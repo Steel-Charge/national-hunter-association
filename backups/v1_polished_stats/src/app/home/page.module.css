@@ -1,0 +1,94 @@
+.container {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    /* background-color: #000; Removed to allow global background */
+}
+
+.content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* Bottom aligned */
+    padding: 20px;
+    padding-bottom: 100px;
+    /* Space for navbar */
+}
+
+.profileSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    /* Align bottom of Name with bottom of Rank */
+}
+
+.info {
+    flex: 1;
+}
+
+.name {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 5px;
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+.title {
+    font-size: 0.9rem;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.badge {
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid var(--color-secondary);
+    color: var(--color-secondary);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+}
+
+.rankSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Center "Rank:" above "E" */
+    margin-left: 20px;
+    margin-bottom: 5px;
+    /* Adjust to align baseline with Name if needed */
+}
+
+.rankLabel {
+    color: var(--color-primary);
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-bottom: -10px;
+    /* Pull label closer to value */
+    z-index: 10;
+}
+
+.rankValue {
+    font-size: 6rem;
+    line-height: 1;
+    font-family: sans-serif;
+    filter: drop-shadow(0 0 15px currentColor);
+}

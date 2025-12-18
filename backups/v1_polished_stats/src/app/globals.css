@@ -1,0 +1,199 @@
+:root {
+  /* Hunter Theme Colors */
+  --color-bg-dark: #050505;
+  --color-bg-card: rgba(10, 10, 15, 0.8);
+  --color-primary: #00e5ff;
+  /* Cyan */
+  --color-primary-glow: rgba(0, 229, 255, 0.6);
+  --color-secondary: #ffd700;
+  /* Gold */
+  --color-text-main: #ffffff;
+  --color-text-muted: #8899a6;
+  --color-border: #00e5ff;
+  /* Cyan borders */
+
+  /* Ranks */
+  --rank-s: #ff2a57;
+  /* Red */
+  --rank-a: #ffe597;
+  /* Gold */
+  --rank-b: #8247ff;
+  /* Purple */
+  --rank-c: #00abff;
+  /* Blue */
+  --rank-d: #2aff5f;
+  /* Green */
+  --rank-e: #ffffff;
+  /* White */
+
+  /* Rarities */
+  --rarity-legendary: #ffd700;
+  /* Gold */
+  --rarity-mythic: #ff2a57;
+  /* Red */
+  --rarity-epic: #c0c0c0;
+  /* Silver - making it distinct from white */
+  --rarity-rare: #cd7f32;
+  /* Bronze */
+  --rarity-common: #00e5ff;
+  /* Blue (Hunter default) */
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  /* background-color: var(--color-bg-dark); Removed to allow BackgroundWrapper to show */
+  color: var(--color-text-main);
+  font-family: 'Inter', sans-serif;
+  /* We'll use uppercase for headers */
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Utility Classes */
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: var(--spacing-md);
+  padding-bottom: 80px;
+  position: relative;
+  background-color: var(--color-bg-dark);
+}
+
+/* Cyber/Hunter Card Style */
+.card {
+  background-color: rgba(5, 5, 10, 0.6);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  backdrop-filter: blur(5px);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #000;
+  box-shadow: 0 0 15px var(--color-primary-glow);
+}
+
+.btn-primary:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 25px var(--color-primary-glow);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.text-cyan {
+  color: var(--color-primary);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.gap-sm {
+  gap: var(--spacing-sm);
+}
+
+.gap-md {
+  gap: var(--spacing-md);
+}
+
+/* Rank Badge - Glowing Text */
+.rank-text {
+  font-weight: 900;
+  text-shadow: 0 0 10px currentColor;
+}
+
+.rank-S {
+  color: var(--rank-s);
+}
+
+.rank-A {
+  color: var(--rank-a);
+}
+
+.rank-B {
+  color: var(--rank-b);
+}
+
+.rank-C {
+  color: var(--rank-c);
+}
+
+.rank-D {
+  color: var(--rank-d);
+}
+
+.rank-E {
+  color: var(--rank-e);
+}

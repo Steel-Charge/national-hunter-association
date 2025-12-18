@@ -1,0 +1,160 @@
+.container {
+    min-height: 100vh;
+    padding: 20px;
+    padding-bottom: 100px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.pageTitle {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    /* Color will be dynamic inline */
+}
+
+.pageSubtitle {
+    font-size: 1rem;
+    color: #888;
+    margin: 5px 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sectionTitle {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #00ffff;
+    /* Default cyan, overridden by dynamic color if needed */
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.filterBtn {
+    background: transparent;
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.filterBtn:hover {
+    background: rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.activeFilter {
+    background: #00ffff;
+    color: #000;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.tableHeader {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #00ffff;
+    text-transform: uppercase;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+    text-align: center;
+}
+
+.colLeft {
+    text-align: left;
+}
+
+.rankList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rankItem {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.rankItem:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.playerName {
+    text-align: left;
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.playerRank {
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+
+.playerScore {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Rank Colors for the list items */
+.rankS {
+    color: var(--rank-s);
+    text-shadow: 0 0 10px var(--rank-s);
+}
+
+.rankA {
+    color: var(--rank-a);
+    text-shadow: 0 0 10px var(--rank-a);
+}
+
+.rankB {
+    color: var(--rank-b);
+    text-shadow: 0 0 10px var(--rank-b);
+}
+
+.rankC {
+    color: var(--rank-c);
+    text-shadow: 0 0 10px var(--rank-c);
+}
+
+.rankD {
+    color: var(--rank-d);
+    text-shadow: 0 0 10px var(--rank-d);
+}
+
+.rankE {
+    color: var(--rank-e);
+    text-shadow: 0 0 10px var(--rank-e);
+}

@@ -1,0 +1,42 @@
+.navbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    background-color: rgba(10, 10, 15, 0.9);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-full);
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    z-index: 100;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.navItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-text-muted);
+    font-size: 0.6rem;
+    gap: 4px;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.navItem:hover {
+    color: #fff;
+}
+
+.active {
+    color: var(--color-primary);
+    text-shadow: 0 0 5px var(--color-primary);
+}
+
+.active svg {
+    filter: drop-shadow(0 0 5px var(--color-primary));
+}

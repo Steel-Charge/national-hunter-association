@@ -1,0 +1,17 @@
+{
+    "name": "Global Hunters Association",
+    "short_name": "Hunters",
+    "description": "The official app for the Global Hunters Association.",
+    "start_url": "/home",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#00e5ff",
+    "icons": [
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

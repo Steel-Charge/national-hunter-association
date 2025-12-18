@@ -1,0 +1,126 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #050505;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease-out, visibility 0.5s;
+}
+
+.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.throbberContainer {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.throbber {
+    width: 60px;
+    height: 60px;
+    border: 4px solid transparent;
+    border-top-color: var(--rank-color, #00e5ff);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    position: relative;
+}
+
+.throbber::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border: 2px solid var(--rank-color, #00e5ff);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.throbber::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border: 3px solid transparent;
+    border-bottom-color: var(--rank-color, #00e5ff);
+    border-radius: 50%;
+    animation: spin-reverse 1.5s linear infinite;
+}
+
+.loadingText {
+    margin-top: 24px;
+    font-family: 'scribble', sans-serif;
+    font-size: 1.5rem;
+    color: var(--rank-color, #00e5ff);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    text-shadow: 0 0 10px var(--rank-color, #00e5ff);
+    animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spin-reverse {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 0.6;
+    }
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}

@@ -1,0 +1,227 @@
+.container {
+    min-height: 100vh;
+    padding: 20px;
+    padding-bottom: 80px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+    max-width: 100%;
+    /* No background-color here to allow BackgroundWrapper to show */
+}
+
+.header {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.pageTitle {
+    font-size: 1.5rem;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.pageSubtitle {
+    font-size: 1.2rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.sectionTitle {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 35px;
+    flex-wrap: nowrap;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow-x: auto;
+}
+
+.filterBtn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+}
+
+.filterBtn:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.activeFilter {
+    color: #000 !important;
+    transform: scale(1.05);
+}
+
+.tableHeader {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    padding: 10px 25px;
+    margin-bottom: 15px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.colLeft {
+    text-align: left;
+}
+
+.rankList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.rankItem {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    padding: 18px 25px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.rankItem:hover {
+    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.playerName {
+    text-align: left;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+}
+
+.rankNumber {
+    margin-right: 15px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.9rem;
+    width: 25px;
+}
+
+.playerRank {
+    font-weight: 900;
+    font-size: 1.5rem;
+}
+
+.playerScore {
+    font-family: 'Courier New', monospace;
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+
+/* Podium Styles */
+.top1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.15), rgba(0, 0, 0, 0.3));
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+    transform: scale(1.02);
+}
+
+.top1 .rankNumber {
+    color: #ffd700;
+    font-weight: 900;
+}
+
+.top1 .playerName {
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.top2 {
+    background: linear-gradient(90deg, rgba(192, 192, 192, 0.15), rgba(0, 0, 0, 0.3));
+    border: 2px solid #c0c0c0;
+    box-shadow: 0 0 15px rgba(192, 192, 192, 0.2);
+}
+
+.top2 .rankNumber {
+    color: #c0c0c0;
+    font-weight: 900;
+}
+
+.top2 .playerName {
+    color: #c0c0c0;
+}
+
+.top3 {
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.15), rgba(0, 0, 0, 0.3));
+    border: 2px solid #cd7f32;
+    box-shadow: 0 0 10px rgba(205, 127, 50, 0.2);
+}
+
+.top3 .rankNumber {
+    color: #cd7f32;
+    font-weight: 900;
+}
+
+.top3 .playerName {
+    color: #cd7f32;
+}
+
+/* Rank Colors */
+.rankS {
+    color: var(--rank-s);
+    text-shadow: 0 0 15px var(--rank-s);
+}
+
+.rankA {
+    color: var(--rank-a);
+    text-shadow: 0 0 10px var(--rank-a);
+}
+
+.rankB {
+    color: var(--rank-b);
+    text-shadow: 0 0 10px var(--rank-b);
+}
+
+.rankC {
+    color: var(--rank-c);
+    text-shadow: 0 0 10px var(--rank-c);
+}
+
+.rankD {
+    color: var(--rank-d);
+    text-shadow: 0 0 10px var(--rank-d);
+}
+
+.rankE {
+    color: var(--rank-e);
+    text-shadow: 0 0 10px var(--rank-e);
+}
