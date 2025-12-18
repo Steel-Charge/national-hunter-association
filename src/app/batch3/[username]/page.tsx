@@ -49,6 +49,7 @@ export default function HunterProfilePage() {
                 .eq('profile_id', profileData.id);
 
             const userProfile: UserProfile = {
+                id: profileData.id,
                 name: profileData.name,
                 avatarUrl: profileData.avatar_url,
                 activeTitle: profileData.active_title || { name: 'Hunter', rarity: 'Common' },
