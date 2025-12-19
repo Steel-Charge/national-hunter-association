@@ -50,11 +50,8 @@ export default function BackgroundWrapper({ children }: { children: React.ReactN
     // Only treat the Batch 3 profile ROOT (`/batch3/<username>`) as a profile page.
     const isBatch3ProfileRoot = !!(pathname && /^\/batch3\/[^\/]+$/.test(pathname));
     const isProfilePage = pathname === '/home' || pathname === '/' || isBatch3ProfileRoot;
-<<<<<<< HEAD
-    const overlayOpacity = isProfilePage ? 0.0 : 0.90;
-=======
+
     const overlayOpacity = isProfilePage ? 0.0 : 0.85;
->>>>>>> 844a4c1625382d54b1e44a606038f89b7055c23c
 
     return (
         <>
