@@ -117,10 +117,14 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
     // Theme logic: Use settings theme if available, otherwise calculated rank
     // For the special binary profile, force the theme/rank to 'S'
     const themeRank = isSpecialProfile ? 'S' : (profile.settings.theme || overallRank);
+<<<<<<< HEAD
     // If a rarity-based special theme is selected, prefer that for UI variables
     const specialTheme = (profile.settings && (profile.settings as any).specialTheme) || null;
 
     const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
+=======
+    const rankColor = `var(--rank-${themeRank.toLowerCase()})`;
+>>>>>>> 844a4c1625382d54b1e44a606038f89b7055c23c
 
     // Viewer Theme Logic for Comparison
     const viewerOverallRank = viewerStats ? getProfileOverallRank(viewerStats) : 'E';
@@ -171,6 +175,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
         setIsComparing(!isComparing);
     };
 
+<<<<<<< HEAD
     // Map rarity names to hex values (matches CSS vars in globals.css)
     const RARITY_COLORS: Record<string, string> = {
         rare: '#cd7f32',
@@ -185,6 +190,10 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
 
     return (
         <div className={`${styles.container} ${isSpecialProfile ? styles.glitchTheme : ''}`} style={{ '--rank-color': rankColor, '--rank-hex': rankHexForChart } as React.CSSProperties}>
+=======
+    return (
+        <div className={`${styles.container} ${isSpecialProfile ? styles.glitchTheme : ''}`} style={{ '--rank-color': rankColor, '--rank-hex': RANK_COLORS[themeRank as Rank] } as React.CSSProperties}>
+>>>>>>> 844a4c1625382d54b1e44a606038f89b7055c23c
             <div className={styles.header} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <h1 className={styles.pageTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
