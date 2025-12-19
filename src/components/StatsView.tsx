@@ -117,14 +117,15 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
     // Theme logic: Use settings theme if available, otherwise calculated rank
     // For the special binary profile, force the theme/rank to 'S'
     const themeRank = isSpecialProfile ? 'S' : (profile.settings.theme || overallRank);
-<<<<<<< HEAD
-    // If a rarity-based special theme is selected, prefer that for UI variables
-    const specialTheme = (profile.settings && (profile.settings as any).specialTheme) || null;
 
-    const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
-=======
-    const rankColor = `var(--rank-${themeRank.toLowerCase()})`;
->>>>>>> 844a4c1625382d54b1e44a606038f89b7055c23c
+    // If a rarity-based special theme is selected, prefer that for UI variables
+    const specialTheme =
+        (profile.settings && (profile.settings as any).specialTheme) || null;
+
+    const rankColor = specialTheme
+        ? `var(--rarity-${specialTheme})`
+        : `var(--rank-${themeRank.toLowerCase()})`;
+
 
     // Viewer Theme Logic for Comparison
     const viewerOverallRank = viewerStats ? getProfileOverallRank(viewerStats) : 'E';
