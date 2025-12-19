@@ -46,9 +46,11 @@ export default function BackgroundWrapper({ children }: { children: React.ReactN
         setImgSrc('/placeholder.png');
     };
 
-    // On profile page (home), show full opacity. On others, fade it.
-    const isProfilePage = pathname === '/home' || pathname === '/';
-    const overlayOpacity = isProfilePage ? 0.0 : 0.90;
+    // On profile page (home) or the Batch 3 profile root, show full background.
+    // Only treat the Batch 3 profile ROOT (`/batch3/<username>`) as a profile page.
+    const isBatch3ProfileRoot = !!(pathname && /^\/batch3\/[^\/]+$/.test(pathname));
+    const isProfilePage = pathname === '/home' || pathname === '/' || isBatch3ProfileRoot;
+    const overlayOpacity = isProfilePage ? 0.0 : 0.85;
 
     return (
         <>
