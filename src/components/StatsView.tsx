@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { UserProfile, useHunterStore } from '@/lib/store';
 import { getAttributes, RANK_COLORS, Rank } from '@/lib/game-logic';
 
@@ -13,9 +14,18 @@ interface StatsViewProps {
 }
 
 export default function StatsView({ profile, isReadOnly = false, viewerProfile = null, onScoreUpdate }: StatsViewProps) {
-    const { updateScore, getTheme, getStats } = useHunterStore();
+    const { updateScore, getTheme, getStats, logout } = useHunterStore();
     const [activeTab, setActiveTab] = useState<string>('Strength');
     const [isComparing, setIsComparing] = useState(false);
+    const router = useRouter();
+
+    // Special binary identity handling (local-only effects)
+    const SPECIAL_NAME = "01010100 01101000 01100101 00100000 01100101 01101110 01100100 00100000 01101001 01100110 00100000 01110111 01100101 00100000 01100110 01100001 01101001 01101100 00101110 00101110 00101110";
+    const REPLACEMENT_NAME = "00101110 00101110 00101110 01100010 01100101 00100000 01110100 01101000 01100101 00100000 01101111 01101110 01100101 00100000 01110100 01101111 00100000 01100011 01101000 01100001 01101110 01100111 01100101 00100000 01101001 01110100 00001010 00101101 01111010 01100101 01110010 01101111";
+    const isSpecialProfile = profile.name === SPECIAL_NAME;
+
+    const [glitchActive, setGlitchActive] = useState(false);
+    const [glitchedName, setGlitchedName] = useState('');
 
     // Helper to get stats for any profile
     const getProfileStats = (p: UserProfile) => {
@@ -29,6 +39,16 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
         // Replicating is safer for "viewing other profiles".
 
         const attributes = getAttributes(p.profileType);
+        // If this is the special profile, force S rank + 100% for every attribute
+        if (p.name === SPECIAL_NAME) {
+            return Object.values(attributes).map(attr => ({
+                name: attr.name,
+                percentage: 100,
+                rank: 'S',
+                tests: attr.tests.map(test => ({ ...test, score: p.testScores[test.name] || 0, percentage: 100 }))
+            }));
+        }
+
         const stats = Object.values(attributes).map(attr => {
             const attrScores = attr.tests.map(test => {
                 const score = p.testScores[test.name] || 0;
@@ -95,15 +115,20 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
 
     const overallRank = getProfileOverallRank(stats);
     // Theme logic: Use settings theme if available, otherwise calculated rank
-    const themeRank = profile.settings.theme || overallRank;
-    const rankColor = `var(--rank-${themeRank.toLowerCase()})`;
+    // For the special binary profile, force the theme/rank to 'S'
+    const themeRank = isSpecialProfile ? 'S' : (profile.settings.theme || overallRank);
+    // If a rarity-based special theme is selected, prefer that for UI variables
+    const specialTheme = (profile.settings && (profile.settings as any).specialTheme) || null;
+
+    const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
     // Viewer Theme Logic for Comparison
     const viewerOverallRank = viewerStats ? getProfileOverallRank(viewerStats) : 'E';
     const viewerThemeRank = viewerProfile?.settings.theme || viewerOverallRank;
-    let viewerRankColor = `var(--rank-${viewerThemeRank.toLowerCase()})`;
+    // Use the hex color for the viewer (logged-in hunter) so canvas paints correctly
+    let viewerRankColor = RANK_COLORS[viewerThemeRank as Rank] || '#ffffff';
 
-    // Exception Theme: If ranks match, use special color
+    // Exception Theme: If ranks match, use special cyan color used elsewhere
     if (themeRank === viewerThemeRank) {
         viewerRankColor = '#3abbbd';
     }
@@ -129,8 +154,37 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
         }
     };
 
+    const handleCompareClick = () => {
+        // If viewing the special profile and a viewer is logged in, trigger the local-only glitch effect
+        if (isSpecialProfile && viewerProfile) {
+            // Log out the viewer and show a transient overlay with the replacement binary name
+            logout();
+            setGlitchedName(REPLACEMENT_NAME);
+            setGlitchActive(true);
+            setTimeout(() => {
+                setGlitchActive(false);
+                router.push('/');
+            }, 3500);
+            return;
+        }
+
+        setIsComparing(!isComparing);
+    };
+
+    // Map rarity names to hex values (matches CSS vars in globals.css)
+    const RARITY_COLORS: Record<string, string> = {
+        rare: '#cd7f32',
+        epic: '#c0c0c0',
+        legendary: '#ffd700',
+        mythic: '#ff2a57',
+        common: '#00e5ff'
+    };
+
+    // Determine hex to pass to chart and CSS var fallback
+    const rankHexForChart = specialTheme ? (RARITY_COLORS[specialTheme] || RANK_COLORS[themeRank as Rank]) : (RANK_COLORS[themeRank as Rank] || '#ffffff');
+
     return (
-        <div className={styles.container} style={{ '--rank-color': rankColor, '--rank-hex': RANK_COLORS[themeRank as Rank] } as React.CSSProperties}>
+        <div className={`${styles.container} ${isSpecialProfile ? styles.glitchTheme : ''}`} style={{ '--rank-color': rankColor, '--rank-hex': rankHexForChart } as React.CSSProperties}>
             <div className={styles.header} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <h1 className={styles.pageTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
@@ -143,7 +197,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                 {viewerProfile && (
                     <div style={{ marginRight: isReadOnly ? '60px' : '0', marginTop: '5px' }}>
                         <button
-                            onClick={() => setIsComparing(!isComparing)}
+                            onClick={handleCompareClick}
                             style={{
                                 background: 'transparent',
                                 border: `2px solid ${rankColor}`,
@@ -197,11 +251,11 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
 
             {/* Active Attribute Details */}
             <div className={styles.detailsContainer}>
-                <div className="flex-between" style={{ marginBottom: '20px' }}>
+                <div className={styles.attrHeader}>
                     <h2 className={styles.attrTitle} style={{ color: rankColor }}>{currentStat.name}</h2>
                     <div className={styles.rankDisplay}>
-                        <span className={styles.rankLabel} style={{ color: rankColor, fontSize: '1.2rem', fontWeight: 'bold' }}>Current Rank:</span>
-                        <span className={`rank-${currentStat.rank} rank-text`} style={{ fontSize: '3rem', marginLeft: '15px', fontWeight: '900' }}>
+                        <span className={styles.rankLabel} style={{ color: rankColor }}>Current Rank:</span>
+                        <span className={`rank-${currentStat.rank} rank-text ${styles.rankValue}`}>
                             {currentStat.rank}
                         </span>
                     </div>
@@ -228,7 +282,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                                     <label className={styles.testLabel}>{test.name} [{test.unit}]</label>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <span className={styles.testValue} style={{ color: rankColor }}>
-                                            {displayText}
+                                            {isSpecialProfile && currentScore === 0 ? '???' : displayText}
                                         </span>
                                         {/* Comparison Score in Brackets */}
                                         {isComparing && viewerProfile && (
@@ -243,7 +297,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                                     <div
                                         className={styles.progressBarFill}
                                         style={{
-                                            width: `${progress}%`,
+                                            width: `${isSpecialProfile ? 100 : progress}%`,
                                             backgroundColor: rankColor,
                                             boxShadow: `0 0 10px ${rankColor}`
                                         }}
@@ -264,6 +318,14 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                     })}
                 </div>
             </div>
+            {glitchActive && (
+                <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, pointerEvents: 'none' }}>
+                    <div style={{ padding: '36px', borderRadius: '8px', background: 'rgba(0,0,0,0.9)', color: '#0ff', fontWeight: 900, fontSize: '1.1rem', textAlign: 'center', boxShadow: '0 0 30px #0ff' }}>
+                        <div style={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>{glitchedName}</div>
+                        <div style={{ marginTop: '8px', color: '#fff', fontSize: '0.9rem' }}>You have been disconnected.</div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
