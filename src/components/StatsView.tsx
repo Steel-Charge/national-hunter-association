@@ -175,7 +175,6 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
         setIsComparing(!isComparing);
     };
 
-<<<<<<< HEAD
     // Map rarity names to hex values (matches CSS vars in globals.css)
     const RARITY_COLORS: Record<string, string> = {
         rare: '#cd7f32',
@@ -186,14 +185,16 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
     };
 
     // Determine hex to pass to chart and CSS var fallback
-    const rankHexForChart = specialTheme ? (RARITY_COLORS[specialTheme] || RANK_COLORS[themeRank as Rank]) : (RANK_COLORS[themeRank as Rank] || '#ffffff');
+    const rankHexForChart =
+        specialTheme
+            ? (RARITY_COLORS[specialTheme] || RANK_COLORS[themeRank as Rank])
+            : (RANK_COLORS[themeRank as Rank] || '#ffffff');
 
     return (
-        <div className={`${styles.container} ${isSpecialProfile ? styles.glitchTheme : ''}`} style={{ '--rank-color': rankColor, '--rank-hex': rankHexForChart } as React.CSSProperties}>
-=======
-    return (
-        <div className={`${styles.container} ${isSpecialProfile ? styles.glitchTheme : ''}`} style={{ '--rank-color': rankColor, '--rank-hex': RANK_COLORS[themeRank as Rank] } as React.CSSProperties}>
->>>>>>> 844a4c1625382d54b1e44a606038f89b7055c23c
+        <div
+            className={`${styles.container} ${isSpecialProfile ? styles.glitchTheme : ''}`}
+            style={{ '--rank-color': rankColor, '--rank-hex': rankHexForChart } as React.CSSProperties}
+        >
             <div className={styles.header} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <h1 className={styles.pageTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
