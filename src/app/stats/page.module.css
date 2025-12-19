@@ -176,3 +176,31 @@
     font-size: 1.2rem;
     font-weight: 900;
 }
+
+/* Glitch theme for special profile (animated, local-only) */
+.glitchTheme {
+    background: repeating-linear-gradient(45deg, rgba(58,187,189,0.06), rgba(58,187,189,0.06) 2px, transparent 2px, transparent 6px);
+    animation: subtleNoise 3s infinite linear;
+}
+
+@keyframes subtleNoise {
+    0% { background-position: 0 0; }
+    50% { background-position: 100px 100px; filter: hue-rotate(0deg); }
+    100% { background-position: 0 0; filter: hue-rotate(20deg); }
+}
+
+/* Small text glitch effect (used on overlay) */
+.glitchText {
+    color: #0ff;
+    text-shadow: 0 0 8px #0ff, 2px 0 6px rgba(255,0,255,0.2);
+    animation: jitter 0.35s infinite linear;
+}
+
+@keyframes jitter {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-1px); }
+    40% { transform: translateX(1px); }
+    60% { transform: translateX(-1px); }
+    80% { transform: translateX(1px); }
+    100% { transform: translateX(0); }
+}

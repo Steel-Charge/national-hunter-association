@@ -1,0 +1,28 @@
+
+> global-hunters-association@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.1.9
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.196:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 2.1s
+ ○ Compiling / ...
+ ✓ Compiled / in 1670ms (791 modules)
+ GET / 200 in 2023ms
+ GET / 200 in 43ms
+ ✓ Compiled /favicon.ico in 320ms (424 modules)
+ GET /favicon.ico 200 in 401ms
+ ✓ Compiled /home in 443ms (850 modules)
+ GET /home 200 in 526ms
+ GET /favicon.ico 200 in 16ms
+ ✓ Compiled /settings in 178ms (864 modules)
+ GET /settings 200 in 230ms
+ GET /home 200 in 13ms
+ GET /settings 200 in 8ms
+ GET /settings 200 in 81ms
+ GET /favicon.ico 200 in 17ms
+ ✓ Compiled in 438ms (849 modules)
+ ✓ Compiled in 297ms (849 modules)

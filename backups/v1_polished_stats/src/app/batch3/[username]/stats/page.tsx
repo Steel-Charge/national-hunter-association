@@ -48,6 +48,7 @@ export default function HunterStatsPage() {
                 .eq('profile_id', profileData.id);
 
             const userProfile: UserProfile = {
+                id: profileData.id,
                 name: profileData.name,
                 avatarUrl: profileData.avatar_url,
                 activeTitle: profileData.active_title || { name: 'Hunter', rarity: 'Common' },
@@ -55,7 +56,8 @@ export default function HunterStatsPage() {
                 unlockedTitles: titlesData || [],
                 completedQuests: questsData?.map((q: { quest_id: string }) => q.quest_id) || [],
                 settings: profileData.settings || { statsCalculator: true, theme: null },
-                isAdmin: profileData.is_admin || false
+                isAdmin: profileData.is_admin || false,
+                profileType: profileData.profile_type || 'Male'
             };
 
             setViewedProfile(userProfile);

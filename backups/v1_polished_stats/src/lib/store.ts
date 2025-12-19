@@ -13,6 +13,7 @@ export interface UserSettings {
 }
 
 export interface UserProfile {
+    id: string; // Add UUID
     name: string;
     avatarUrl?: string;
     activeTitle: Title;
@@ -30,6 +31,7 @@ const DEFAULT_SETTINGS: UserSettings = {
 };
 
 const DEFAULT_PROFILE: UserProfile = {
+    id: '00000000-0000-0000-0000-000000000000',
     name: 'Edgelord',
     avatarUrl: '/placeholder.png',
     activeTitle: { name: 'Challenger of Storms', rarity: 'Legendary' },
@@ -112,6 +114,7 @@ const LOCKJAW_PROFILE: Partial<UserProfile> = {
 };
 
 const NEW_HUNTER_PROFILE: UserProfile = {
+    id: '',
     name: '',
     avatarUrl: '/placeholder.png',
     activeTitle: { name: 'Hunter', rarity: 'Common' },
@@ -142,6 +145,8 @@ interface HunterState {
     setActiveTitle: (title: Title) => Promise<void>;
     updateAvatar: (url: string) => Promise<void>;
     updateSettings: (newSettings: Partial<UserSettings>) => Promise<void>;
+    updateName: (newName: string) => Promise<{ success: boolean; error?: string }>;
+    updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
     getStats: () => { name: string; percentage: number; rank: Rank }[];
     getOverallRank: () => Rank;
     getTheme: () => Rank;
@@ -187,6 +192,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
 
                 set({
                     profile: {
+                        id: profileData.id,
                         name: profileData.name,
                         avatarUrl: profileData.avatar_url,
                         activeTitle: profileData.active_title || { name: 'Hunter', rarity: 'Common' },
@@ -251,6 +257,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             // Update local state directly instead of fetching to avoid race conditions
             set({
                 profile: {
+                    id: newProfile.id,
                     name: newProfile.name,
                     activeTitle: newProfile.active_title || { name: 'Hunter', rarity: 'Common' },
                     testScores: newProfile.test_scores || {},
@@ -390,7 +397,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         const { error } = await supabase
             .from('profiles')
             .update({ test_scores: newScores })
-            .eq('name', nameToUpdate);
+            .eq(targetName && targetName !== profile.name ? 'name' : 'id', targetName && targetName !== profile.name ? nameToUpdate : profile.id);
 
         if (error) console.error('Error updating score:', error);
     },
@@ -416,28 +423,19 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         });
 
         try {
-            // Get profile ID
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('name', profile.name)
-                .single();
+            // Insert Quest
+            await supabase.from('completed_quests').insert({
+                profile_id: profile.id,
+                quest_id: questId
+            });
 
-            if (profileData) {
-                // Insert Quest
-                await supabase.from('completed_quests').insert({
-                    profile_id: profileData.id,
-                    quest_id: questId
+            // Insert Title if new
+            if (!titleExists) {
+                await supabase.from('unlocked_titles').insert({
+                    profile_id: profile.id,
+                    name: title.name,
+                    rarity: title.rarity
                 });
-
-                // Insert Title if new
-                if (!titleExists) {
-                    await supabase.from('unlocked_titles').insert({
-                        profile_id: profileData.id,
-                        name: title.name,
-                        rarity: title.rarity
-                    });
-                }
             }
         } catch (error) {
             console.error('Error claiming quest:', error);
@@ -450,23 +448,14 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         if (!profile) return;
 
         try {
-            // Get profile ID
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('name', profile.name)
-                .single();
-
-            if (profileData) {
-                // Create title request
-                await supabase.from('title_requests').insert({
-                    profile_id: profileData.id,
-                    quest_id: questId,
-                    title_name: title.name,
-                    title_rarity: title.rarity,
-                    status: 'pending'
-                });
-            }
+            // Create title request
+            await supabase.from('title_requests').insert({
+                profile_id: profile.id,
+                quest_id: questId,
+                title_name: title.name,
+                title_rarity: title.rarity,
+                status: 'pending'
+            });
         } catch (error) {
             console.error('Error requesting title:', error);
         }
@@ -477,21 +466,13 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         if (!profile) return [];
 
         try {
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('name', profile.name)
-                .single();
+            const { data: requests } = await supabase
+                .from('title_requests')
+                .select('quest_id')
+                .eq('profile_id', profile.id)
+                .eq('status', 'pending');
 
-            if (profileData) {
-                const { data: requests } = await supabase
-                    .from('title_requests')
-                    .select('quest_id')
-                    .eq('profile_id', profileData.id)
-                    .eq('status', 'pending');
-
-                return requests?.map(r => r.quest_id) || [];
-            }
+            return requests?.map(r => r.quest_id) || [];
         } catch (error) {
             console.error('Error fetching pending requests:', error);
         }
@@ -615,7 +596,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         const { error } = await supabase
             .from('profiles')
             .update({ active_title: title })
-            .eq('name', profile.name);
+            .eq('id', profile.id);
 
         if (error) console.error('Error setting active title:', error);
     },
@@ -630,7 +611,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         const { error } = await supabase
             .from('profiles')
             .update({ avatar_url: url })
-            .eq('name', profile.name);
+            .eq('id', profile.id);
 
         if (error) {
             console.error('Error updating avatar in DB:', error);
@@ -652,9 +633,56 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         const { error } = await supabase
             .from('profiles')
             .update({ settings: updatedSettings })
-            .eq('name', profile.name);
+            .eq('id', profile.id);
 
         if (error) console.error('Error updating settings:', error);
+    },
+
+    updateName: async (newName: string) => {
+        const profile = get().profile;
+        if (!profile) return { success: false, error: 'Not logged in' };
+
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ name: newName })
+                .eq('id', profile.id);
+
+            if (error) {
+                if (error.code === '23505') {
+                    return { success: false, error: 'Name already taken' };
+                }
+                throw error;
+            }
+
+            // Update local state and last_user
+            set({ profile: { ...profile, name: newName } });
+            localStorage.setItem('last_user', newName);
+
+            return { success: true };
+        } catch (error: any) {
+            console.error('Error updating name:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    updatePassword: async (newPassword: string) => {
+        const profile = get().profile;
+        if (!profile) return { success: false, error: 'Not logged in' };
+
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ password: newPassword })
+                .eq('id', profile.id);
+
+            if (error) throw error;
+
+            return { success: true };
+        } catch (error: any) {
+            console.error('Error updating password:', error);
+            return { success: false, error: error.message };
+        }
     },
 
     getStats: () => {
@@ -695,4 +723,3 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         }
     }
 }));
-

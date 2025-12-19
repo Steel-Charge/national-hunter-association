@@ -22,7 +22,7 @@ BEGIN
       "Push-ups": 30,
       "1-mile run": 0,
       "Bench Press": 60,
-      "Plank Hold": 1.2,
+      "Plank Hold": 1.37,
       "100m Sprint": 17.6,
       "40-yard Dash": 6.1,
       "Pro Agility Shuttle": 8.3
@@ -77,8 +77,8 @@ BEGIN
       "Push-ups": 0,
       "1-mile run": 0,
       "Bench Press": 60,
-      "Plank Hold": 0.33,
-      "100m Sprint": 19.6,
+      "Plank Hold": 0.32,
+      "100m Sprint": 19.05,
       "40-yard Dash": 6.45,
       "Pro Agility Shuttle": 6.9
     }'

@@ -8,9 +8,10 @@ import styles from './Navbar.module.css';
 
 export default function Navbar() {
     const pathname = usePathname();
-    const { getTheme } = useHunterStore();
+    const { getTheme, profile } = useHunterStore();
     const rank = getTheme();
-    const rankColor = `var(--rank-${rank.toLowerCase()})`;
+    const specialTheme = profile?.settings?.specialTheme || null;
+    const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${rank.toLowerCase()})`;
 
     const isActive = (path: string) => pathname === path;
 

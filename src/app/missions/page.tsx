@@ -66,7 +66,8 @@ export default function MissionsPage() {
     };
 
     const themeRank = getTheme();
-    const rankColorVar = `var(--rank-${themeRank.toLowerCase()})`;
+    const specialTheme = profile?.settings?.specialTheme || null;
+    const rankColorVar = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
     return (
         <div className={styles.container} style={{ '--rank-color': rankColorVar } as React.CSSProperties}>

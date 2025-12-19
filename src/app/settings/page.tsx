@@ -20,7 +20,11 @@ export default function SettingsPage() {
     const [localAvatar, setLocalAvatar] = useState<string>('');
     const [localStatsCalc, setLocalStatsCalc] = useState<boolean>(true);
     const [localTheme, setLocalTheme] = useState<Rank | null>(null);
+    const [localSpecialTheme, setLocalSpecialTheme] = useState<'rare' | 'epic' | 'legendary' | 'mythic' | null>(null);
     const [localActiveTitle, setLocalActiveTitle] = useState<Title | null>(null);
+    const [localName, setLocalName] = useState<string>('');
+    const [localPassword, setLocalPassword] = useState<string>('');
+    const [localPasswordConfirm, setLocalPasswordConfirm] = useState<string>('');
 
     const [hasChanges, setHasChanges] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
@@ -33,7 +37,9 @@ export default function SettingsPage() {
             setLocalAvatar(profile.avatarUrl || '');
             setLocalStatsCalc(profile.settings.statsCalculator);
             setLocalTheme(profile.settings.theme);
+            setLocalSpecialTheme(profile.settings.specialTheme || null);
             setLocalActiveTitle(profile.activeTitle);
+            setLocalName(profile.name);
         }
     }, [loading, profile, router]);
 
@@ -80,6 +86,16 @@ export default function SettingsPage() {
 
     const handleThemeChange = (rank: Rank) => {
         setLocalTheme(rank);
+        // Deselect any special rarity theme when choosing a rank theme
+        setLocalSpecialTheme(null);
+        setHasChanges(true);
+    };
+
+    const toggleSpecialTheme = (rarity: 'rare' | 'epic' | 'legendary' | 'mythic') => {
+        const newVal = localSpecialTheme === rarity ? null : rarity;
+        setLocalSpecialTheme(newVal);
+        // If selecting a special theme, clear the rank theme selection
+        if (newVal) setLocalTheme(null);
         setHasChanges(true);
     };
 
@@ -92,19 +108,55 @@ export default function SettingsPage() {
         }
     };
 
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setLocalName(e.target.value);
+        setHasChanges(true);
+    };
+
+    const handlePasswordUpdate = async () => {
+        if (!localPassword) {
+            setSaveMessage('Password cannot be empty');
+            return;
+        }
+        if (localPassword !== localPasswordConfirm) {
+            setSaveMessage('Passwords do not match');
+            return;
+        }
+
+        const result = await useHunterStore.getState().updatePassword(localPassword);
+        if (result.success) {
+            setSaveMessage('Password Reset Successful!');
+            setLocalPassword('');
+            setLocalPasswordConfirm('');
+        } else {
+            setSaveMessage(`Error: ${result.error}`);
+        }
+        setTimeout(() => setSaveMessage(''), 3000);
+    };
+
     const saveChanges = async () => {
         // Commit all changes to store/DB
         if (localAvatar !== profile.avatarUrl) await updateAvatar(localAvatar);
 
-        if (localStatsCalc !== profile.settings.statsCalculator || localTheme !== profile.settings.theme) {
+        if (localStatsCalc !== profile.settings.statsCalculator || localTheme !== profile.settings.theme || localSpecialTheme !== profile.settings.specialTheme) {
             await updateSettings({
                 statsCalculator: localStatsCalc,
-                theme: localTheme
+                theme: localTheme,
+                specialTheme: localSpecialTheme
             });
         }
 
         if (localActiveTitle && localActiveTitle.name !== profile.activeTitle.name) {
             await setActiveTitle(localActiveTitle);
+        }
+
+        if (localName !== profile.name) {
+            const result = await useHunterStore.getState().updateName(localName);
+            if (!result.success) {
+                setSaveMessage(`Error: ${result.error}`);
+                setTimeout(() => setSaveMessage(''), 3000);
+                return;
+            }
         }
 
         setHasChanges(false);
@@ -117,6 +169,13 @@ export default function SettingsPage() {
         const rankValues: Record<Rank, number> = { E: 1, D: 2, C: 3, B: 4, A: 5, S: 6 };
         return rankValues[rank] <= rankValues[overallRank];
     };
+
+    // Count titles by rarity to determine unlocks for rarity themes
+    const countTitlesByRarity = (rarity: string) => profile.unlockedTitles.filter(t => (t.rarity || '').toLowerCase() === rarity.toLowerCase()).length;
+    const rareUnlocked = countTitlesByRarity('Rare') >= 2;
+    const epicUnlocked = countTitlesByRarity('Epic') >= 2;
+    const legendaryUnlocked = countTitlesByRarity('Legendary') >= 2;
+    const mythicUnlocked = countTitlesByRarity('Mythic') >= 2;
 
     return (
         <div className="container" style={{ '--rank-color': rankColor } as React.CSSProperties}>
@@ -149,6 +208,23 @@ export default function SettingsPage() {
                     >
                         Upload Image
                     </button>
+                </div>
+
+                {/* Change Hunter Name Sub-section */}
+                <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
+                    <h3 className={styles.sectionTitle} style={{ color: rankColor, fontSize: '1rem', marginBottom: '10px' }}>
+                        Change Hunter Name
+                    </h3>
+                    <div className={styles.row}>
+                        <input
+                            type="text"
+                            value={localName}
+                            onChange={handleNameChange}
+                            placeholder="Enter Hunter Name"
+                            className={styles.select}
+                            style={{ borderColor: rankColor }}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -193,7 +269,7 @@ export default function SettingsPage() {
                 </div>
             )}
 
-            {/* Theme Section */}
+            {/* Theme Section (includes Rarity Themes) */}
             <div className={styles.section} style={{ borderColor: `${rankColor}44` }}>
                 <h2 className={styles.sectionTitle} style={{ color: rankColor }}>
                     <Palette size={20} /> Change Theme
@@ -217,6 +293,79 @@ export default function SettingsPage() {
                             </button>
                         );
                     })}
+
+                    {/* Rarity theme buttons grouped with rank options */}
+                    <button
+                        className={`${styles.themeBtn} ${localSpecialTheme === 'rare' ? styles.active : ''}`}
+                        onClick={() => rareUnlocked && toggleSpecialTheme('rare')}
+                        disabled={!rareUnlocked}
+                        style={localSpecialTheme === 'rare' ? { borderColor: 'var(--rarity-rare)', boxShadow: `0 0 10px var(--rarity-rare)`, color: 'var(--rarity-rare)' } : {}}
+                    >
+                        Rare Theme
+                        {!rareUnlocked && <span style={{ display: 'block', fontSize: '0.7rem' }}>[LOCKED]</span>}
+                    </button>
+
+                    <button
+                        className={`${styles.themeBtn} ${localSpecialTheme === 'epic' ? styles.active : ''}`}
+                        onClick={() => epicUnlocked && toggleSpecialTheme('epic')}
+                        disabled={!epicUnlocked}
+                        style={localSpecialTheme === 'epic' ? { borderColor: 'var(--rarity-epic)', boxShadow: `0 0 10px var(--rarity-epic)`, color: 'var(--rarity-epic)' } : {}}
+                    >
+                        Epic Theme
+                        {!epicUnlocked && <span style={{ display: 'block', fontSize: '0.7rem' }}>[LOCKED]</span>}
+                    </button>
+
+                    <button
+                        className={`${styles.themeBtn} ${localSpecialTheme === 'legendary' ? styles.active : ''}`}
+                        onClick={() => legendaryUnlocked && toggleSpecialTheme('legendary')}
+                        disabled={!legendaryUnlocked}
+                        style={localSpecialTheme === 'legendary' ? { borderColor: 'var(--rarity-legendary)', boxShadow: `0 0 10px var(--rarity-legendary)`, color: 'var(--rarity-legendary)' } : {}}
+                    >
+                        Legendary Theme
+                        {!legendaryUnlocked && <span style={{ display: 'block', fontSize: '0.7rem' }}>[LOCKED]</span>}
+                    </button>
+
+                    <button
+                        className={`${styles.themeBtn} ${localSpecialTheme === 'mythic' ? styles.active : ''}`}
+                        onClick={() => mythicUnlocked && toggleSpecialTheme('mythic')}
+                        disabled={!mythicUnlocked}
+                        style={localSpecialTheme === 'mythic' ? { borderColor: 'var(--rarity-mythic)', boxShadow: `0 0 10px var(--rarity-mythic)`, color: 'var(--rarity-mythic)' } : {}}
+                    >
+                        Mythic Theme
+                        {!mythicUnlocked && <span style={{ display: 'block', fontSize: '0.7rem' }}>[LOCKED]</span>}
+                    </button>
+                </div>
+            </div>
+
+            {/* Reset Password Section */}
+            <div className={styles.section} style={{ borderColor: `${rankColor}44` }}>
+                <h2 className={styles.sectionTitle} style={{ color: rankColor }}>
+                    Reset Password
+                </h2>
+                <div className={styles.row} style={{ flexDirection: 'column', gap: '15px', alignItems: 'stretch' }}>
+                    <input
+                        type="password"
+                        value={localPassword}
+                        onChange={(e) => setLocalPassword(e.target.value)}
+                        placeholder="New Password"
+                        className={styles.select}
+                        style={{ borderColor: rankColor }}
+                    />
+                    <input
+                        type="password"
+                        value={localPasswordConfirm}
+                        onChange={(e) => setLocalPasswordConfirm(e.target.value)}
+                        placeholder="Confirm New Password"
+                        className={styles.select}
+                        style={{ borderColor: rankColor }}
+                    />
+                    <button
+                        className={styles.themeBtn}
+                        onClick={handlePasswordUpdate}
+                        style={{ backgroundColor: `${rankColor}22`, borderColor: rankColor }}
+                    >
+                        Update Password
+                    </button>
                 </div>
             </div>
 

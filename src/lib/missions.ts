@@ -45,9 +45,9 @@ export const MISSION_PATHS: MissionPath[] = [
             },
             {
                 id: 'windrunner_mythic',
-                name: 'Windrunner',
+                name: 'Sovreign of the Gale',
                 description: 'Complete all Path of the Windrunner missions',
-                reward: { name: 'Windrunner', rarity: 'Mythic' }
+                reward: { name: 'Sovreign of the Gale', rarity: 'Mythic' }
             }
         ]
     },
@@ -85,33 +85,33 @@ export const MISSION_PATHS: MissionPath[] = [
     },
     {
         id: 'arcanist',
-        name: 'Path of the Arcanist',
+        name: 'Path of the Mastermind',
         theme: 'Intelligence and technical skill',
         focusStats: ['Agility', 'Precision', 'Coordination'],
         quests: [
             {
                 id: 'arcanist_1',
-                name: 'Quick Cast',
+                name: 'Mind Over Muscle',
                 description: 'Complete a complex combo or movement routine under a time limit',
-                reward: { name: 'Quick Cast', rarity: 'Rare' }
+                reward: { name: 'Mind Over Muscle', rarity: 'Rare' }
             },
             {
                 id: 'arcanist_2',
-                name: 'Mind Over Muscle',
+                name: 'Tactical Master',
                 description: 'Memorize and execute 5 complex movement drills perfectly',
-                reward: { name: 'Mind Over Muscle', rarity: 'Epic' }
+                reward: { name: 'Tactical Master', rarity: 'Epic' }
             },
             {
                 id: 'arcanist_3',
-                name: 'Tactical Master',
+                name: 'Mastermind',
                 description: 'Lead a team-based simulation or challenge and win',
-                reward: { name: 'Tactical Master', rarity: 'Legendary' }
+                reward: { name: 'Mastermind', rarity: 'Legendary' }
             },
             {
                 id: 'arcanist_mythic',
-                name: 'Arcanist',
+                name: 'Echo of a Thousand Plans',
                 description: 'Complete all Path of the Arcanist missions',
-                reward: { name: 'Arcanist', rarity: 'Mythic' }
+                reward: { name: 'Echo of a Thousand Plans', rarity: 'Mythic' }
             }
         ]
     },
@@ -359,9 +359,9 @@ export const MISSION_PATHS: MissionPath[] = [
             },
             {
                 id: 'bladewalker_3',
-                name: 'Duel of Echoes',
+                name: 'Blade Ascendant',
                 description: 'Win a sparring or stick-fighting match',
-                reward: { name: 'Duel of Echoes', rarity: 'Legendary' }
+                reward: { name: 'Blade Ascendant', rarity: 'Legendary' }
             },
             {
                 id: 'bladewalker_mythic',

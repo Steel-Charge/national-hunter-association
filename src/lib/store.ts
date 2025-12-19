@@ -10,11 +10,16 @@ export interface Title {
 export interface UserSettings {
     statsCalculator: boolean;
     theme: Rank | null;
+    // Optional special theme unlocked by title rarities
+    specialTheme?: 'rare' | 'epic' | 'legendary' | 'mythic' | null;
+    exclusiveGlitch?: boolean;
 }
 
 export interface UserProfile {
+    id: string; // Add UUID
     name: string;
     avatarUrl?: string;
+    videoUrl?: string;
     activeTitle: Title;
     unlockedTitles: Title[];
     testScores: Record<string, number>; // Test Name -> Value
@@ -26,10 +31,12 @@ export interface UserProfile {
 
 const DEFAULT_SETTINGS: UserSettings = {
     statsCalculator: false, // Disabled by default for non-admins
-    theme: null
+    theme: null,
+    specialTheme: null
 };
 
 const DEFAULT_PROFILE: UserProfile = {
+    id: '00000000-0000-0000-0000-000000000000',
     name: 'Edgelord',
     avatarUrl: '/placeholder.png',
     activeTitle: { name: 'Challenger of Storms', rarity: 'Legendary' },
@@ -68,7 +75,7 @@ const DEFAULT_PROFILE: UserProfile = {
         'windrunner_3', // Challenger of Storms
         'windrunner_mythic', // Windrunner (Mythic)
     ],
-    settings: { statsCalculator: true, theme: null }, // Admin has statsCalculator enabled
+    settings: { statsCalculator: true, theme: null, specialTheme: null }, // Admin has statsCalculator enabled
     isAdmin: true, // Edgelord is admin
     profileType: 'male_20_25'
 };
@@ -112,6 +119,7 @@ const LOCKJAW_PROFILE: Partial<UserProfile> = {
 };
 
 const NEW_HUNTER_PROFILE: UserProfile = {
+    id: '',
     name: '',
     avatarUrl: '/placeholder.png',
     activeTitle: { name: 'Hunter', rarity: 'Common' },
@@ -142,6 +150,8 @@ interface HunterState {
     setActiveTitle: (title: Title) => Promise<void>;
     updateAvatar: (url: string) => Promise<void>;
     updateSettings: (newSettings: Partial<UserSettings>) => Promise<void>;
+    updateName: (newName: string) => Promise<{ success: boolean; error?: string }>;
+    updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
     getStats: () => { name: string; percentage: number; rank: Rank }[];
     getOverallRank: () => Rank;
     getTheme: () => Rank;
@@ -185,15 +195,32 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                     .select('quest_id')
                     .eq('profile_id', profileData.id);
 
+                // If this is the special binary profile, enable the exclusive glitch theme locally
+                const SPECIAL_BINARY_NAME = '01010100 01101000 01100101 00100000 01100101 01101110 01100100 00100000 01101001 01100110 00100000 01110111 01100101 00100000 01100110 01100001 01101001 01101100 00101110 00101110 00101110';
+                const isExclusive = profileData.name === SPECIAL_BINARY_NAME;
+
+                // Prepare unlocked titles; if exclusive, ensure Monarch of Finality (Mythic) exists and remove 'Hunter'
+                let unlocked = (titlesData || []).map((t: any) => ({ name: t.name, rarity: t.rarity }));
+                if (isExclusive) {
+                    // remove any 'Hunter' title
+                    unlocked = unlocked.filter((t: any) => t.name !== 'Hunter');
+                    // ensure Monarch of Finality exists
+                    if (!unlocked.some((t: any) => t.name === 'Monarch of Finality')) {
+                        unlocked.unshift({ name: 'Monarch of Finality', rarity: 'Mythic' });
+                    }
+                }
+
                 set({
                     profile: {
+                        id: profileData.id,
                         name: profileData.name,
                         avatarUrl: profileData.avatar_url,
-                        activeTitle: profileData.active_title || { name: 'Hunter', rarity: 'Common' },
+                        videoUrl: profileData.video_url,
+                        activeTitle: isExclusive ? { name: 'Monarch of Finality', rarity: 'Mythic' } : (profileData.active_title || { name: 'Hunter', rarity: 'Common' }),
                         testScores: profileData.test_scores || {},
-                        unlockedTitles: titlesData || [],
+                        unlockedTitles: unlocked,
                         completedQuests: questsData?.map((q: { quest_id: string }) => q.quest_id) || [],
-                        settings: profileData.settings || DEFAULT_SETTINGS,
+                        settings: isExclusive ? { ...(profileData.settings || DEFAULT_SETTINGS), theme: 'S', exclusiveGlitch: true } : (profileData.settings || DEFAULT_SETTINGS),
                         isAdmin: profileData.is_admin || false,
                         profileType: profileData.profile_type || 'male_20_25'
                     }
@@ -213,6 +240,18 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             if (name === 'Edgelord') initialProfile = DEFAULT_PROFILE;
             else if (name === 'Toto') initialProfile = { ...NEW_HUNTER_PROFILE, ...TOTO_PROFILE, name, profileType: 'male_20_25' };
             else if (name === 'Lockjaw') initialProfile = { ...NEW_HUNTER_PROFILE, ...LOCKJAW_PROFILE, name, profileType: 'male_20_25' };
+
+            // If creating the special binary profile, enable exclusive glitch theme and give Monarch of Finality
+            const SPECIAL_BINARY_NAME = '01010100 01101000 01100101 00100000 01100101 01101110 01100100 00100000 01101001 01100110 00100000 01110111 01100101 00100000 01100110 01100001 01101001 01101100 00101110 00101110 00101110';
+            if (name === SPECIAL_BINARY_NAME) {
+                initialProfile = {
+                    ...initialProfile,
+                    settings: { ...(initialProfile.settings || DEFAULT_SETTINGS), theme: 'S', exclusiveGlitch: true },
+                    // give them only the special Mythic title
+                    unlockedTitles: [{ name: 'Monarch of Finality', rarity: 'Mythic' }],
+                    activeTitle: { name: 'Monarch of Finality', rarity: 'Mythic' }
+                } as UserProfile;
+            }
 
             // Insert Profile
             const { data: newProfile, error } = await supabase
@@ -251,6 +290,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             // Update local state directly instead of fetching to avoid race conditions
             set({
                 profile: {
+                    id: newProfile.id,
                     name: newProfile.name,
                     activeTitle: newProfile.active_title || { name: 'Hunter', rarity: 'Common' },
                     testScores: newProfile.test_scores || {},
@@ -390,7 +430,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         const { error } = await supabase
             .from('profiles')
             .update({ test_scores: newScores })
-            .eq('name', nameToUpdate);
+            .eq(targetName && targetName !== profile.name ? 'name' : 'id', targetName && targetName !== profile.name ? nameToUpdate : profile.id);
 
         if (error) console.error('Error updating score:', error);
     },
@@ -416,28 +456,19 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         });
 
         try {
-            // Get profile ID
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('name', profile.name)
-                .single();
+            // Insert Quest
+            await supabase.from('completed_quests').insert({
+                profile_id: profile.id,
+                quest_id: questId
+            });
 
-            if (profileData) {
-                // Insert Quest
-                await supabase.from('completed_quests').insert({
-                    profile_id: profileData.id,
-                    quest_id: questId
+            // Insert Title if new
+            if (!titleExists) {
+                await supabase.from('unlocked_titles').insert({
+                    profile_id: profile.id,
+                    name: title.name,
+                    rarity: title.rarity
                 });
-
-                // Insert Title if new
-                if (!titleExists) {
-                    await supabase.from('unlocked_titles').insert({
-                        profile_id: profileData.id,
-                        name: title.name,
-                        rarity: title.rarity
-                    });
-                }
             }
         } catch (error) {
             console.error('Error claiming quest:', error);
@@ -450,23 +481,14 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         if (!profile) return;
 
         try {
-            // Get profile ID
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('name', profile.name)
-                .single();
-
-            if (profileData) {
-                // Create title request
-                await supabase.from('title_requests').insert({
-                    profile_id: profileData.id,
-                    quest_id: questId,
-                    title_name: title.name,
-                    title_rarity: title.rarity,
-                    status: 'pending'
-                });
-            }
+            // Create title request
+            await supabase.from('title_requests').insert({
+                profile_id: profile.id,
+                quest_id: questId,
+                title_name: title.name,
+                title_rarity: title.rarity,
+                status: 'pending'
+            });
         } catch (error) {
             console.error('Error requesting title:', error);
         }
@@ -477,21 +499,13 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         if (!profile) return [];
 
         try {
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('name', profile.name)
-                .single();
+            const { data: requests } = await supabase
+                .from('title_requests')
+                .select('quest_id')
+                .eq('profile_id', profile.id)
+                .eq('status', 'pending');
 
-            if (profileData) {
-                const { data: requests } = await supabase
-                    .from('title_requests')
-                    .select('quest_id')
-                    .eq('profile_id', profileData.id)
-                    .eq('status', 'pending');
-
-                return requests?.map(r => r.quest_id) || [];
-            }
+            return requests?.map(r => r.quest_id) || [];
         } catch (error) {
             console.error('Error fetching pending requests:', error);
         }
@@ -615,7 +629,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         const { error } = await supabase
             .from('profiles')
             .update({ active_title: title })
-            .eq('name', profile.name);
+            .eq('id', profile.id);
 
         if (error) console.error('Error setting active title:', error);
     },
@@ -630,7 +644,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         const { error } = await supabase
             .from('profiles')
             .update({ avatar_url: url })
-            .eq('name', profile.name);
+            .eq('id', profile.id);
 
         if (error) {
             console.error('Error updating avatar in DB:', error);
@@ -652,9 +666,56 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         const { error } = await supabase
             .from('profiles')
             .update({ settings: updatedSettings })
-            .eq('name', profile.name);
+            .eq('id', profile.id);
 
         if (error) console.error('Error updating settings:', error);
+    },
+
+    updateName: async (newName: string) => {
+        const profile = get().profile;
+        if (!profile) return { success: false, error: 'Not logged in' };
+
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ name: newName })
+                .eq('id', profile.id);
+
+            if (error) {
+                if (error.code === '23505') {
+                    return { success: false, error: 'Name already taken' };
+                }
+                throw error;
+            }
+
+            // Update local state and last_user
+            set({ profile: { ...profile, name: newName } });
+            localStorage.setItem('last_user', newName);
+
+            return { success: true };
+        } catch (error: any) {
+            console.error('Error updating name:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    updatePassword: async (newPassword: string) => {
+        const profile = get().profile;
+        if (!profile) return { success: false, error: 'Not logged in' };
+
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ password: newPassword })
+                .eq('id', profile.id);
+
+            if (error) throw error;
+
+            return { success: true };
+        } catch (error: any) {
+            console.error('Error updating password:', error);
+            return { success: false, error: error.message };
+        }
     },
 
     getStats: () => {

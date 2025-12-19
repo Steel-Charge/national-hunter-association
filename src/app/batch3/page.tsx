@@ -21,7 +21,8 @@ export default function Batch3Page() {
     const router = useRouter();
     const { getTheme, profile } = useHunterStore();
     const themeRank = getTheme();
-    const rankColor = `var(--rank-${themeRank.toLowerCase()})`;
+    const specialTheme = profile?.settings?.specialTheme || null;
+    const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
     useEffect(() => {
         const fetchHunters = async () => {
@@ -49,7 +50,7 @@ export default function Batch3Page() {
     if (loading || !profile) return <LoadingScreen loading={loading} rank={getTheme()} />;
 
     return (
-        <div className={styles.container}>
+        <div className={styles.container} style={{ '--rank-color': rankColor } as React.CSSProperties}>
             <div className={styles.header}>
                 <h1 className={styles.pageTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
                     {profile.name.toUpperCase()}

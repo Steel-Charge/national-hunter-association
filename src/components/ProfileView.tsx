@@ -5,14 +5,17 @@ interface ProfileViewProps {
     profile: UserProfile;
     overallRank: string;
     themeRank: string;
+    specialTheme?: 'rare' | 'epic' | 'legendary' | 'mythic' | null;
 }
 
-export default function ProfileView({ profile, overallRank, themeRank }: ProfileViewProps) {
+export default function ProfileView({ profile, overallRank, themeRank, specialTheme }: ProfileViewProps) {
+    const colorVar = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
+
     return (
         <div className={styles.content}>
             <div className={styles.profileSection}>
                 <div className={styles.info}>
-                    <h1 className={styles.name} style={{ color: `var(--rank-${themeRank.toLowerCase()})`, textShadow: `0 0 10px var(--rank-${themeRank.toLowerCase()})` }}>
+                    <h1 className={styles.name} style={{ color: colorVar, textShadow: `0 0 10px ${colorVar}` }}>
                         {profile.name}
                     </h1>
                     <p className={styles.title} style={{ color: `var(--rarity-${profile.activeTitle?.rarity?.toLowerCase() || 'common'})` }}>

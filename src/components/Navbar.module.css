@@ -6,13 +6,13 @@
     width: 90%;
     max-width: 400px;
     background-color: rgba(10, 10, 15, 0.9);
-    border: 1px solid var(--color-primary);
+    border: 1px solid var(--rank-color, var(--color-primary));
     border-radius: var(--radius-full);
     display: flex;
     justify-content: space-around;
     padding: 12px 0;
     z-index: 100;
-    box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+    box-shadow: 0 0 20px var(--rank-color, rgba(0, 229, 255, 0.2));
     backdrop-filter: blur(10px);
 }
 
@@ -33,10 +33,10 @@
 }
 
 .active {
-    color: var(--color-primary);
-    text-shadow: 0 0 5px var(--color-primary);
+    color: var(--rank-color, var(--color-primary));
+    text-shadow: 0 0 5px var(--rank-color, var(--color-primary));
 }
 
 .active svg {
-    filter: drop-shadow(0 0 5px var(--color-primary));
+    filter: drop-shadow(0 0 5px var(--rank-color, var(--color-primary)));
 }
