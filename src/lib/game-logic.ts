@@ -24,11 +24,13 @@ export interface Attribute {
 export const PROFILE_TYPES = {
   MALE_20_25: 'male_20_25',
   FEMALE_15_20: 'female_15_20',
+  FEMALE_20_24: 'female_20_24',
 } as const;
 
 export const PROFILE_LABELS: Record<string, string> = {
-  [PROFILE_TYPES.MALE_20_25]: 'Male: 20 - 25 years old',
-  [PROFILE_TYPES.FEMALE_15_20]: 'Female: 15 - 20 years old',
+  [PROFILE_TYPES.MALE_20_25]: 'Male: 20 - 24 years old',
+  [PROFILE_TYPES.FEMALE_15_20]: 'Female: 15 - 19 years old',
+  'female_20_24': 'Female: 20 - 24 years old',
 };
 
 const MALE_20_25_TARGETS: Record<string, Attribute> = {
@@ -51,7 +53,7 @@ const MALE_20_25_TARGETS: Record<string, Attribute> = {
     name: 'Stamina',
     tests: [
       { name: 'Plank Hold', maxScore: 15, unit: 'min' },
-      { name: 'Burpees', maxScore: 91, unit: 'reps' },
+      { name: 'Burpees', maxScore: 40, unit: 'reps' },
       { name: '1-mile run', maxScore: 6.3, unit: 'min', inverse: true },
     ],
   },
@@ -74,9 +76,9 @@ const FEMALE_15_20_TARGETS: Record<string, Attribute> = {
   Strength: {
     name: 'Strength',
     tests: [
-      { name: 'Bench Press', maxScore: 100, unit: 'kg' },
-      { name: 'Deadlift', maxScore: 150, unit: 'kg' },
-      { name: 'Squat', maxScore: 120, unit: 'kg' },
+      { name: 'Bench Press', maxScore: 65, unit: 'kg' },
+      { name: 'Deadlift', maxScore: 115, unit: 'kg' },
+      { name: 'Squat', maxScore: 105, unit: 'kg' },
     ],
   },
   Endurance: {
@@ -90,7 +92,7 @@ const FEMALE_15_20_TARGETS: Record<string, Attribute> = {
     name: 'Stamina',
     tests: [
       { name: 'Plank Hold', maxScore: 15, unit: 'min' },
-      { name: 'Burpees', maxScore: 73, unit: 'reps' },
+      { name: 'Burpees', maxScore: 20, unit: 'reps' },
       { name: '1-mile run', maxScore: 7.5, unit: 'min', inverse: true },
     ],
   },
@@ -104,7 +106,46 @@ const FEMALE_15_20_TARGETS: Record<string, Attribute> = {
   Agility: {
     name: 'Agility',
     tests: [
-      { name: 'Pro Agility Shuttle', maxScore: 10, unit: 's', inverse: true },
+      { name: 'Pro Agility Shuttle', maxScore: 4.75, unit: 's', inverse: true },
+    ],
+  },
+};
+
+const FEMALE_20_24_TARGETS: Record<string, Attribute> = {
+  Strength: {
+    name: 'Strength',
+    tests: [
+      { name: 'Bench Press', maxScore: 75, unit: 'kg' },
+      { name: 'Deadlift', maxScore: 125, unit: 'kg' },
+      { name: 'Squat', maxScore: 110, unit: 'kg' },
+    ],
+  },
+  Endurance: {
+    name: 'Endurance',
+    tests: [
+      { name: 'Pull-ups', maxScore: 22, unit: 'reps' },
+      { name: 'Push-ups', maxScore: 30, unit: 'reps' },
+    ],
+  },
+  Stamina: {
+    name: 'Stamina',
+    tests: [
+      { name: 'Plank Hold', maxScore: 15, unit: 'min' },
+      { name: 'Burpees', maxScore: 20, unit: 'reps' },
+      { name: '1-mile run', maxScore: 6, unit: 'min', inverse: true },
+    ],
+  },
+  Speed: {
+    name: 'Speed',
+    tests: [
+      { name: '100m Sprint', maxScore: 10.5, unit: 's', inverse: true },
+      { name: '40-yard Dash', maxScore: 4.8, unit: 's', inverse: true },
+    ],
+  },
+  Agility: {
+    name: 'Agility',
+    tests: [
+      { name: 'Pro Agility Shuttle', maxScore: 4.5, unit: 's', inverse: true },
     ],
   },
 };
@@ -112,6 +153,9 @@ const FEMALE_15_20_TARGETS: Record<string, Attribute> = {
 export function getAttributes(profileType: string = PROFILE_TYPES.MALE_20_25): Record<string, Attribute> {
   if (profileType === PROFILE_TYPES.FEMALE_15_20) {
     return FEMALE_15_20_TARGETS;
+  }
+  if (profileType === PROFILE_TYPES.FEMALE_20_24) {
+    return FEMALE_20_24_TARGETS;
   }
   return MALE_20_25_TARGETS;
 }
