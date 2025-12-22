@@ -61,7 +61,7 @@ export default function Batch3Page() {
             </div>
 
             <h2 className={styles.sectionTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
-                BATCH 3 RANKINGS
+                BATCH 3 MEMBERS
             </h2>
 
             <div className={styles.content}>
