@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import ProfileView from '@/components/ProfileView';
 import Navbar from '@/components/Navbar';
 import { UserProfile, Title, UserSettings, useHunterStore } from '@/lib/store';
-import { calculateOverallRank } from '@/lib/game-logic';
+import { calculateOverallRank, RANK_COLORS, Rank } from '@/lib/game-logic';
 import { X, Book } from 'lucide-react';
 import LoadingScreen from '@/components/LoadingScreen';
 import styles from '@/app/home/page.module.css';
@@ -24,6 +24,10 @@ export default function HunterProfilePage() {
     // Viewer (logged-in) profile from global store
     const viewer = useHunterStore(state => state.profile);
     const [bookOpen, setBookOpen] = useState(false);
+    const [editBio, setEditBio] = useState('');
+    const [editComment, setEditComment] = useState('');
+    const [newVideo, setNewVideo] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -86,7 +90,9 @@ export default function HunterProfilePage() {
                 completedQuests: questsData?.map((q: { quest_id: string }) => q.quest_id) || [],
                 settings: profileData.settings || { statsCalculator: true, theme: null },
                 isAdmin: profileData.is_admin || false,
-                profileType: profileData.profile_type || 'male_20_25'
+                profileType: profileData.profile_type || 'male_20_25',
+                bio: profileData.bio,
+                managerComment: profileData.manager_comment
             };
 
             setProfile(userProfile);
@@ -95,6 +101,15 @@ export default function HunterProfilePage() {
 
         fetchProfile();
     }, [username]);
+
+    // Update edit state when profile loads
+    useEffect(() => {
+        if (profile) {
+            setEditBio(profile.bio || '');
+            setEditComment(profile.managerComment || '');
+            setNewVideo(null); // Reset new video on profile load
+        }
+    }, [profile]);
 
     if (loading) return <LoadingScreen loading={loading} rank={profile?.settings?.theme || 'E'} />;
 
@@ -122,30 +137,52 @@ export default function HunterProfilePage() {
     const themeRank = profile.settings.theme || overallRank;
     const specialTheme = profile.settings.specialTheme || null;
 
-    const canUploadForThisProfile = viewer?.name === 'Edgelord' && profile.name !== 'Edgelord';
+    const canUploadForThisProfile = viewer?.isAdmin || false;
 
     const handleVideoFile = async (file: File | null) => {
         if (!file) return;
         const reader = new FileReader();
         reader.onload = async () => {
             const result = reader.result as string;
-            try {
-                // Update profile in DB
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ video_url: result })
-                    .eq('id', profile.id);
-                if (error) {
-                    console.error('Error uploading video:', error);
-                    return;
-                }
-                // Update local state
-                setProfile({ ...profile, videoUrl: result });
-            } catch (err) {
-                console.error('Upload failed', err);
-            }
+            setNewVideo(result);
         };
         reader.readAsDataURL(file);
+    };
+
+    const handleSave = async () => {
+        if (!profile) return;
+        setSaving(true);
+        try {
+            const updates: any = {
+                bio: editBio,
+                manager_comment: editComment
+            };
+            if (newVideo) {
+                updates.video_url = newVideo;
+            }
+
+            const { error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', profile.id);
+
+            if (error) throw error;
+
+            // Update local state
+            setProfile({
+                ...profile,
+                bio: editBio,
+                managerComment: editComment,
+                videoUrl: newVideo || profile.videoUrl
+            });
+            setNewVideo(null);
+            alert('Saved successfully!');
+        } catch (error) {
+            console.error('Error saving:', error);
+            alert('Error saving changes');
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -209,10 +246,7 @@ export default function HunterProfilePage() {
                     width: '100%',
                     height: '100%',
                     backgroundColor: '#000',
-                    opacity: 0, // Profile page has 0 opacity overlay usually, but maybe we want it slightly visible?
-                    // Actually, BackgroundWrapper handles this for the logged in user.
-                    // Here we are manually rendering the background for the VIEWED user.
-                    // Let's match the "Profile Page" style which is 0 opacity.
+                    opacity: 0,
                     zIndex: -1,
                     pointerEvents: 'none'
                 }}
@@ -239,42 +273,80 @@ export default function HunterProfilePage() {
             />
 
             {/* Profile Book Modal */}
+            {console.log('Viewer Theme Debug:', { theme: viewer?.settings?.theme, rankVar: `var(--rank-${(viewer?.settings?.theme || 'e').toLowerCase()})` })}
             {bookOpen && (
-                <div style={{ position: 'fixed', inset: 0, zIndex: 2000 }}>
+                <div className={styles.interviewOverlay}>
                     <div
                         onClick={() => setBookOpen(false)}
-                        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)' }}
+                        style={{ position: 'absolute', inset: 0 }}
                     />
-                    <div style={{ position: 'relative', maxWidth: 900, margin: '6vh auto', background: '#0b0b0b', padding: 24, borderRadius: 10, zIndex: 2001, color: '#fff' }}>
-                        <h2 style={{ marginTop: 0 }}>{profile.name} — Interview</h2>
-                        <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-                            <div style={{ flex: 1 }}>
+                    <div className={styles.interviewModal} style={{
+                        '--custom-theme-color': RANK_COLORS[(viewer?.settings?.theme || calculateOverallRank(viewer?.testScores || {}, viewer?.profileType || 'male_20_25')) as Rank] || '#00e5ff',
+                        '--custom-theme-glow': RANK_COLORS[(viewer?.settings?.theme || calculateOverallRank(viewer?.testScores || {}, viewer?.profileType || 'male_20_25')) as Rank] || '#00e5ff'
+                    } as React.CSSProperties}>
+                        <h2 className={styles.interviewHeader}>
+                            {profile.name} — Interview
+                        </h2>
+                        <div className={styles.interviewBody}>
+                            <div className={styles.videoSection}>
                                 {profile.videoUrl ? (
-                                    <video controls style={{ width: '100%', borderRadius: 6 }} src={profile.videoUrl} />
+                                    <div className={styles.videoWrapper}>
+                                        <video controls style={{ width: '100%', display: 'block' }} src={newVideo || profile.videoUrl} />
+                                    </div>
                                 ) : (
-                                    <div style={{ width: '100%', height: 240, borderRadius: 6, background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>
-                                        No interview available
+                                    <div style={{ width: '100%', height: 280, borderRadius: 12, background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        {newVideo ? <video controls style={{ width: '100%', borderRadius: 12 }} src={newVideo} /> : 'No interview available'}
                                     </div>
                                 )}
 
                                 {canUploadForThisProfile && (
-                                    <div style={{ marginTop: 12 }}>
-                                        <label style={{ display: 'inline-block', padding: '8px 12px', borderRadius: 8, background: '#1f6feb', cursor: 'pointer' }}>
-                                            Upload Video
+                                    <div style={{ marginTop: 20 }}>
+                                        <label className={styles.uploadLabel} style={{ marginRight: 15 }}>
+                                            {newVideo ? 'Change Video' : 'Upload Video'}
                                             <input type="file" accept="video/*" onChange={(e) => handleVideoFile(e.target.files ? e.target.files[0] : null)} style={{ display: 'none' }} />
                                         </label>
                                     </div>
                                 )}
                             </div>
-                            <div style={{ width: 320 }}>
-                                <h3>Bio</h3>
-                                <p style={{ color: '#ccc' }}>[Pending...]</p>
-                                <h3>Manager's Comment</h3>
-                                <p style={{ color: '#ccc' }}>[Pending...]</p>
+                            <div className={styles.textSection}>
+                                <div>
+                                    <span className={styles.sectionTitle}>BIO</span>
+                                    {canUploadForThisProfile ? (
+                                        <textarea
+                                            value={editBio}
+                                            onChange={(e) => setEditBio(e.target.value)}
+                                            className={styles.editTxArea}
+                                        />
+                                    ) : (
+                                        <p className={styles.sectionContent}>{profile.bio || '[Pending...]'}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <span className={styles.sectionTitle}>MANAGER'S COMMENT</span>
+                                    {canUploadForThisProfile ? (
+                                        <textarea
+                                            value={editComment}
+                                            onChange={(e) => setEditComment(e.target.value)}
+                                            className={styles.editTxArea}
+                                        />
+                                    ) : (
+                                        <p className={styles.sectionContent}>{profile.managerComment || '[Pending...]'}</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                        <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
-                            <button onClick={() => setBookOpen(false)} style={{ padding: '8px 12px', borderRadius: 8, background: '#222', color: '#fff', border: '1px solid #333' }}>Close</button>
+                        <div className={styles.buttonGroup}>
+                            {canUploadForThisProfile && (
+                                <button
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    className={styles.saveButton}
+                                >
+                                    {saving ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            )}
+                            <button onClick={() => setBookOpen(false)} className={styles.closeButton}>Close</button>
                         </div>
                     </div>
                 </div>

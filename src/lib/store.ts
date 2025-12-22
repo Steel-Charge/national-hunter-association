@@ -19,7 +19,9 @@ export interface UserProfile {
     id: string; // Add UUID
     name: string;
     avatarUrl?: string;
-    videoUrl?: string;
+    videoUrl?: string; // Existing
+    bio?: string;      // New
+    managerComment?: string; // New
     activeTitle: Title;
     unlockedTitles: Title[];
     testScores: Record<string, number>; // Test Name -> Value
@@ -222,7 +224,9 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         completedQuests: questsData?.map((q: { quest_id: string }) => q.quest_id) || [],
                         settings: isExclusive ? { ...(profileData.settings || DEFAULT_SETTINGS), theme: 'S', exclusiveGlitch: true } : (profileData.settings || DEFAULT_SETTINGS),
                         isAdmin: profileData.is_admin || false,
-                        profileType: profileData.profile_type || 'male_20_25'
+                        profileType: profileData.profile_type || 'male_20_25',
+                        bio: profileData.bio,
+                        managerComment: profileData.manager_comment
                     }
                 });
             }
@@ -298,7 +302,9 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                     completedQuests: initialProfile.completedQuests as string[],
                     settings: initialProfile.settings,
                     isAdmin: name === 'Edgelord', // Only Edgelord is admin
-                    profileType: initialProfile.profileType
+                    profileType: initialProfile.profileType,
+                    bio: newProfile.bio,
+                    managerComment: newProfile.manager_comment
                 }
             });
         } catch (error) {
