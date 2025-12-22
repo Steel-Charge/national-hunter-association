@@ -1,4 +1,5 @@
 export type Rank = 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
+// Force redeploy
 
 export const RANK_COLORS: Record<Rank, string> = {
   'S': '#ff2a57', // Red
