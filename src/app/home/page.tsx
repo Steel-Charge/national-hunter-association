@@ -133,9 +133,6 @@ export default function HomePage() {
                     } as React.CSSProperties}>
                         <h2 className={styles.interviewHeader}>
                             {profile?.name} — Interview
-                            <span style={{ fontSize: '0.5em', opacity: 0.5, marginLeft: 10, verticalAlign: 'middle', textTransform: 'none' }}>
-                                (Theme: {profile?.settings?.theme || calculateOverallRank(profile?.testScores || {}, profile?.profileType || 'male_20_25')})
-                            </span>
                         </h2>
                         <div className={styles.interviewBody}>
                             <div className={styles.videoSection}>
