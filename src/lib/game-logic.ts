@@ -54,7 +54,7 @@ const MALE_20_25_TARGETS: Record<string, Attribute> = {
     name: 'Stamina',
     tests: [
       { name: 'Plank Hold', maxScore: 15, unit: 'min' },
-      { name: 'Burpees', maxScore: 40, unit: 'reps' },
+      { name: 'Burpees in 1-minute', maxScore: 40, unit: 'reps' },
       { name: '1-mile run', maxScore: 6.3, unit: 'min', inverse: true },
     ],
   },
@@ -93,7 +93,7 @@ const FEMALE_15_20_TARGETS: Record<string, Attribute> = {
     name: 'Stamina',
     tests: [
       { name: 'Plank Hold', maxScore: 15, unit: 'min' },
-      { name: 'Burpees', maxScore: 20, unit: 'reps' },
+      { name: 'Burpees in 1-minute', maxScore: 20, unit: 'reps' },
       { name: '1-mile run', maxScore: 7.5, unit: 'min', inverse: true },
     ],
   },
@@ -132,7 +132,7 @@ const FEMALE_20_24_TARGETS: Record<string, Attribute> = {
     name: 'Stamina',
     tests: [
       { name: 'Plank Hold', maxScore: 15, unit: 'min' },
-      { name: 'Burpees', maxScore: 20, unit: 'reps' },
+      { name: 'Burpees in 1-minute', maxScore: 20, unit: 'reps' },
       { name: '1-mile run', maxScore: 6, unit: 'min', inverse: true },
     ],
   },
@@ -205,7 +205,12 @@ export function calculateAttributeRank(
   let count = 0;
 
   attribute.tests.forEach((test) => {
-    const score = userScores[test.name];
+    let score = userScores[test.name];
+    // Fallback for renamed Burpees key to preserve existing data
+    if (score === undefined && test.name === 'Burpees in 1-minute') {
+      score = userScores['Burpees'];
+    }
+
     if (score !== undefined && score !== null) {
       totalPercentage += calculatePercentage(score, test);
       count++;
