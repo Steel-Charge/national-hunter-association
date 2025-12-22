@@ -273,7 +273,7 @@ export default function HunterProfilePage() {
             />
 
             {/* Profile Book Modal */}
-            {console.log('Viewer Theme Debug:', { theme: viewer?.settings?.theme, rankVar: `var(--rank-${(viewer?.settings?.theme || 'e').toLowerCase()})` })}
+            {/* Profile Book Modal */}
             {bookOpen && (
                 <div className={styles.interviewOverlay}>
                     <div
