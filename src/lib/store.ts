@@ -246,6 +246,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         settings: isExclusive ? { ...(profileData.settings || DEFAULT_SETTINGS), theme: 'S', exclusiveGlitch: true } : (profileData.settings || DEFAULT_SETTINGS),
                         isAdmin: profileData.is_admin || false,
                         profileType: profileData.profile_type || 'male_20_25',
+                        role: profileData.role || 'Hunter',
                         bio: profileData.bio,
                         managerComment: profileData.manager_comment,
                         email: profileData.email,
@@ -340,6 +341,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                     settings: initialProfile.settings,
                     isAdmin: name === 'Edgelord', // Only Edgelord is admin
                     profileType: initialProfile.profileType,
+                    role: initialProfile.role,
                     bio: newProfile.bio,
                     managerComment: newProfile.manager_comment
                 }
