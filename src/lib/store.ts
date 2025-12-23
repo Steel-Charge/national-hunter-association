@@ -250,8 +250,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         bio: profileData.bio,
                         managerComment: profileData.manager_comment,
                         email: profileData.email,
-                        phone: profileData.phone,
-                        role: profileData.role || 'Hunter'
+                        phone: profileData.phone
                     }
                 });
             }
