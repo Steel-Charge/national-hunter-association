@@ -54,7 +54,8 @@ export default function HunterProfilePage() {
                         completedQuests: [],
                         settings: { statsCalculator: true, theme: 'S', exclusiveGlitch: true } as UserSettings,
                         isAdmin: false,
-                        profileType: 'male_20_25'
+                        profileType: 'male_20_25',
+                        role: 'Hunter'
                     };
 
                     setProfile(userProfile);
@@ -95,6 +96,7 @@ export default function HunterProfilePage() {
                 settings: profileData.settings || { statsCalculator: true, theme: null },
                 isAdmin: profileData.is_admin || false,
                 profileType: profileData.profile_type || 'male_20_25',
+                role: profileData.role || 'Hunter',
                 bio: profileData.bio,
                 managerComment: profileData.manager_comment
             };
