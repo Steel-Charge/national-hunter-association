@@ -77,9 +77,9 @@ export const MISSION_PATHS: MissionPath[] = [
             },
             {
                 id: 'juggernaut_mythic',
-                name: 'Juggernaut',
+                name: 'The Unfallen King',
                 description: 'Complete all Path of the Juggernaut missions',
-                reward: { name: 'Juggernaut', rarity: 'Mythic' }
+                reward: { name: 'The Unfallen King', rarity: 'Mythic' }
             }
         ]
     },

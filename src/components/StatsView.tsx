@@ -272,9 +272,17 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                         const viewerTest = currentViewerStat?.tests.find(t => t.name === test.name);
                         const viewerScore = viewerTest?.score || 0;
 
-                        const displayText = test.inverse
-                            ? `${test.maxScore} / ${currentScore}`
-                            : `${currentScore} / ${test.maxScore}`;
+                        const formatValue = (val: number, name: string) => {
+                            if (name === 'Plank Hold' && val < 1 && val > 0) {
+                                return `${Math.round(val * 100)}sec`;
+                            }
+                            return val.toString();
+                        };
+
+                        const formattedScore = formatValue(currentScore, test.name);
+                        const formattedViewerScore = formatValue(viewerScore, test.name);
+
+                        const displayText = `${formattedScore} / ${test.maxScore}`;
 
                         return (
                             <div key={test.name} className={styles.testItem}>
@@ -287,7 +295,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                                         {/* Comparison Score in Brackets */}
                                         {isComparing && viewerProfile && (
                                             <span style={{ color: viewerRankColor, fontFamily: 'scribble, sans-serif', fontSize: '1.1rem', transform: 'rotate(-5deg)' }}>
-                                                ({viewerScore})
+                                                ({formattedViewerScore})
                                             </span>
                                         )}
                                     </div>

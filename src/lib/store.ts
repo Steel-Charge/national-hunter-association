@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { supabase } from './supabase';
 import { ATTRIBUTES, calculateAttributeRank, calculateOverallRank, getAttributes, Rank } from './game-logic';
+import { MISSION_PATHS } from './missions';
 
 export interface Title {
     name: string;
     rarity: 'Legendary' | 'Epic' | 'Rare' | 'Common' | 'Mythic';
+    is_hidden?: boolean;
 }
 
 export interface UserSettings {
@@ -154,6 +156,8 @@ interface HunterState {
     updateSettings: (newSettings: Partial<UserSettings>) => Promise<void>;
     updateName: (newName: string) => Promise<{ success: boolean; error?: string }>;
     updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
+    removeTitle: (profileId: string, titleName: string) => Promise<void>;
+    updateTitleVisibility: (titleName: string, isHidden: boolean) => Promise<void>;
     getStats: () => { name: string; percentage: number; rank: Rank }[];
     getOverallRank: () => Rank;
     getTheme: () => Rank;
@@ -188,7 +192,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                 // 2. Get Unlocked Titles
                 const { data: titlesData } = await supabase
                     .from('unlocked_titles')
-                    .select('name, rarity')
+                    .select('name, rarity, is_hidden')
                     .eq('profile_id', profileData.id);
 
                 // 3. Get Completed Quests
@@ -202,7 +206,11 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                 const isExclusive = profileData.name === SPECIAL_BINARY_NAME;
 
                 // Prepare unlocked titles; if exclusive, ensure Monarch of Finality (Mythic) exists and remove 'Hunter'
-                let unlocked = (titlesData || []).map((t: any) => ({ name: t.name, rarity: t.rarity }));
+                let unlocked = (titlesData || []).map((t: any) => ({
+                    name: t.name,
+                    rarity: t.rarity,
+                    is_hidden: t.is_hidden || false
+                }));
                 if (isExclusive) {
                     // remove any 'Hunter' title
                     unlocked = unlocked.filter((t: any) => t.name !== 'Hunter');
@@ -332,7 +340,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                 if (['Edgelord', 'Toto', 'Lockjaw'].includes(name)) {
                     // Verify password for creation
                     const expectedPasswords: Record<string, string> = {
-                        'Edgelord': 'Qwerty1',
+                        'Edgelord': 'Mcpe32767',
                         'Toto': 'Password1',
                         'Lockjaw': 'Password2'
                     };
@@ -356,7 +364,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                 // Lazy migration: If DB has 'default' password, allow login with expected password and update DB
                 if (profileData.password === 'default') {
                     const expectedPasswords: Record<string, string> = {
-                        'Edgelord': 'Qwerty1',
+                        'Edgelord': 'Mcpe32767',
                         'Toto': 'Password1',
                         'Lockjaw': 'Password2'
                     };
@@ -479,6 +487,98 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         } catch (error) {
             console.error('Error claiming quest:', error);
             // Revert optimistic update on error? For now, just log.
+        }
+    },
+
+    removeTitle: async (profileId: string, titleName: string) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        // Prevent removing the default 'Hunter' title
+        if (titleName === 'Hunter') {
+            console.warn('Cannot remove default Hunter title');
+            return;
+        }
+
+        // DB Delete from unlocked_titles
+        const { error: titleError } = await supabase
+            .from('unlocked_titles')
+            .delete()
+            .eq('profile_id', profileId)
+            .eq('name', titleName);
+
+        if (titleError) {
+            console.error('Error removing title:', titleError);
+            return;
+        }
+
+        // Find the quest associated with this title to remove completion as well
+        let questIdToRemove: string | null = null;
+        for (const path of MISSION_PATHS) {
+            const quest = path.quests.find(q => q.reward.name === titleName);
+            if (quest) {
+                questIdToRemove = quest.id;
+                break;
+            }
+        }
+
+        if (questIdToRemove) {
+            const { error: questError } = await supabase
+                .from('completed_quests')
+                .delete()
+                .eq('profile_id', profileId)
+                .eq('quest_id', questIdToRemove);
+
+            if (questError) {
+                console.error('Error removing quest completion:', questError);
+            }
+        }
+
+        // Check if it was the active title or hidden
+        const isSelf = profile.id === profileId;
+        if (isSelf) {
+            const newUnlocked = profile.unlockedTitles.filter(t => t.name !== titleName);
+            const newCompleted = questIdToRemove
+                ? profile.completedQuests.filter(id => id !== questIdToRemove)
+                : profile.completedQuests;
+
+            let newActive = profile.activeTitle;
+            if (profile.activeTitle.name === titleName) {
+                newActive = { name: 'Hunter', rarity: 'Common' };
+                await get().setActiveTitle(newActive);
+            }
+            set({
+                profile: {
+                    ...profile,
+                    unlockedTitles: newUnlocked,
+                    completedQuests: newCompleted,
+                    activeTitle: newActive
+                }
+            });
+        }
+    },
+
+    updateTitleVisibility: async (titleName: string, isHidden: boolean) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        // Optimistic update
+        const newUnlocked = profile.unlockedTitles.map(t =>
+            t.name === titleName ? { ...t, is_hidden: isHidden } : t
+        );
+        set({ profile: { ...profile, unlockedTitles: newUnlocked } });
+
+        // DB Update
+        const { error } = await supabase
+            .from('unlocked_titles')
+            .update({ is_hidden: isHidden })
+            .eq('profile_id', profile.id)
+            .eq('name', titleName);
+
+        if (error) {
+            console.error('Error updating title visibility:', error);
+            // Revert
+            set({ profile: { ...profile, unlockedTitles: profile.unlockedTitles } });
         }
     },
 

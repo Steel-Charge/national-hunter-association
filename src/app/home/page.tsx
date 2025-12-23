@@ -118,6 +118,8 @@ export default function HomePage() {
                 overallRank={overallRank}
                 themeRank={themeRank}
                 specialTheme={specialTheme}
+                canRemoveTitles={profile?.isAdmin}
+                isOwnProfile={true}
             />
 
             {/* Profile Book Modal for logged-in user */}

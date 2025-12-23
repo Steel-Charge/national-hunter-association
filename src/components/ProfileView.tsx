@@ -1,15 +1,31 @@
+import { useState } from 'react';
 import styles from '@/app/home/page.module.css';
-import { UserProfile } from '@/lib/store';
+import { UserProfile, useHunterStore } from '@/lib/store';
+import { Pencil, X } from 'lucide-react';
+import TitleSelectionModal from './TitleSelectionModal';
 
 interface ProfileViewProps {
     profile: UserProfile;
     overallRank: string;
     themeRank: string;
     specialTheme?: 'rare' | 'epic' | 'legendary' | 'mythic' | null;
+    canRemoveTitles?: boolean;
+    isOwnProfile?: boolean;
 }
 
-export default function ProfileView({ profile, overallRank, themeRank, specialTheme }: ProfileViewProps) {
+export default function ProfileView({ profile, overallRank, themeRank, specialTheme, canRemoveTitles = false, isOwnProfile = false }: ProfileViewProps) {
+    const { removeTitle } = useHunterStore();
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const colorVar = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
+
+    // Filter unlocked titles to only show those that are NOT hidden
+    const displayedTitles = profile.unlockedTitles.filter(t => !t.is_hidden);
+
+    const handleRemoveTitle = async (titleName: string) => {
+        if (window.confirm(`Are you sure you want to remove the title "${titleName}"?`)) {
+            await removeTitle(profile.id, titleName);
+        }
+    };
 
     return (
         <div className={styles.content}>
@@ -18,22 +34,47 @@ export default function ProfileView({ profile, overallRank, themeRank, specialTh
                     <h1 className={styles.name} style={{ color: colorVar, textShadow: `0 0 10px ${colorVar}` }}>
                         {profile.name}
                     </h1>
-                    <p className={styles.title} style={{ color: `var(--rarity-${profile.activeTitle?.rarity?.toLowerCase() || 'common'})` }}>
-                        {profile.activeTitle?.name || 'Hunter'}
-                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
+                        <p className={styles.title} style={{ color: `var(--rarity-${profile.activeTitle?.rarity?.toLowerCase() || 'common'})`, margin: 0 }}>
+                            {profile.activeTitle?.name || 'Hunter'}
+                        </p>
+                        {isOwnProfile && (
+                            <button
+                                onClick={() => setIsModalOpen(true)}
+                                style={{ background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
+                                title="Edit displayed titles"
+                            >
+                                <Pencil size={14} />
+                            </button>
+                        )}
+                    </div>
 
                     <div className={styles.badges}>
-                        {profile.unlockedTitles.map((title, i) => (
+                        {displayedTitles.map((title, i) => (
                             <div
                                 key={i}
                                 className={styles.badge}
                                 style={{
                                     borderColor: `var(--rarity-${title.rarity?.toLowerCase() || 'common'})`,
                                     color: `var(--rarity-${title.rarity?.toLowerCase() || 'common'})`,
-                                    background: 'transparent'
+                                    background: 'transparent',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
                                 }}
                             >
                                 {title.name}
+                                {canRemoveTitles && title.name !== 'Hunter' && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveTitle(title.name);
+                                        }}
+                                        style={{ background: 'transparent', border: 'none', color: 'red', cursor: 'pointer', padding: 0, display: 'flex' }}
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -46,6 +87,13 @@ export default function ProfileView({ profile, overallRank, themeRank, specialTh
                     </span>
                 </div>
             </div>
+
+            <TitleSelectionModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                unlockedTitles={profile.unlockedTitles}
+                rankColor={colorVar}
+            />
         </div>
     );
 }

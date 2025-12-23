@@ -270,6 +270,8 @@ export default function HunterProfilePage() {
                 overallRank={overallRank}
                 themeRank={themeRank}
                 specialTheme={specialTheme}
+                canRemoveTitles={viewer?.isAdmin}
+                isOwnProfile={viewer?.id === profile.id}
             />
 
             {/* Profile Book Modal */}
