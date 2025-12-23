@@ -38,7 +38,7 @@ export default function HunterStatsPage() {
             // 2. Get Unlocked Titles
             const { data: titlesData } = await supabase
                 .from('unlocked_titles')
-                .select('name, rarity')
+                .select('name, rarity, is_hidden')
                 .eq('profile_id', profileData.id);
 
             // 3. Get Completed Quests
@@ -53,7 +53,11 @@ export default function HunterStatsPage() {
                 avatarUrl: profileData.avatar_url,
                 activeTitle: profileData.active_title || { name: 'Hunter', rarity: 'Common' },
                 testScores: profileData.test_scores || {},
-                unlockedTitles: titlesData || [],
+                unlockedTitles: (titlesData || []).map((t: any) => ({
+                    name: t.name,
+                    rarity: t.rarity,
+                    is_hidden: t.is_hidden || false
+                })),
                 completedQuests: questsData?.map((q: { quest_id: string }) => q.quest_id) || [],
                 settings: profileData.settings || { statsCalculator: true, theme: null },
                 isAdmin: profileData.is_admin || false,
