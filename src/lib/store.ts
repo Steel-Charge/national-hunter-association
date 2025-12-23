@@ -31,6 +31,10 @@ export interface UserProfile {
     settings: UserSettings;
     isAdmin: boolean; // Admin flag
     profileType: string; // Profile type for attribute targets
+    email?: string;
+    phone?: string;
+    password?: string;
+    role: 'Hunter' | 'Captain' | 'Admin';
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
@@ -81,7 +85,8 @@ const DEFAULT_PROFILE: UserProfile = {
     ],
     settings: { statsCalculator: true, theme: null, specialTheme: null }, // Admin has statsCalculator enabled
     isAdmin: true, // Edgelord is admin
-    profileType: 'male_20_25'
+    profileType: 'male_20_25',
+    role: 'Admin'
 };
 
 const TOTO_PROFILE: Partial<UserProfile> = {
@@ -132,7 +137,8 @@ const NEW_HUNTER_PROFILE: UserProfile = {
     completedQuests: [],
     settings: DEFAULT_SETTINGS,
     isAdmin: false,
-    profileType: 'male_20_25'
+    profileType: 'male_20_25',
+    role: 'Hunter'
 };
 
 interface HunterState {
@@ -141,7 +147,7 @@ interface HunterState {
     setProfile: (profile: UserProfile | null) => void;
     setLoading: (loading: boolean) => void;
     fetchProfile: (name: string) => Promise<void>;
-    createProfile: (name: string, password?: string, profileType?: string) => Promise<void>;
+    createProfile: (name: string, password?: string, profileType?: string, contactInfo?: { email?: string, phone?: string }) => Promise<void>;
     login: (name: string, password?: string) => Promise<boolean>;
     logout: () => void;
     updateScore: (testName: string, value: number, targetName?: string) => Promise<void>;
@@ -156,8 +162,15 @@ interface HunterState {
     updateSettings: (newSettings: Partial<UserSettings>) => Promise<void>;
     updateName: (newName: string) => Promise<{ success: boolean; error?: string }>;
     updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
+    requestOTP: (username: string) => Promise<{ success: boolean; error?: string }>;
+    verifyOTP: (username: string, otp: string) => Promise<{ success: boolean; error?: string }>;
+    resetPassword: (username: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
     removeTitle: (profileId: string, titleName: string) => Promise<void>;
     updateTitleVisibility: (titleName: string, isHidden: boolean) => Promise<void>;
+    requestStatUpdate: (statName: string, newValue: number, oldValue: number) => Promise<void>;
+    getPendingStatRequests: (username?: string) => Promise<any[]>;
+    approveStatRequest: (requestId: string) => Promise<void>;
+    denyStatRequest: (requestId: string) => Promise<void>;
     getStats: () => { name: string; percentage: number; rank: Rank }[];
     getOverallRank: () => Rank;
     getTheme: () => Rank;
@@ -234,7 +247,10 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         isAdmin: profileData.is_admin || false,
                         profileType: profileData.profile_type || 'male_20_25',
                         bio: profileData.bio,
-                        managerComment: profileData.manager_comment
+                        managerComment: profileData.manager_comment,
+                        email: profileData.email,
+                        phone: profileData.phone,
+                        role: profileData.role || 'Hunter'
                     }
                 });
             }
@@ -245,9 +261,20 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         }
     },
 
-    createProfile: async (name: string, password?: string, profileType: string = 'male_20_25') => {
+    createProfile: async (name: string, password?: string, profileType: string = 'male_20_25', contactInfo?: { email?: string, phone?: string }) => {
         try {
-            let initialProfile = { ...NEW_HUNTER_PROFILE, name, profileType };
+            let hashedPassword = password;
+            if (password) {
+                const hashRes = await fetch('/api/auth/hash', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'hash', password })
+                });
+                const hashData = await hashRes.json();
+                if (hashData.hash) hashedPassword = hashData.hash;
+            }
+
+            let initialProfile = { ...NEW_HUNTER_PROFILE, name, password: hashedPassword, profileType, ...contactInfo };
 
             if (name === 'Edgelord') initialProfile = DEFAULT_PROFILE;
             else if (name === 'Toto') initialProfile = { ...NEW_HUNTER_PROFILE, ...TOTO_PROFILE, name, profileType: 'male_20_25' };
@@ -275,7 +302,9 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                     test_scores: initialProfile.testScores,
                     settings: initialProfile.settings,
                     is_admin: initialProfile.isAdmin,
-                    profile_type: initialProfile.profileType
+                    profile_type: initialProfile.profileType,
+                    email: initialProfile.email,
+                    phone: initialProfile.phone
                 }])
                 .select()
                 .single();
@@ -361,30 +390,44 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             // User exists, check password
             if (profileData) {
                 console.log('User exists, checking password...');
-                // Lazy migration: If DB has 'default' password, allow login with expected password and update DB
-                if (profileData.password === 'default') {
-                    const expectedPasswords: Record<string, string> = {
-                        'Edgelord': 'Mcpe32767',
-                        'Toto': 'Password1',
-                        'Lockjaw': 'Password2'
-                    };
 
-                    if (password === expectedPasswords[name]) {
-                        console.log('Lazy migration: Updating password...');
-                        // Update DB with correct password
-                        await supabase
-                            .from('profiles')
-                            .update({ password: password })
-                            .eq('name', name);
+                let isMatch = false;
+                if (password) {
+                    // 1. Try bcrypt comparison
+                    const compareRes = await fetch('/api/auth/hash', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'compare', password, hash: profileData.password })
+                    });
+                    const compareData = await compareRes.json();
+                    isMatch = compareData.match;
 
-                        localStorage.setItem('last_user', name);
-                        await get().fetchProfile(name);
-                        return true;
+                    // 2. Fallback for plain-text (auto-migrate)
+                    // Lazy migration: If DB has 'default' password, or matches input exactly
+                    if (!isMatch && (profileData.password === 'default' || password === profileData.password)) {
+                        const expectedPasswords: Record<string, string> = {
+                            'Edgelord': 'Mcpe32767',
+                            'Toto': 'Password1',
+                            'Lockjaw': 'Password2'
+                        };
+
+                        if (password === expectedPasswords[name] || password === profileData.password) {
+                            console.log(`Auto-migrating legacy password for user: ${name}`);
+                            const hashRes = await fetch('/api/auth/hash', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'hash', password })
+                            });
+                            const hashData = await hashRes.json();
+                            if (hashData.hash) {
+                                await supabase.from('profiles').update({ password: hashData.hash }).eq('name', name);
+                                isMatch = true;
+                            }
+                        }
                     }
                 }
 
-                // Normal login
-                if (profileData.password === password) {
+                if (isMatch) {
                     console.log('Password match, logging in...');
                     localStorage.setItem('last_user', name);
                     await get().fetchProfile(name);
@@ -417,7 +460,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         const nameToUpdate = targetName || profile.name;
 
         // If updating another user's profile, admin must be logged in
-        if (targetName && targetName !== profile.name && !profile.isAdmin) {
+        if (targetName && targetName !== profile.name && profile.role !== 'Admin') {
             console.error('Only admins can update other users\' scores');
             return;
         }
@@ -824,6 +867,284 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         }
     },
 
+    requestOTP: async (username: string) => {
+        try {
+            // 1. Check if user exists and has email or phone
+            const { data: user, error } = await supabase
+                .from('profiles')
+                .select('id, email, phone')
+                .eq('name', username)
+                .single();
+
+            if (error || !user) {
+                return { success: false, error: 'User not found' };
+            }
+
+            if (!user.email && !user.phone) {
+                return { success: false, error: 'No contact information (email/phone) linked to this account.' };
+            }
+
+            // 2. Generate OTP
+            const otpBuffer = new Uint32Array(1);
+            window.crypto.getRandomValues(otpBuffer);
+            const otp = (otpBuffer[0] % 900000 + 100000).toString(); // 6-digit OTP
+            const expiry = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 mins
+
+            // 3. Save OTP to DB
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ otp, otp_expiry: expiry })
+                .eq('id', user.id);
+
+            if (updateError) throw updateError;
+
+            // 4. Send Real OTP (Email/SMS) via API route
+            try {
+                const apiResponse = await fetch('/api/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        otp,
+                        email: user.email,
+                        phone: user.phone
+                    }),
+                });
+
+                const apiData = await apiResponse.json();
+                if (!apiResponse.ok) {
+                    console.warn('Real OTP sending failed, falling back to console log:', apiData.error);
+                } else {
+                    console.log(`[PASS_RESET] Real OTP sent via ${apiData.sentVia}`);
+                }
+            } catch (apiErr) {
+                console.error('Error calling send-otp API:', apiErr);
+            }
+
+            // Always log to console for development/fallback
+            // console.log(`[PASS_RESET] OTP for ${username}: ${otp} (Sent to ${user.email || user.phone})`);
+
+            return { success: true };
+        } catch (error: any) {
+            console.error('Error requesting OTP:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    verifyOTP: async (username: string, otp: string) => {
+        try {
+            const { data: user, error } = await supabase
+                .from('profiles')
+                .select('otp, otp_expiry')
+                .eq('name', username)
+                .single();
+
+            if (error || !user) return { success: false, error: 'User not found' };
+
+            if (user.otp !== otp) {
+                return { success: false, error: 'Invalid OTP' };
+            }
+
+            if (new Date(user.otp_expiry) < new Date()) {
+                return { success: false, error: 'OTP has expired' };
+            }
+
+            return { success: true };
+        } catch (error: any) {
+            console.error('Error verifying OTP:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    resetPassword: async (username: string, newPassword: string) => {
+        try {
+            // Hash the new password before saving
+            const hashRes = await fetch('/api/auth/hash', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'hash', password: newPassword })
+            });
+            const hashData = await hashRes.json();
+            if (!hashData.hash) throw new Error('Failed to hash password');
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    password: hashData.hash,
+                    otp: null,
+                    otp_expiry: null
+                })
+                .eq('name', username);
+
+            if (error) throw error;
+
+            return { success: true };
+        } catch (error: any) {
+            console.error('Error resetting password:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    requestStatUpdate: async (statName: string, newValue: number, oldValue: number) => {
+        const profile = get().profile;
+        if (!profile || !profile.id) {
+            console.error('Unable to send request: Profile not loaded or ID missing');
+            return;
+        }
+
+        try {
+            console.log(`Requesting stat update for ${profile.name}: ${statName} ${oldValue} -> ${newValue}`);
+            const { data: existing, error: checkError } = await supabase
+                .from('stat_requests')
+                .select('id')
+                .eq('profile_id', profile.id)
+                .eq('stat_name', statName)
+                .eq('status', 'pending')
+                .maybeSingle();
+
+            if (checkError) throw checkError;
+
+            if (existing) {
+                console.log('Updating existing pending request:', existing.id);
+                const { error: updateReqError } = await supabase
+                    .from('stat_requests')
+                    .update({
+                        new_value: newValue,
+                        old_value: oldValue,
+                        requested_at: new Date().toISOString()
+                    })
+                    .eq('id', existing.id);
+                if (updateReqError) throw updateReqError;
+            } else {
+                console.log('Inserting new pending request');
+                const { error: insertError } = await supabase.from('stat_requests').insert({
+                    profile_id: profile.id,
+                    stat_name: statName,
+                    new_value: newValue,
+                    old_value: oldValue,
+                    status: 'pending'
+                });
+                if (insertError) throw insertError;
+            }
+        } catch (error: any) {
+            console.error('Error in requestStatUpdate:', error.message || error);
+            throw error;
+        }
+    },
+
+    getPendingStatRequests: async (username?: string) => {
+        try {
+            console.log('Fetching pending stat requests for:', username || 'ALL');
+            let query = supabase
+                .from('stat_requests')
+                .select(`
+                    id, 
+                    profile_id, 
+                    stat_name, 
+                    new_value, 
+                    old_value, 
+                    status, 
+                    requested_at,
+                    profiles!profile_id ( name )
+                `)
+                .eq('status', 'pending');
+
+            if (username) {
+                const { data: userData } = await supabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('name', username)
+                    .maybeSingle();
+
+                if (userData) {
+                    query = query.eq('profile_id', userData.id);
+                } else {
+                    console.warn(`User ${username} not found for request filtering`);
+                    return [];
+                }
+            }
+
+            const { data, error: queryError } = await query;
+            if (queryError) throw queryError;
+
+            console.log(`Found ${data?.length || 0} pending requests`);
+            return data || [];
+        } catch (error: any) {
+            console.error('Error in getPendingStatRequests:', error.message || error);
+            return [];
+        }
+    },
+
+    approveStatRequest: async (requestId: string) => {
+        const profile = get().profile;
+        if (!profile || (profile.role !== 'Admin' && profile.role !== 'Captain')) return;
+
+        try {
+            // 1. Get request data
+            const { data: request, error: getReqError } = await supabase
+                .from('stat_requests')
+                .select('*')
+                .eq('id', requestId)
+                .single();
+
+            if (getReqError || !request) return;
+
+            // 2. Update hunter's profile stats
+            const { data: targetProfile, error: getTargetError } = await supabase
+                .from('profiles')
+                .select('test_scores')
+                .eq('id', request.profile_id)
+                .single();
+
+            if (getTargetError) throw getTargetError;
+
+            const updatedScores = {
+                ...(targetProfile?.test_scores || {}),
+                [request.stat_name]: request.new_value
+            };
+
+            const { error: updateProfError } = await supabase
+                .from('profiles')
+                .update({ test_scores: updatedScores })
+                .eq('id', request.profile_id);
+
+            if (updateProfError) throw updateProfError;
+
+            // 3. Mark request as approved
+            const { error: finalError } = await supabase
+                .from('stat_requests')
+                .update({
+                    status: 'approved',
+                    resolved_at: new Date().toISOString(),
+                    resolved_by: profile.id
+                })
+                .eq('id', requestId);
+
+            if (finalError) throw finalError;
+
+        } catch (error: any) {
+            console.error('Error approving stat request:', error.message || error);
+        }
+    },
+
+    denyStatRequest: async (requestId: string) => {
+        const profile = get().profile;
+        if (!profile || (profile.role !== 'Admin' && profile.role !== 'Captain')) return;
+
+        try {
+            await supabase
+                .from('stat_requests')
+                .update({
+                    status: 'denied',
+                    resolved_at: new Date().toISOString(),
+                    resolved_by: profile.id
+                })
+                .eq('id', requestId);
+        } catch (error: any) {
+            console.error('Error denying stat request:', error.message || error);
+        }
+    },
+
     getStats: () => {
         const profile = get().profile;
         if (!profile) return [];
@@ -862,4 +1183,5 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         }
     }
 }));
+
 

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserProfile, useHunterStore } from '@/lib/store';
+import { UserProfile, useHunterStore, Title } from '@/lib/store';
 import { getAttributes, RANK_COLORS, Rank } from '@/lib/game-logic';
 
 import RadarChart from '@/components/RadarChart';
@@ -134,23 +134,78 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
     }
 
     // Determine if editing is allowed
-    // Can edit if:
-    // 1. Viewing own profile AND statsCalculator is enabled
-    // 2. Admin viewing someone else's profile
-    const canEdit = (!isReadOnly && profile.settings.statsCalculator) || (isReadOnly && viewerProfile?.isAdmin);
+    // 1. Admin/Captain viewing ANY profile (they see the approve/deny UI)
+    // 2. Hunter viewing OWN profile (they see the sliders and Request Update button)
+    const isAdminView = viewerProfile?.role === 'Admin' || viewerProfile?.role === 'Captain';
+    const isOwnProfile = viewerProfile?.id === profile.id;
+    const canEdit = isOwnProfile || (isReadOnly && isAdminView);
+
+    const [pendingChanges, setPendingChanges] = useState<Record<string, number>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [statRequests, setStatRequests] = useState<any[]>([]);
+
+    const { getPendingStatRequests, approveStatRequest, denyStatRequest, requestStatUpdate } = useHunterStore();
+
+    useEffect(() => {
+        const fetchRequests = async () => {
+            // Fetch requests if viewer is admin/captain OR if viewing own profile
+            if ((isReadOnly && isAdminView) || isOwnProfile) {
+                const requests = await getPendingStatRequests(profile.name);
+                setStatRequests(requests || []);
+            }
+        };
+        fetchRequests();
+    }, [isAdminView, isOwnProfile, isReadOnly, profile.name]);
 
     const handleScoreChange = (testName: string, value: string) => {
         if (!canEdit) return;
         const numValue = parseFloat(value);
         if (!isNaN(numValue)) {
-            // If admin is editing someone else's profile, pass the target name
-            const targetName = isReadOnly ? profile.name : undefined;
-            updateScore(testName, numValue, targetName);
-
-            // Call callback to update local state (for admin editing)
-            if (onScoreUpdate) {
-                onScoreUpdate(testName, numValue);
+            // For own profile, use local pending state
+            if (isOwnProfile) {
+                setPendingChanges(prev => ({ ...prev, [testName]: numValue }));
             }
+        }
+    };
+
+    const handleAdminSave = async () => {
+        setIsSubmitting(true);
+        const { updateScore } = useHunterStore.getState();
+        try {
+            for (const [statName, newValue] of Object.entries(pendingChanges)) {
+                await updateScore(statName, newValue);
+            }
+            setPendingChanges({});
+            alert('Stats saved successfully.');
+        } catch (error) {
+            console.error('Save failed:', error);
+            alert('Save failed. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const submitRequest = async () => {
+        setIsSubmitting(true);
+        const { requestStatUpdate } = useHunterStore.getState();
+
+        try {
+            for (const [statName, newValue] of Object.entries(pendingChanges)) {
+                const oldValue = profile.testScores[statName] || 0;
+                await requestStatUpdate(statName, newValue, oldValue);
+            }
+
+            // Refresh requests immediately
+            const requests = await getPendingStatRequests(profile.name);
+            setStatRequests(requests || []);
+
+            setPendingChanges({});
+            alert('Stat update requests sent for approval.');
+        } catch (error) {
+            console.error('Request failed:', error);
+            alert('Request failed. Please try again.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -194,7 +249,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                         {profile.activeTitle?.name || 'HUNTER'}
                     </p>
                 </div>
-                {viewerProfile && (
+                {viewerProfile && !isOwnProfile && (
                     <div style={{ marginRight: isReadOnly ? '60px' : '0', marginTop: '5px' }}>
                         <button
                             onClick={handleCompareClick}
@@ -312,19 +367,146 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                                     />
                                 </div>
 
-                                <input
-                                    type="number"
-                                    value={currentScore || ''}
-                                    onChange={(e) => handleScoreChange(test.name, e.target.value)}
-                                    className={styles.hiddenInput}
-                                    placeholder={canEdit ? "Update..." : "Locked"}
-                                    disabled={!canEdit}
-                                    style={!canEdit ? { cursor: 'not-allowed', opacity: 0.5 } : {}}
-                                />
+                                {isOwnProfile && (
+                                    <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <input
+                                            type="number"
+                                            value={pendingChanges[test.name] ?? currentScore}
+                                            onChange={(e) => handleScoreChange(test.name, e.target.value)}
+                                            style={{
+                                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                                border: `1px solid ${rankColor}40`,
+                                                color: '#fff',
+                                                padding: '8px',
+                                                borderRadius: '4px',
+                                                width: '100px',
+                                                fontSize: '1rem',
+                                                fontFamily: 'inherit'
+                                            }}
+                                            min="0"
+                                            step={test.name === 'Plank Hold' ? '0.01' : '1'}
+                                        />
+                                        <div style={{ display: 'flex', gap: '5px' }}>
+                                            {statRequests.some(r => r.stat_name === test.name) && (
+                                                <span style={{
+                                                    fontSize: '0.7rem',
+                                                    color: '#facc15',
+                                                    border: `1px solid #facc15`,
+                                                    padding: '2px 6px',
+                                                    borderRadius: '4px',
+                                                    fontWeight: 'bold'
+                                                }}>
+                                                    PENDING
+                                                </span>
+                                            )}
+                                            {pendingChanges[test.name] !== undefined && (
+                                                <span style={{
+                                                    fontSize: '0.7rem',
+                                                    color: rankColor,
+                                                    border: `1px solid ${rankColor}`,
+                                                    padding: '2px 6px',
+                                                    borderRadius: '4px',
+                                                    fontWeight: 'bold'
+                                                }}>
+                                                    MODIFIED
+                                                </span>
+                                            )}
+                                            {pendingChanges[test.name] === undefined && !statRequests.some(r => r.stat_name === test.name) && (
+                                                <span style={{
+                                                    fontSize: '0.7rem',
+                                                    color: rankColor + '80',
+                                                    border: `1px solid ${rankColor}40`,
+                                                    padding: '2px 6px',
+                                                    borderRadius: '4px',
+                                                    fontWeight: 'bold'
+                                                }}>
+                                                    REQUEST CHANGE
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                                {pendingChanges[test.name] !== undefined && (
+                                    <div style={{ fontSize: '0.8rem', color: rankColor, marginTop: '5px', textAlign: 'left', opacity: 0.8 }}>
+                                        Current: {currentScore} → Proposed: {pendingChanges[test.name]}
+                                    </div>
+                                )}
+                                {pendingChanges[test.name] === undefined && statRequests.find(r => r.stat_name === test.name) && (
+                                    <div style={{ fontSize: '0.8rem', color: '#facc15', marginTop: '5px', textAlign: 'left', opacity: 0.8 }}>
+                                        Sent: {currentScore} → Awaiting: {statRequests.find(r => r.stat_name === test.name).new_value}
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
                 </div>
+
+                {Object.keys(pendingChanges).length > 0 && isOwnProfile && (
+                    <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                        <button
+                            onClick={isAdminView ? handleAdminSave : submitRequest}
+                            disabled={isSubmitting}
+                            className={styles.submitBtn}
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                backgroundColor: rankColor,
+                                color: '#000',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                                boxShadow: `0 0 15px ${rankColor}`
+                            }}
+                        >
+                            {isSubmitting
+                                ? (isAdminView ? 'SAVING...' : 'SENDING REQUEST...')
+                                : (isAdminView ? 'SAVE CHANGES' : 'REQUEST STAT UPDATE')
+                            }
+                        </button>
+                    </div>
+                )}
+
+                {isAdminView && statRequests.length > 0 && (
+                    <div style={{ marginTop: '20px', borderTop: `1px solid ${rankColor}40`, paddingTop: '20px' }}>
+                        <h3 style={{ color: rankColor, marginBottom: '15px', fontSize: '1rem' }}>PENDING STAT REQUESTS</h3>
+                        {statRequests.map((req) => (
+                            <div key={req.id} style={{
+                                backgroundColor: 'rgba(0,0,0,0.3)',
+                                padding: '15px',
+                                borderRadius: '8px',
+                                marginBottom: '10px',
+                                border: `1px solid ${rankColor}20`
+                            }}>
+                                <div className="flex-between" style={{ marginBottom: '10px' }}>
+                                    <span style={{ fontWeight: 'bold' }}>{req.stat_name}</span>
+                                    <span>{req.old_value} → {req.new_value}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <button
+                                        onClick={async () => {
+                                            await approveStatRequest(req.id);
+                                            setStatRequests(prev => prev.filter(r => r.id !== req.id));
+                                            if (onScoreUpdate) onScoreUpdate(req.stat_name, req.new_value);
+                                        }}
+                                        style={{ flex: 1, padding: '8px', backgroundColor: '#22c55e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                    >
+                                        APPROVE
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            await denyStatRequest(req.id);
+                                            setStatRequests(prev => prev.filter(r => r.id !== req.id));
+                                        }}
+                                        style={{ flex: 1, padding: '8px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                    >
+                                        DENY
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
             {glitchActive && (
                 <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, pointerEvents: 'none' }}>

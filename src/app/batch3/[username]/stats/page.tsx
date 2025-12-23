@@ -61,7 +61,8 @@ export default function HunterStatsPage() {
                 completedQuests: questsData?.map((q: { quest_id: string }) => q.quest_id) || [],
                 settings: profileData.settings || { statsCalculator: true, theme: null },
                 isAdmin: profileData.is_admin || false,
-                profileType: profileData.profile_type || 'Male'
+                profileType: profileData.profile_type || 'Male',
+                role: profileData.role || 'Hunter'
             };
 
             setViewedProfile(userProfile);

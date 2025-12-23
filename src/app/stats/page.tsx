@@ -23,7 +23,7 @@ export default function StatsPage() {
 
     return (
         <div className={styles.container}>
-            <StatsView profile={profile} />
+            <StatsView profile={profile} viewerProfile={profile} />
             <Navbar />
         </div>
     );

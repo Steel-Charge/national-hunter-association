@@ -11,6 +11,7 @@ export default function RegisterPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [contactInfo, setContactInfo] = useState(''); // email or phone
     const [profileType, setProfileType] = useState<string>(PROFILE_TYPES.MALE_20_25);
     const router = useRouter();
     const { createProfile, loading } = useHunterStore();
@@ -18,8 +19,8 @@ export default function RegisterPage() {
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!username.trim() || !password.trim()) {
-            alert('Please fill in all fields');
+        if (!username.trim() || !password.trim() || !contactInfo.trim()) {
+            alert('Please fill in all fields (Username, Password, and Email/Phone)');
             return;
         }
 
@@ -29,7 +30,11 @@ export default function RegisterPage() {
         }
 
         try {
-            await createProfile(username, password, profileType);
+            // Determine if it's email or phone (simple check)
+            const isEmail = contactInfo.includes('@');
+            const info = isEmail ? { email: contactInfo } : { phone: contactInfo };
+
+            await createProfile(username, password, profileType, info);
             alert('Account created successfully! Please login.');
             router.push('/');
         } catch (error) {
@@ -64,6 +69,19 @@ export default function RegisterPage() {
                                 </option>
                             ))}
                         </select>
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                        <label htmlFor="contactInfo">Email or Phone:</label>
+                        <input
+                            type="text"
+                            id="contactInfo"
+                            value={contactInfo}
+                            onChange={(e) => setContactInfo(e.target.value)}
+                            placeholder="Email or Phone (for recovery)"
+                            className={styles.input}
+                            required
+                        />
                     </div>
 
                     <div className={styles.inputGroup}>

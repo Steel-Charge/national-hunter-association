@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar';
 import styles from './page.module.css';
 import { useHunterStore } from '@/lib/store';
 import LoadingScreen from '@/components/LoadingScreen';
+import { Settings as Cog } from 'lucide-react';
 
 interface HunterPreview {
     id: string;
@@ -15,9 +16,18 @@ interface HunterPreview {
     active_title: { name: string; rarity: string } | null;
 }
 
+interface AgencyData {
+    name: string;
+    description: string;
+    logo_url: string;
+}
+
 export default function Batch3Page() {
     const [hunters, setHunters] = useState<HunterPreview[]>([]);
+    const [agency, setAgency] = useState<AgencyData | null>(null);
+    const [showSettings, setShowSettings] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [isUploading, setIsUploading] = useState(false);
     const router = useRouter();
     const { getTheme, profile } = useHunterStore();
     const themeRank = getTheme();
@@ -25,26 +35,82 @@ export default function Batch3Page() {
     const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
     useEffect(() => {
-        const fetchHunters = async () => {
-            const { data, error } = await supabase
+        const fetchData = async () => {
+            // Fetch Hunters
+            const { data: huntersData, error: huntersError } = await supabase
                 .from('profiles')
                 .select('id, name, avatar_url, active_title');
 
-            if (error) {
-                console.error('Error fetching hunters:', error);
+            if (huntersError) {
+                console.error('Error fetching hunters:', huntersError);
             } else {
-                // Filter out the logged-in user
-                const filteredHunters = (data || []).filter(h => h.name !== profile?.name);
+                const filteredHunters = (huntersData || []).filter(h => h.name !== profile?.name);
                 setHunters(filteredHunters);
             }
+
+            // Fetch Agency Data
+            const { data: agencyData, error: agencyError } = await supabase
+                .from('agencies')
+                .select('*')
+                .single();
+
+            if (agencyError) {
+                console.error('Error fetching agency:', agencyError);
+            } else {
+                setAgency(agencyData);
+            }
+
             setLoading(false);
         };
 
-        fetchHunters();
+        fetchData();
     }, [profile]);
 
     const handleHunterClick = (username: string) => {
         router.push(`/batch3/${username}`);
+    };
+
+    const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || !profile?.isAdmin) return;
+
+        setIsUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `agency-logo-${Date.now()}.${fileExt}`;
+            const filePath = `agency/${fileName}`;
+
+            // 1. Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('avatars') // Using avatars bucket as it likely exists and is configured for public access
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            // 3. Update Agencies table
+            const { error: updateError } = await supabase
+                .from('agencies')
+                .update({ logo_url: publicUrl })
+                .eq('name', agency?.name || 'BATCH 3');
+
+            if (updateError) throw updateError;
+
+            // 4. Update local state
+            if (agency) {
+                setAgency({ ...agency, logo_url: publicUrl });
+            }
+            setShowSettings(false);
+        } catch (error: any) {
+            console.error('Error uploading logo:', error);
+            alert(`Failed to upload logo: ${error.message || 'Unknown error'}`);
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     if (loading || !profile) return <LoadingScreen loading={loading} rank={getTheme()} />;
@@ -60,8 +126,61 @@ export default function Batch3Page() {
                 </p>
             </div>
 
+            <div className={styles.agencySection}>
+                <div className={styles.agencyInfo}>
+                    <h2 className={styles.agencyName} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
+                        {agency?.name || 'BATCH 3'}
+                    </h2>
+                    <p className={styles.agencyDescriptionLabel}>DESCRIPTION:</p>
+                    <p className={styles.agencyDescription}>
+                        {agency?.description || 'LOADING DESCRIPTION...'}
+                    </p>
+                </div>
+                <div className={styles.agencyLogoContainer}>
+                    {isUploading ? (
+                        <div className={styles.loader}></div>
+                    ) : (
+                        <img
+                            src={agency?.logo_url || '/placeholder.png'}
+                            alt="Agency Logo"
+                            className={styles.agencyLogo}
+                        />
+                    )}
+                </div>
+
+                {profile.isAdmin && (
+                    <>
+                        <button
+                            className={styles.settingsTrigger}
+                            onClick={() => setShowSettings(!showSettings)}
+                        >
+                            <Cog size={20} />
+                        </button>
+
+                        {showSettings && (
+                            <div className={styles.settingsMenu}>
+                                <button
+                                    className={styles.updateLogoBtn}
+                                    onClick={() => document.getElementById('logo-upload')?.click()}
+                                    disabled={isUploading}
+                                >
+                                    {isUploading ? 'Uploading...' : 'Update Agency Logo'}
+                                </button>
+                                <input
+                                    type="file"
+                                    id="logo-upload"
+                                    hidden
+                                    accept="image/*"
+                                    onChange={handleLogoUpload}
+                                />
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+
             <h2 className={styles.sectionTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
-                BATCH 3 MEMBERS
+                {agency?.name || 'BATCH 3'} MEMBERS
             </h2>
 
             <div className={styles.content}>
