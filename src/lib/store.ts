@@ -206,7 +206,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                 const isExclusive = profileData.name === SPECIAL_BINARY_NAME;
 
                 // Prepare unlocked titles; if exclusive, ensure Monarch of Finality (Mythic) exists and remove 'Hunter'
-                let unlocked = (titlesData || []).map((t: any) => ({
+                let unlocked: Title[] = (titlesData || []).map((t: any) => ({
                     name: t.name,
                     rarity: t.rarity,
                     is_hidden: t.is_hidden || false
@@ -216,7 +216,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                     unlocked = unlocked.filter((t: any) => t.name !== 'Hunter');
                     // ensure Monarch of Finality exists
                     if (!unlocked.some((t: any) => t.name === 'Monarch of Finality')) {
-                        unlocked.unshift({ name: 'Monarch of Finality', rarity: 'Mythic' });
+                        unlocked.unshift({ name: 'Monarch of Finality', rarity: 'Mythic', is_hidden: false });
                     }
                 }
 
@@ -226,7 +226,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         name: profileData.name,
                         avatarUrl: profileData.avatar_url,
                         videoUrl: profileData.video_url,
-                        activeTitle: isExclusive ? { name: 'Monarch of Finality', rarity: 'Mythic' } : (profileData.active_title || { name: 'Hunter', rarity: 'Common' }),
+                        activeTitle: isExclusive ? { name: 'Monarch of Finality', rarity: 'Mythic', is_hidden: false } : (profileData.active_title || { name: 'Hunter', rarity: 'Common', is_hidden: false }),
                         testScores: profileData.test_scores || {},
                         unlockedTitles: unlocked,
                         completedQuests: questsData?.map((q: { quest_id: string }) => q.quest_id) || [],
