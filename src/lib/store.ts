@@ -274,7 +274,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                 if (hashData.hash) hashedPassword = hashData.hash;
             }
 
-            let initialProfile = { ...NEW_HUNTER_PROFILE, name, password: hashedPassword, profileType, ...contactInfo };
+            let initialProfile: UserProfile = { ...NEW_HUNTER_PROFILE, name, password: hashedPassword, profileType, ...contactInfo };
 
             if (name === 'Edgelord') initialProfile = DEFAULT_PROFILE;
             else if (name === 'Toto') initialProfile = { ...NEW_HUNTER_PROFILE, ...TOTO_PROFILE, name, profileType: 'male_20_25' };
