@@ -59,9 +59,12 @@ export default function AgencySettings({ agency, onClose }: Props) {
                     </div>
 
                     <div className={styles.actions}>
-                        <button onClick={() => leaveAgency()} className={styles.actionBtn}>
-                            <LogOut size={16} /> LEAVE AGENCY
-                        </button>
+                        {/* Hide Leave button for default Batch 3 agency */}
+                        {agency.invite_code !== 'BATCH3-DEFAULT' && (
+                            <button onClick={() => leaveAgency()} className={styles.actionBtn}>
+                                <LogOut size={16} /> LEAVE AGENCY
+                            </button>
+                        )}
 
                         {isCaptain && (
                             <button onClick={disbandAgency} className={`${styles.actionBtn} ${styles.danger}`}>

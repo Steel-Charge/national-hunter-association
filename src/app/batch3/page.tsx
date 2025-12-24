@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import styles from './page.module.css';
 import { useHunterStore, UserProfile, Agency } from '@/lib/store';
 import LoadingScreen from '@/components/LoadingScreen';
-import { Settings as Cog, Lock } from 'lucide-react';
+import { Settings as Cog, Lock, X } from 'lucide-react';
 import { calculateOverallPercentage, getRankFromPercentage, Rank } from '@/lib/game-logic';
 import AgencySettings from '@/components/AgencySettings';
 
@@ -16,9 +16,13 @@ export default function AgencyPage() {
     const [agency, setAgency] = useState<Agency | null>(null);
     const [agencyRank, setAgencyRank] = useState<Rank>('E');
     const [showSettings, setShowSettings] = useState(false);
+    const [showJoinModal, setShowJoinModal] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [inviteCode, setInviteCode] = useState('');
+    const [agencyName, setAgencyName] = useState('');
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const { getTheme, profile } = useHunterStore();
+    const { getTheme, profile, joinAgency, createAgency } = useHunterStore();
 
     const themeRank = getTheme();
     const specialTheme = profile?.settings?.specialTheme || null;
@@ -84,10 +88,32 @@ export default function AgencyPage() {
         };
 
         fetchData();
-    }, [profile, profile?.agencyId]);
+    }, [profile, router]);
 
-    const handleHunterClick = (username: string) => {
-        router.push(`/batch3/${username}`);
+    const handleJoinAgency = async () => {
+        if (!inviteCode) return;
+        const res = await joinAgency(inviteCode);
+        if (res.success) {
+            setShowJoinModal(false);
+            router.refresh();
+        } else {
+            alert(res.error || 'Invalid invite code');
+        }
+    };
+
+    const handleCreateAgency = async () => {
+        if (!agencyName) return;
+        try {
+            await createAgency(agencyName, '/placeholder.png');
+            setShowCreateModal(false);
+            router.push('/agency');
+        } catch (error: any) {
+            alert(error.message || 'Failed to create agency');
+        }
+    };
+
+    const handleHunterClick = (name: string) => {
+        router.push(`/batch3/${name}`);
     };
 
     if (loading || !profile) return <LoadingScreen loading={loading} rank={getTheme()} />;
@@ -141,10 +167,23 @@ export default function AgencyPage() {
                     <div className={styles.restrictedContent}>
                         <Lock size={48} className={styles.lockIcon} />
                         <h3>RANKINGS RESTRICTED</h3>
-                        <p>This feature is only available for hunters who are part of an agency.</p>
-                        <button onClick={() => router.push('/role-selection')} className={styles.joinBtn}>
-                            JOIN AN AGENCY
-                        </button>
+                        <p>Join or create an agency to access rankings and team features.</p>
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                            <button
+                                onClick={() => setShowJoinModal(true)}
+                                className={styles.joinBtn}
+                                style={{ flex: 1 }}
+                            >
+                                JOIN AGENCY
+                            </button>
+                            <button
+                                onClick={() => setShowCreateModal(true)}
+                                className={styles.joinBtn}
+                                style={{ flex: 1 }}
+                            >
+                                CREATE AGENCY
+                            </button>
+                        </div>
                     </div>
                 </div>
             ) : (
@@ -177,6 +216,136 @@ export default function AgencyPage() {
 
             {showSettings && agency && (
                 <AgencySettings agency={agency} onClose={() => setShowSettings(false)} />
+            )}
+
+            {/* Join Agency Modal */}
+            {showJoinModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        background: '#1a1a1a',
+                        padding: '2rem',
+                        borderRadius: '8px',
+                        border: `2px solid ${rankColor}`,
+                        minWidth: '400px',
+                        position: 'relative'
+                    }}>
+                        <button
+                            onClick={() => setShowJoinModal(false)}
+                            style={{
+                                position: 'absolute',
+                                top: '1rem',
+                                right: '1rem',
+                                background: 'transparent',
+                                border: 'none',
+                                color: '#fff',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <X size={24} />
+                        </button>
+                        <h2 style={{ color: rankColor, marginBottom: '1rem' }}>JOIN AGENCY</h2>
+                        <p style={{ color: '#aaa', marginBottom: '1.5rem' }}>Enter your agency invite code</p>
+                        <input
+                            type="text"
+                            value={inviteCode}
+                            onChange={(e) => setInviteCode(e.target.value)}
+                            placeholder="INVITE CODE"
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                background: '#0a0a0a',
+                                border: `1px solid ${rankColor}`,
+                                color: '#fff',
+                                borderRadius: '4px',
+                                marginBottom: '1rem',
+                                fontSize: '1rem'
+                            }}
+                        />
+                        <button
+                            onClick={handleJoinAgency}
+                            className={styles.joinBtn}
+                            style={{ width: '100%' }}
+                        >
+                            JOIN
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Create Agency Modal */}
+            {showCreateModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        background: '#1a1a1a',
+                        padding: '2rem',
+                        borderRadius: '8px',
+                        border: `2px solid ${rankColor}`,
+                        minWidth: '400px',
+                        position: 'relative'
+                    }}>
+                        <button
+                            onClick={() => setShowCreateModal(false)}
+                            style={{
+                                position: 'absolute',
+                                top: '1rem',
+                                right: '1rem',
+                                background: 'transparent',
+                                border: 'none',
+                                color: '#fff',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <X size={24} />
+                        </button>
+                        <h2 style={{ color: rankColor, marginBottom: '1rem' }}>CREATE AGENCY</h2>
+                        <p style={{ color: '#aaa', marginBottom: '1.5rem' }}>Choose a name for your agency</p>
+                        <input
+                            type="text"
+                            value={agencyName}
+                            onChange={(e) => setAgencyName(e.target.value)}
+                            placeholder="AGENCY NAME"
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                background: '#0a0a0a',
+                                border: `1px solid ${rankColor}`,
+                                color: '#fff',
+                                borderRadius: '4px',
+                                marginBottom: '1rem',
+                                fontSize: '1rem'
+                            }}
+                        />
+                        <button
+                            onClick={handleCreateAgency}
+                            className={styles.joinBtn}
+                            style={{ width: '100%' }}
+                        >
+                            CREATE
+                        </button>
+                    </div>
+                </div>
             )}
 
             <Navbar />
