@@ -135,10 +135,10 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
 
     // Determine if editing is allowed
     // Users who can self-manage (admin/solo/captain) can edit any profile they're viewing
-    // Regular hunters can only edit their own profile
+    // Regular hunters can only edit their own profile BUT need approval (request system)
     const isOwnProfile = viewerProfile?.id === profile.id;
-    const canManageStats = isOwnProfile || (isReadOnly && canSelfManage(viewerProfile));
-    const canEdit = canManageStats;
+    const canManageStats = isOwnProfile ? canSelfManage(viewerProfile) : (isReadOnly && canSelfManage(viewerProfile));
+    const canEdit = isOwnProfile || (isReadOnly && canSelfManage(viewerProfile));
 
     const [pendingChanges, setPendingChanges] = useState<Record<string, number>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
