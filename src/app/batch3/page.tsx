@@ -5,53 +5,43 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import styles from './page.module.css';
-import { useHunterStore } from '@/lib/store';
+import { useHunterStore, UserProfile, Agency } from '@/lib/store';
 import LoadingScreen from '@/components/LoadingScreen';
-import { Settings as Cog } from 'lucide-react';
+import { Settings as Cog, Lock } from 'lucide-react';
+import { calculateOverallPercentage, getRankFromPercentage, Rank } from '@/lib/game-logic';
+import AgencySettings from '@/components/AgencySettings';
 
-interface HunterPreview {
-    id: string;
-    name: string;
-    avatar_url: string | null;
-    active_title: { name: string; rarity: string } | null;
-}
-
-interface AgencyData {
-    name: string;
-    description: string;
-    logo_url: string;
-}
-
-export default function Batch3Page() {
-    const [hunters, setHunters] = useState<HunterPreview[]>([]);
-    const [agency, setAgency] = useState<AgencyData | null>(null);
+export default function AgencyPage() {
+    const [members, setMembers] = useState<UserProfile[]>([]);
+    const [agency, setAgency] = useState<Agency | null>(null);
+    const [agencyRank, setAgencyRank] = useState<Rank>('E');
     const [showSettings, setShowSettings] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [isUploading, setIsUploading] = useState(false);
     const router = useRouter();
     const { getTheme, profile } = useHunterStore();
+
     const themeRank = getTheme();
     const specialTheme = profile?.settings?.specialTheme || null;
     const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
+    const isSolo = profile?.role === 'Solo';
+    const isNamelessInBatch3 = isSolo && agency?.name === 'Batch 3';
+
     useEffect(() => {
         const fetchData = async () => {
-            // Fetch Hunters
-            const { data: huntersData, error: huntersError } = await supabase
-                .from('profiles')
-                .select('id, name, avatar_url, active_title');
+            if (!profile) return;
 
-            if (huntersError) {
-                console.error('Error fetching hunters:', huntersError);
-            } else {
-                const filteredHunters = (huntersData || []).filter(h => h.name !== profile?.name);
-                setHunters(filteredHunters);
+            // If no agency_id, redirect to role selection
+            if (!profile.agencyId) {
+                router.push('/role-selection');
+                return;
             }
 
-            // Fetch Agency Data
+            // 1. Fetch Agency Data
             const { data: agencyData, error: agencyError } = await supabase
                 .from('agencies')
                 .select('*')
+                .eq('id', profile.agencyId)
                 .single();
 
             if (agencyError) {
@@ -60,57 +50,44 @@ export default function Batch3Page() {
                 setAgency(agencyData);
             }
 
+            // 2. Fetch Members
+            const { data: membersData, error: membersError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('agency_id', profile.agencyId);
+
+            if (membersError) {
+                console.error('Error fetching members:', membersError);
+            } else {
+                const mappedMembers = (membersData || []).map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    avatarUrl: p.avatar_url,
+                    activeTitle: p.active_title,
+                    testScores: p.test_scores || {},
+                    profileType: p.profile_type || 'male_20_25',
+                    role: p.role,
+                    settings: p.settings
+                })) as any[];
+
+                setMembers(mappedMembers);
+
+                // 3. Calculate Agency Rank
+                if (mappedMembers.length > 0) {
+                    const totalAvg = mappedMembers.reduce((acc, m) => acc + calculateOverallPercentage(m.testScores, m.profileType), 0);
+                    const agencyAvg = totalAvg / mappedMembers.length;
+                    setAgencyRank(getRankFromPercentage(agencyAvg));
+                }
+            }
+
             setLoading(false);
         };
 
         fetchData();
-    }, [profile]);
+    }, [profile, profile?.agencyId]);
 
     const handleHunterClick = (username: string) => {
         router.push(`/batch3/${username}`);
-    };
-
-    const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file || !profile?.isAdmin) return;
-
-        setIsUploading(true);
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `agency-logo-${Date.now()}.${fileExt}`;
-            const filePath = `agency/${fileName}`;
-
-            // 1. Upload to Supabase Storage
-            const { error: uploadError } = await supabase.storage
-                .from('avatars') // Using avatars bucket as it likely exists and is configured for public access
-                .upload(filePath, file);
-
-            if (uploadError) throw uploadError;
-
-            // 2. Get Public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(filePath);
-
-            // 3. Update Agencies table
-            const { error: updateError } = await supabase
-                .from('agencies')
-                .update({ logo_url: publicUrl })
-                .eq('name', agency?.name || 'BATCH 3');
-
-            if (updateError) throw updateError;
-
-            // 4. Update local state
-            if (agency) {
-                setAgency({ ...agency, logo_url: publicUrl });
-            }
-            setShowSettings(false);
-        } catch (error: any) {
-            console.error('Error uploading logo:', error);
-            alert(`Failed to upload logo: ${error.message || 'Unknown error'}`);
-        } finally {
-            setIsUploading(false);
-        }
     };
 
     if (loading || !profile) return <LoadingScreen loading={loading} rank={getTheme()} />;
@@ -129,124 +106,79 @@ export default function Batch3Page() {
             <div className={styles.agencySection}>
                 <div className={styles.agencyInfo}>
                     <h2 className={styles.agencyName} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
-                        {agency?.name || 'BATCH 3'}
+                        {agency?.name?.toUpperCase() || 'LOADING...'}
                     </h2>
-                    <p className={styles.agencyDescriptionLabel}>DESCRIPTION:</p>
-                    <p className={styles.agencyDescription}>
-                        {agency?.description || 'LOADING DESCRIPTION...'}
-                    </p>
+
+                    <div className={styles.agencyStats}>
+                        <p>MEMBERS: [{members.length}/10]</p>
+                        <p>RANK: <span style={{ color: `var(--rank-${agencyRank.toLowerCase()})` }}>{agencyRank}</span></p>
+                    </div>
+
+                    <div className={styles.agencyTitles}>
+                        <p className={styles.label}>TITLES:</p>
+                        <div className={styles.titleBadge}>UPSTART</div>
+                    </div>
                 </div>
+
                 <div className={styles.agencyLogoContainer}>
-                    {isUploading ? (
-                        <div className={styles.loader}></div>
-                    ) : (
-                        <img
-                            src={agency?.logo_url || '/placeholder.png'}
-                            alt="Agency Logo"
-                            className={styles.agencyLogo}
-                        />
-                    )}
+                    <img
+                        src={agency?.logo_url || '/placeholder.png'}
+                        alt="Agency Logo"
+                        className={styles.agencyLogo}
+                    />
                 </div>
 
-                {profile.isAdmin && (
-                    <>
-                        <button
-                            className={styles.settingsTrigger}
-                            onClick={() => setShowSettings(!showSettings)}
-                        >
-                            <Cog size={20} />
+                <button
+                    className={styles.settingsTrigger}
+                    onClick={() => setShowSettings(true)}
+                >
+                    <Cog size={24} />
+                </button>
+            </div>
+
+            {isSolo ? (
+                <div className={styles.restrictedView}>
+                    <div className={styles.restrictedContent}>
+                        <Lock size={48} className={styles.lockIcon} />
+                        <h3>RANKINGS RESTRICTED</h3>
+                        <p>This feature is only available for hunters who are part of an agency.</p>
+                        <button onClick={() => router.push('/role-selection')} className={styles.joinBtn}>
+                            JOIN AN AGENCY
                         </button>
-
-                        {showSettings && (
-                            <div className={styles.settingsMenu}>
-                                <button
-                                    className={styles.updateLogoBtn}
-                                    onClick={() => document.getElementById('logo-upload')?.click()}
-                                    disabled={isUploading}
-                                >
-                                    {isUploading ? 'Uploading...' : 'Update Agency Logo'}
-                                </button>
-                                <input
-                                    type="file"
-                                    id="logo-upload"
-                                    hidden
-                                    accept="image/*"
-                                    onChange={handleLogoUpload}
-                                />
-                            </div>
-                        )}
-                    </>
-                )}
-            </div>
-
-            <h2 className={styles.sectionTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
-                {agency?.name || 'BATCH 3'} MEMBERS
-            </h2>
-
-            <div className={styles.content}>
-
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '20px',
-                    padding: '0 20px',
-                    maxWidth: '600px',
-                    margin: '0 auto',
-                    width: '100%'
-                }}>
-                    {hunters.map((hunter) => (
-                        <div
-                            key={hunter.id}
-                            onClick={() => handleHunterClick(hunter.name)}
-                            style={{
-                                border: `1px solid ${rankColor}`,
-                                borderRadius: '10px',
-                                overflow: 'hidden',
-                                cursor: 'pointer',
-                                position: 'relative',
-                                aspectRatio: '2/3',
-                                transition: 'transform 0.2s',
-                                boxShadow: `0 0 5px ${rankColor}40`
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                        >
-                            {/* Image */}
-                            <img
-                                src={hunter.avatar_url || '/placeholder.png'}
-                                alt={hunter.name}
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover'
-                                }}
-                            />
-
-                            {/* Overlay Name */}
-                            <div style={{
-                                position: 'absolute',
-                                bottom: 0,
-                                left: 0,
-                                width: '100%',
-                                background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)',
-                                padding: '15px 10px',
-                                textAlign: 'center'
-                            }}>
-                                <h3 style={{
-                                    color: '#fff',
-                                    textTransform: 'uppercase',
-                                    margin: 0,
-                                    fontSize: '1.2rem',
-                                    fontWeight: '900',
-                                    textShadow: '0 2px 4px rgba(0,0,0,0.8)'
-                                }}>
-                                    {hunter.name}
-                                </h3>
-                            </div>
-                        </div>
-                    ))}
+                    </div>
                 </div>
-            </div>
+            ) : (
+                <>
+                    <h2 className={styles.sectionTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
+                        {agency?.name?.toUpperCase() || 'AGENCY'} MEMBERS
+                    </h2>
+
+                    <div className={styles.membersGrid}>
+                        {members.filter(m => m.name !== profile.name).map((member) => (
+                            <div
+                                key={member.id}
+                                onClick={() => handleHunterClick(member.name)}
+                                className={styles.memberCard}
+                                style={{ borderColor: rankColor }}
+                            >
+                                <img
+                                    src={member.avatarUrl || '/placeholder.png'}
+                                    alt={member.name}
+                                    className={styles.memberAvatar}
+                                />
+                                <div className={styles.memberOverlay}>
+                                    <h3 className={styles.memberName}>{member.name}</h3>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {showSettings && agency && (
+                <AgencySettings agency={agency} onClose={() => setShowSettings(false)} />
+            )}
+
             <Navbar />
         </div>
     );

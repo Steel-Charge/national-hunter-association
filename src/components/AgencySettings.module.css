@@ -1,0 +1,138 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal {
+    width: 90%;
+    max-width: 500px;
+    background: #050505;
+    border: 2px solid var(--cyan);
+    border-radius: 20px;
+    padding: 30px;
+    position: relative;
+    box-shadow: 0 0 30px var(--cyan-glow);
+}
+
+.closeBtn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+.title {
+    color: var(--cyan);
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+}
+
+.section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section h3 {
+    font-size: 0.9rem;
+    color: #fff;
+    opacity: 0.7;
+    margin-bottom: 15px;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.inputGroup label {
+    font-size: 0.8rem;
+    color: #fff;
+}
+
+.inputGroup input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    color: #fff;
+}
+
+.saveBtn {
+    width: 100%;
+    background: var(--cyan);
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    color: #000;
+    font-weight: 900;
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+.codeBox {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    color: var(--cyan);
+    font-family: monospace;
+    font-size: 1.2rem;
+}
+
+.codeBox button {
+    background: transparent;
+    border: none;
+    color: var(--cyan);
+    cursor: pointer;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.actionBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.actionBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.danger {
+    color: #ff4444;
+    border-color: #ff444450;
+}
+
+.danger:hover {
+    background: #ff444410;
+}

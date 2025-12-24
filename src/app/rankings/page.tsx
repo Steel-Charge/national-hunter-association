@@ -26,13 +26,21 @@ export default function RankingsPage() {
     useEffect(() => {
         const fetchLeaderboard = async () => {
             setFetching(true);
-            const data = await getLeaderboard(activeFilter || undefined);
+            const data = await getLeaderboard(activeFilter || undefined, profile?.agencyId);
             setLeaderboard(data);
             setFetching(false);
         };
 
-        fetchLeaderboard();
-    }, [activeFilter]);
+        if (profile?.agencyId) {
+            fetchLeaderboard();
+        } else if (profile && !loading) {
+            // If no agency (e.g. Solo/Nameless default or error), maybe show global or empty?
+            // For now, let's fetch global if no agency or handle gracefully.
+            // If Nameless is in 'Batch 3', they have an agencyId.
+            fetchLeaderboard();
+        }
+
+    }, [activeFilter, profile?.agencyId]);
 
     if (loading || !profile) return <LoadingScreen loading={loading} rank={getTheme()} />;
 

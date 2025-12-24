@@ -9,12 +9,19 @@ export interface LeaderboardEntry {
 
 const RANK_VALUES: Record<Rank, number> = { E: 1, D: 2, C: 3, B: 4, A: 5, S: 6 };
 
-export async function getLeaderboard(attribute?: string): Promise<LeaderboardEntry[]> {
+export async function getLeaderboard(attribute?: string, agencyId?: string): Promise<LeaderboardEntry[]> {
     try {
         const SPECIAL_NAME = "01010100 01101000 01100101 00100000 01100101 01101110 01100100 00100000 01101001 01100110 00100000 01110111 01100101 00100000 01100110 01100001 01101001 01101100 00101110 00101110 00101110";
-        const { data: profiles, error } = await supabase
+
+        let query = supabase
             .from('profiles')
             .select('name, test_scores');
+
+        if (agencyId) {
+            query = query.eq('agency_id', agencyId);
+        }
+
+        const { data: profiles, error } = await query;
 
         if (error) throw error;
         if (!profiles) return [];

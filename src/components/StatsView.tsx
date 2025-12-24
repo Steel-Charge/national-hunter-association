@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserProfile, useHunterStore, Title } from '@/lib/store';
+import { UserProfile, useHunterStore, Title, canSelfManage } from '@/lib/store';
 import { getAttributes, RANK_COLORS, Rank } from '@/lib/game-logic';
 
 import RadarChart from '@/components/RadarChart';
@@ -134,11 +134,11 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
     }
 
     // Determine if editing is allowed
-    // 1. Admin/Captain viewing ANY profile (they see the approve/deny UI)
-    // 2. Hunter viewing OWN profile (they see the sliders and Request Update button)
-    const isAdminView = viewerProfile?.role === 'Admin' || viewerProfile?.role === 'Captain';
+    // Users who can self-manage (admin/solo/captain) can edit any profile they're viewing
+    // Regular hunters can only edit their own profile
     const isOwnProfile = viewerProfile?.id === profile.id;
-    const canEdit = isOwnProfile || (isReadOnly && isAdminView);
+    const canManageStats = isOwnProfile || (isReadOnly && canSelfManage(viewerProfile));
+    const canEdit = canManageStats;
 
     const [pendingChanges, setPendingChanges] = useState<Record<string, number>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -149,13 +149,13 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
     useEffect(() => {
         const fetchRequests = async () => {
             // Fetch requests if viewer is admin/captain OR if viewing own profile
-            if ((isReadOnly && isAdminView) || isOwnProfile) {
+            if (canManageStats) {
                 const requests = await getPendingStatRequests(profile.name);
                 setStatRequests(requests || []);
             }
         };
         fetchRequests();
-    }, [isAdminView, isOwnProfile, isReadOnly, profile.name]);
+    }, [canManageStats, profile.name, getPendingStatRequests]);
 
     const handleScoreChange = (testName: string, value: string) => {
         if (!canEdit) return;
@@ -444,7 +444,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                 {Object.keys(pendingChanges).length > 0 && isOwnProfile && (
                     <div style={{ marginTop: '20px', textAlign: 'center' }}>
                         <button
-                            onClick={isAdminView ? handleAdminSave : submitRequest}
+                            onClick={canManageStats ? handleAdminSave : submitRequest}
                             disabled={isSubmitting}
                             className={styles.submitBtn}
                             style={{
@@ -460,14 +460,14 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                             }}
                         >
                             {isSubmitting
-                                ? (isAdminView ? 'SAVING...' : 'SENDING REQUEST...')
-                                : (isAdminView ? 'SAVE CHANGES' : 'REQUEST STAT UPDATE')
+                                ? (canManageStats ? 'SAVING...' : 'SENDING REQUEST...')
+                                : (canManageStats ? 'SAVE CHANGES' : 'REQUEST STAT UPDATE')
                             }
                         </button>
                     </div>
                 )}
 
-                {isAdminView && statRequests.length > 0 && (
+                {canManageStats && statRequests.length > 0 && (
                     <div style={{ marginTop: '20px', borderTop: `1px solid ${rankColor}40`, paddingTop: '20px' }}>
                         <h3 style={{ color: rankColor, marginBottom: '15px', fontSize: '1rem' }}>PENDING STAT REQUESTS</h3>
                         {statRequests.map((req) => (

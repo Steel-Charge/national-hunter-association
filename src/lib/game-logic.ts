@@ -226,10 +226,10 @@ export function calculateAttributeRank(
   };
 }
 
-export function calculateOverallRank(
+export function calculateOverallPercentage(
   userScores: Record<string, number>,
   profileType: string = PROFILE_TYPES.MALE_20_25
-): Rank {
+): number {
   let totalPercentage = 0;
   let count = 0;
   const attributes = getAttributes(profileType);
@@ -240,8 +240,14 @@ export function calculateOverallRank(
     count++;
   });
 
-  if (count === 0) return 'E';
+  if (count === 0) return 0;
+  return totalPercentage / count;
+}
 
-  const averagePercentage = totalPercentage / count;
+export function calculateOverallRank(
+  userScores: Record<string, number>,
+  profileType: string = PROFILE_TYPES.MALE_20_25
+): Rank {
+  const averagePercentage = calculateOverallPercentage(userScores, profileType);
   return getRankFromPercentage(averagePercentage);
 }

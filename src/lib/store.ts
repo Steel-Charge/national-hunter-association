@@ -34,13 +34,30 @@ export interface UserProfile {
     email?: string;
     phone?: string;
     password?: string;
-    role: 'Hunter' | 'Captain' | 'Admin';
+    role: 'Hunter' | 'Captain' | 'Admin' | 'Solo';
+    agencyId?: string;
+}
+
+export interface Agency {
+    id: string;
+    name: string;
+    logo_url: string;
+    invite_code: string;
+    captain_id: string;
+    created_at: string;
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
     statsCalculator: false, // Disabled by default for non-admins
     theme: null,
     specialTheme: null
+};
+
+// Permission helper: Check if user can self-manage (update stats, claim missions without approval)
+export const canSelfManage = (profile: UserProfile | null): boolean => {
+    if (!profile) return false;
+    // Admins, Solo hunters, and Captains can self-manage
+    return profile.isAdmin || profile.role === 'Solo' || profile.role === 'Captain';
 };
 
 const DEFAULT_PROFILE: UserProfile = {
@@ -86,7 +103,7 @@ const DEFAULT_PROFILE: UserProfile = {
     settings: { statsCalculator: true, theme: null, specialTheme: null }, // Admin has statsCalculator enabled
     isAdmin: true, // Edgelord is admin
     profileType: 'male_20_25',
-    role: 'Admin'
+    role: 'Solo'
 };
 
 const TOTO_PROFILE: Partial<UserProfile> = {
@@ -138,7 +155,7 @@ const NEW_HUNTER_PROFILE: UserProfile = {
     settings: DEFAULT_SETTINGS,
     isAdmin: false,
     profileType: 'male_20_25',
-    role: 'Hunter'
+    role: 'Solo'
 };
 
 interface HunterState {
@@ -172,9 +189,16 @@ interface HunterState {
     approveStatRequest: (requestId: string) => Promise<void>;
     denyStatRequest: (requestId: string) => Promise<void>;
     getStats: () => { name: string; percentage: number; rank: Rank }[];
-    getOverallRank: () => Rank;
     getTheme: () => Rank;
     initialize: () => void;
+    // Agency Actions
+    createAgency: (name: string, logoUrl: string) => Promise<void>;
+    joinAgency: (inviteCode: string) => Promise<{ success: boolean; error?: string }>;
+    leaveAgency: (promoNext?: boolean) => Promise<void>;
+    kickMember: (memberId: string) => Promise<void>;
+    disbandAgency: () => Promise<void>;
+    updateAgency: (data: Partial<Agency>) => Promise<void>;
+    getAgencyMembers: (agencyId: string) => Promise<UserProfile[]>;
 }
 
 export const useHunterStore = create<HunterState>((set, get) => ({
@@ -247,6 +271,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         isAdmin: profileData.is_admin || false,
                         profileType: profileData.profile_type || 'male_20_25',
                         role: profileData.role || 'Hunter',
+                        agencyId: profileData.agency_id,
                         bio: profileData.bio,
                         managerComment: profileData.manager_comment,
                         email: profileData.email,
@@ -341,6 +366,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                     isAdmin: name === 'Edgelord', // Only Edgelord is admin
                     profileType: initialProfile.profileType,
                     role: initialProfile.role,
+                    agencyId: newProfile.agency_id,
                     bio: newProfile.bio,
                     managerComment: newProfile.manager_comment
                 }
@@ -1182,6 +1208,126 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         } else {
             set({ loading: false });
         }
+    },
+
+    // Agency Actions
+    createAgency: async (name: string, logoUrl: string) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+        const { data: agency, error } = await supabase
+            .from('agencies')
+            .insert({ name, logo_url: logoUrl, invite_code: inviteCode, captain_id: profile.id })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        await supabase
+            .from('profiles')
+            .update({ agency_id: agency.id, role: 'Captain' })
+            .eq('id', profile.id);
+
+        await get().fetchProfile(profile.name);
+    },
+
+    joinAgency: async (inviteCode: string) => {
+        const profile = get().profile;
+        if (!profile) return { success: false, error: 'No profile' };
+
+        const { data: agency, error } = await supabase
+            .from('agencies')
+            .select('id')
+            .eq('invite_code', inviteCode)
+            .single();
+
+        if (error || !agency) return { success: false, error: 'Invalid invite code' };
+
+        await supabase
+            .from('profiles')
+            .update({ agency_id: agency.id, role: 'Hunter' })
+            .eq('id', profile.id);
+
+        await get().fetchProfile(profile.name);
+        return { success: true };
+    },
+
+    leaveAgency: async (promoNext: boolean = true) => {
+        const profile = get().profile;
+        if (!profile || !profile.agencyId) return;
+
+        // If captain, promote the next oldest member
+        if (profile.role === 'Captain' && promoNext) {
+            const { data: members } = await supabase
+                .from('profiles')
+                .select('id, created_at')
+                .eq('agency_id', profile.agencyId)
+                .order('created_at', { ascending: true });
+
+            const nextMember = members?.find(m => m.id !== profile.id);
+            if (nextMember) {
+                await supabase.from('agencies').update({ captain_id: nextMember.id }).eq('id', profile.agencyId);
+                await supabase.from('profiles').update({ role: 'Captain' }).eq('id', nextMember.id);
+            } else {
+                // No one left, disband
+                await get().disbandAgency();
+                return;
+            }
+        }
+
+        await supabase
+            .from('profiles')
+            .update({ agency_id: null, role: 'Solo' })
+            .eq('id', profile.id);
+
+        await get().fetchProfile(profile.name);
+    },
+
+    kickMember: async (memberId: string) => {
+        const profile = get().profile;
+        if (!profile || profile.role !== 'Captain') return;
+
+        await supabase
+            .from('profiles')
+            .update({ agency_id: null, role: 'Solo' })
+            .eq('id', memberId)
+            .eq('agency_id', profile.agencyId);
+    },
+
+    disbandAgency: async () => {
+        const profile = get().profile;
+        if (!profile || profile.role !== 'Captain' || !profile.agencyId) return;
+
+        await supabase.from('profiles').update({ agency_id: null, role: 'Solo' }).eq('agency_id', profile.agencyId);
+        await supabase.from('agencies').delete().eq('id', profile.agencyId);
+
+        await get().fetchProfile(profile.name);
+    },
+
+    updateAgency: async (data: Partial<Agency>) => {
+        const profile = get().profile;
+        if (!profile || profile.role !== 'Captain' || !profile.agencyId) return;
+
+        await supabase.from('agencies').update(data).eq('id', profile.agencyId);
+        await get().fetchProfile(profile.name);
+    },
+
+    getAgencyMembers: async (agencyId: string) => {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('agency_id', agencyId);
+
+        if (error) return [];
+        return (data || []).map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            avatarUrl: p.avatar_url,
+            activeTitle: p.active_title,
+            role: p.role,
+        })) as any[];
     }
 }));
 

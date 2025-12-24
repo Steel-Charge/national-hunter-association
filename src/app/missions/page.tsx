@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
-import { useHunterStore } from '@/lib/store';
+import { useHunterStore, canSelfManage } from '@/lib/store';
 import { MISSION_PATHS, MissionPath, Quest } from '@/lib/missions';
 import LoadingScreen from '@/components/LoadingScreen';
 import styles from './page.module.css';
@@ -45,8 +45,9 @@ export default function MissionsPage() {
             }
         }
 
-        // Admins can claim directly, non-admins must request
-        if (profile.isAdmin) {
+        // Users who can self-manage (admins, solo hunters, captains) can claim directly
+        // Regular hunters in agencies must request approval
+        if (canSelfManage(profile)) {
             await claimQuest(quest.id, quest.reward);
         } else {
             await requestTitle(quest.id, quest.reward);
@@ -150,7 +151,7 @@ export default function MissionsPage() {
                                             >
                                                 {pendingRequests.includes(quest.id)
                                                     ? 'PENDING'
-                                                    : (profile.isAdmin ? 'CLAIM' : 'REQUEST')}
+                                                    : (canSelfManage(profile) ? 'CLAIM' : 'REQUEST')}
                                             </button>
                                         )}
 
