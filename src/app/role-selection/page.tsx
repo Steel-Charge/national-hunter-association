@@ -27,7 +27,7 @@ export default function RoleSelectionPage() {
         if (!agencyName) return;
         try {
             await createAgency(agencyName, agencyLogo || '/placeholder.png');
-            router.push('/batch3');
+            router.push('/agency');
         } catch (error: any) {
             alert(error.message || 'Failed to create agency');
         }
@@ -53,7 +53,7 @@ export default function RoleSelectionPage() {
             <main className={styles.main}>
                 <div className={styles.container}>
                     <img src="/logo.png" alt="NHA Logo" className={styles.logo} />
-                    <h2 className={styles.title}>ENTER YOUR FACTION CODE</h2>
+                    <h2 className={styles.title}>ENTER YOUR AGENCY CODE</h2>
                     <input
                         type="text"
                         value={inviteCode}
@@ -71,15 +71,15 @@ export default function RoleSelectionPage() {
         return (
             <main className={styles.main}>
                 <div className={styles.container}>
-                    <h2 className={styles.title}>CREATE FACTION</h2>
+                    <h2 className={styles.title}>CREATE AGENCY</h2>
                     <div className={styles.logoUpload}>
-                        <p>FACTION LOGO</p>
+                        <p>AGENCY LOGO</p>
                         <div className={styles.logoPreview}>
                             <img src={agencyLogo || '/logo.png'} alt="Preview" />
                         </div>
                     </div>
                     <div className={styles.field}>
-                        <p>FACTION NAME</p>
+                        <p>AGENCY NAME</p>
                         <input
                             type="text"
                             value={agencyName}
@@ -104,12 +104,12 @@ export default function RoleSelectionPage() {
                 <div className={styles.options}>
                     <button className={styles.optionButton} onClick={() => setStep('join')}>
                         <span className={styles.optionTitle}>FREELANCER</span>
-                        <span className={styles.optionSub}>ALREADY PART OF A FACTION</span>
+                        <span className={styles.optionSub}>ALREADY PART OF AN AGENCY</span>
                     </button>
 
                     <button className={styles.optionButton} onClick={() => setStep('create')}>
                         <span className={styles.optionTitle}>CAPTAIN</span>
-                        <span className={styles.optionSub}>CREATE YOUR FACTION</span>
+                        <span className={styles.optionSub}>CREATE YOUR AGENCY</span>
                     </button>
 
                     <button className={styles.optionButton} onClick={handleSolo}>
