@@ -162,63 +162,34 @@ export default function AgencyPage() {
                 </button>
             </div>
 
-            {isSolo ? (
-                <div className={styles.restrictedView}>
-                    <div className={styles.restrictedContent}>
-                        <Lock size={48} className={styles.lockIcon} />
-                        <h3>RANKINGS RESTRICTED</h3>
-                        <p>Join or create an agency to access rankings and team features.</p>
-                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-                            <button
-                                onClick={() => setShowJoinModal(true)}
-                                className={styles.joinBtn}
-                                style={{ flex: 1 }}
-                            >
-                                JOIN AGENCY
-                            </button>
-                            <button
-                                onClick={() => setShowCreateModal(true)}
-                                className={styles.joinBtn}
-                                style={{ flex: 1 }}
-                            >
-                                CREATE AGENCY
-                            </button>
+            <h2 className={styles.sectionTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
+                {agency?.name?.toUpperCase() || 'AGENCY'} MEMBERS
+            </h2>
+
+            <div className={styles.membersGrid}>
+                {members.filter(m => m.name !== profile.name).map((member) => (
+                    <div
+                        key={member.id}
+                        onClick={() => handleHunterClick(member.name)}
+                        className={styles.memberCard}
+                        style={{ borderColor: rankColor }}
+                    >
+                        <img
+                            src={member.avatarUrl || '/placeholder.png'}
+                            alt={member.name}
+                            className={styles.memberAvatar}
+                        />
+                        <div className={styles.memberOverlay}>
+                            <h3 className={styles.memberName}>{member.name}</h3>
                         </div>
                     </div>
-                </div>
-            ) : (
-                <>
-                    <h2 className={styles.sectionTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
-                        {agency?.name?.toUpperCase() || 'AGENCY'} MEMBERS
-                    </h2>
-
-                    <div className={styles.membersGrid}>
-                        {members.filter(m => m.name !== profile.name).map((member) => (
-                            <div
-                                key={member.id}
-                                onClick={() => handleHunterClick(member.name)}
-                                className={styles.memberCard}
-                                style={{ borderColor: rankColor }}
-                            >
-                                <img
-                                    src={member.avatarUrl || '/placeholder.png'}
-                                    alt={member.name}
-                                    className={styles.memberAvatar}
-                                />
-                                <div className={styles.memberOverlay}>
-                                    <h3 className={styles.memberName}>{member.name}</h3>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </>
-            )}
+                ))}
+            </div>
 
             {showSettings && agency && (
                 <AgencySettings agency={agency} onClose={() => setShowSettings(false)} />
             )}
 
-            {/* Join Agency Modal */}
             {showJoinModal && (
                 <div style={{
                     position: 'fixed',
