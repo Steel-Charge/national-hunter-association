@@ -189,6 +189,7 @@ interface HunterState {
     approveStatRequest: (requestId: string) => Promise<void>;
     denyStatRequest: (requestId: string) => Promise<void>;
     getStats: () => { name: string; percentage: number; rank: Rank }[];
+    getOverallRank: () => Rank;
     getTheme: () => Rank;
     initialize: () => void;
     // Agency Actions
