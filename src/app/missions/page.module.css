@@ -32,27 +32,28 @@
 }
 
 .slot {
-    width: 30%;
-    aspect-ratio: 2/1;
-    background: rgba(0, 0, 0, 0.5);
-    border: 2px solid var(--rank-color);
-    border-radius: 999px;
+    width: 32%;
+    height: 100px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .slot:hover {
+    border-color: var(--rank-color);
     box-shadow: 0 0 15px var(--rank-color);
     transform: translateY(-2px);
 }
 
 .slotPlus {
-    font-size: 2rem;
-    color: var(--rank-color);
+    font-size: 2.5rem;
+    color: #fff;
     font-weight: 300;
 }
 
@@ -85,19 +86,21 @@
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
+    margin-bottom: 20px;
 }
 
 .eventCard {
     background: rgba(0, 0, 0, 0.5);
     border: 2px solid var(--rarity-event);
-    border-radius: 999px;
-    padding: 15px 30px;
+    border-radius: 20px;
+    padding: 10px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     cursor: pointer;
     transition: all 0.3s;
-    min-width: 120px;
+    min-width: 100px;
+    text-align: center;
 }
 
 .eventCard.active {
@@ -106,23 +109,24 @@
 }
 
 .eventCardTitle {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: 900;
     color: #fff;
+    text-transform: uppercase;
 }
 
 .eventCardProgress {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: var(--rarity-event);
     font-weight: 800;
 }
 
 .eventDetailCard {
-    margin-top: 20px;
+    margin-top: 10px;
     background: rgba(0, 0, 0, 0.5);
-    border: 2px solid var(--rarity-event);
-    border-radius: 30px;
-    padding: 30px;
+    border: 1px solid var(--rarity-event);
+    border-radius: 20px;
+    padding: 25px;
     box-shadow: 0 0 20px rgba(255, 28, 210, 0.1);
 }
 

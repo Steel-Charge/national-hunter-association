@@ -128,7 +128,7 @@ export default function MissionsPage() {
 
                 {/* EVENT Section */}
                 {!isSelecting && (
-                    <>
+                    <div style={{ marginTop: '40px' }}>
                         <h2 className={styles.sectionHeader} style={{ textAlign: 'center' }}>EVENT</h2>
                         <div className={styles.eventSection}>
                             <div className={styles.eventGrid}>
@@ -148,10 +148,10 @@ export default function MissionsPage() {
 
                             {selectedEventQuest && (
                                 <div className={styles.eventDetailCard}>
-                                    <h3 className={styles.eventMissionTitle}>Mission: {selectedEventQuest.name}</h3>
+                                    <h3 className={styles.eventMissionTitle}>MISSION: {selectedEventQuest.name.toUpperCase()}</h3>
                                     <p className={styles.eventMissionDesc}>{selectedEventQuest.description}</p>
                                     <p className={styles.eventMissionDesc}>
-                                        Rewards: <span className={styles.rewardText}>Title: {selectedEventQuest.reward.name}</span>
+                                        Rewards: <span className={styles.rewardText} style={{ color: 'var(--rarity-event)' }}>Title: {selectedEventQuest.reward.name}</span>
                                     </p>
 
                                     {!isQuestCompleted(selectedEventQuest.id) ? (
@@ -159,16 +159,17 @@ export default function MissionsPage() {
                                             className={styles.claimButtonEvent}
                                             onClick={() => handleClaimQuest(selectedEventQuest)}
                                             disabled={pendingRequests.includes(selectedEventQuest.id)}
+                                            style={{ backgroundColor: 'var(--rarity-event)', color: '#fff', borderRadius: '999px', padding: '12px 0', border: 'none', width: '100%', fontWeight: '900', marginTop: '20px', cursor: 'pointer' }}
                                         >
                                             {pendingRequests.includes(selectedEventQuest.id) ? 'PENDING' : 'CLAIM'}
                                         </button>
                                     ) : (
-                                        <div style={{ color: 'var(--rarity-event)', textAlign: 'center', fontWeight: 'bold' }}>✓ CLAIMED</div>
+                                        <div style={{ color: 'var(--rarity-event)', textAlign: 'center', fontWeight: 'bold', marginTop: '20px' }}>✓ CLAIMED</div>
                                     )}
                                 </div>
                             )}
                         </div>
-                    </>
+                    </div>
                 )}
 
                 {/* Selection Panel (Mission Picker) */}
@@ -178,7 +179,7 @@ export default function MissionsPage() {
                         <button className={styles.cancelSelection} onClick={() => setIsSelecting(false)}>CANCEL</button>
 
                         <div className={styles.panels}>
-                            {/* Left Panel - Mission List */}
+                            {/* Mission Paths (Horizontal Scroll) */}
                             <div className={styles.missionList}>
                                 {MISSION_PATHS.map((path) => (
                                     <button
@@ -192,7 +193,7 @@ export default function MissionsPage() {
                                 ))}
                             </div>
 
-                            {/* Right Panel - Quest Details */}
+                            {/* Quest Details (Vertical) */}
                             <div className={styles.questDetails}>
                                 <div className={styles.pathHeader}>
                                     <h2 className={styles.pathTitle}>{selectedPath.name.toUpperCase()}</h2>
@@ -204,7 +205,7 @@ export default function MissionsPage() {
                                         const completed = isQuestCompleted(quest.id);
                                         const tracked = isQuestTracked(quest.id);
 
-                                        if (completed) return null; // Don't show completed quests in picker
+                                        if (completed) return null;
 
                                         const isMythic = quest.reward.rarity === 'Mythic';
                                         const canClaim = isMythic ? canClaimMythic(selectedPath) : true;
@@ -213,20 +214,17 @@ export default function MissionsPage() {
                                             <div
                                                 key={quest.id}
                                                 className={`${styles.questCard} ${isMythic ? styles.mythic : ''} ${tracked ? styles.tracked : ''}`}
-                                                onClick={() => handleToggleTrack(quest.id)}
-                                                style={{ cursor: 'pointer' }}
                                             >
                                                 <div className={styles.questHeader}>
                                                     <div className={styles.questTitle}>
                                                         {isMythic && <span className={styles.mythicBadge}>MYTHIC</span>}
                                                         Mission: {quest.name}
-                                                        {tracked && <span className={styles.trackedBadge}>TRACKING</span>}
                                                     </div>
                                                     <div
                                                         className={styles.questRarity}
                                                         style={{ color: getRarityColor(quest.reward.rarity) }}
                                                     >
-                                                        {quest.reward.rarity}
+                                                        {quest.reward.rarity.toUpperCase()}
                                                     </div>
                                                 </div>
 
@@ -241,6 +239,16 @@ export default function MissionsPage() {
                                                         Title: {quest.reward.name}
                                                     </span>
                                                 </div>
+
+                                                {!completed && (
+                                                    <button
+                                                        className={styles.trackButton}
+                                                        onClick={() => handleToggleTrack(quest.id)}
+                                                        style={tracked ? { backgroundColor: 'transparent', border: '1px solid var(--rank-color)', color: 'var(--rank-color)' } : {}}
+                                                    >
+                                                        {tracked ? 'UNTRACK' : 'TRACK'}
+                                                    </button>
+                                                )}
 
                                                 {!canClaim && isMythic && (
                                                     <div className={styles.lockedMessage}>
