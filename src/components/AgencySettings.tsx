@@ -15,8 +15,9 @@ export default function AgencySettings({ agency, onClose }: Props) {
     const router = useRouter();
     const { profile, updateAgency, leaveAgency, kickMember, disbandAgency, joinAgency, createAgency, getTheme } = useHunterStore();
     const [newName, setNewName] = useState(agency.name);
-    const [newLogo, setNewLogo] = useState(agency.logo_url);
-    const [isSaving, setIsSaving] = useState(false);
+    const [logoPreview, setLogoPreview] = useState(agency.logo_url);
+    const [isSavingName, setIsSavingName] = useState(false);
+    const [isSavingLogo, setIsSavingLogo] = useState(false);
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [inviteCode, setInviteCode] = useState('');
@@ -30,11 +31,34 @@ export default function AgencySettings({ agency, onClose }: Props) {
     const specialTheme = profile?.settings?.specialTheme || null;
     const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
-    const handleSave = async () => {
-        setIsSaving(true);
-        await updateAgency({ name: newName, logo_url: newLogo });
-        setIsSaving(false);
-        onClose();
+    const handleSaveName = async () => {
+        setIsSavingName(true);
+        await updateAgency({ name: newName });
+        setIsSavingName(false);
+    };
+
+    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            // Convert to base64
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setLogoPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSaveLogo = async () => {
+        setIsSavingLogo(true);
+        await updateAgency({ logo_url: logoPreview });
+        setIsSavingLogo(false);
     };
 
     const handleCopyCode = () => {
@@ -99,16 +123,52 @@ export default function AgencySettings({ agency, onClose }: Props) {
                     )}
 
                     {isCaptain && (
-                        <div className={styles.section}>
-                            <h3>MANAGE AGENCY</h3>
-                            <div className={styles.inputGroup}>
-                                <label>Agency Name</label>
-                                <input value={newName} onChange={e => setNewName(e.target.value)} />
+                        <>
+                            <div className={styles.section}>
+                                <h3>UPDATE AGENCY NAME</h3>
+                                <div className={styles.inputGroup}>
+                                    <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Agency Name" />
+                                </div>
+                                <button onClick={handleSaveName} disabled={isSavingName} className={styles.saveBtn}>
+                                    {isSavingName ? 'SAVING...' : 'SAVE NAME'}
+                                </button>
                             </div>
-                            <button onClick={handleSave} disabled={isSaving} className={styles.saveBtn}>
-                                {isSaving ? 'SAVING...' : 'UPDATE AGENCY'}
-                            </button>
-                        </div>
+
+                            <div className={styles.section}>
+                                <h3>UPDATE AGENCY LOGO</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+                                    <div style={{
+                                        width: '150px',
+                                        height: '150px',
+                                        border: `2px solid ${rankColor}`,
+                                        borderRadius: '8px',
+                                        overflow: 'hidden',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <img
+                                            src={logoPreview || '/placeholder.png'}
+                                            alt="Agency Logo Preview"
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    </div>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleLogoChange}
+                                        style={{ display: 'none' }}
+                                        id="logo-upload"
+                                    />
+                                    <label htmlFor="logo-upload" className={styles.uploadBtn}>
+                                        UPLOAD IMAGE
+                                    </label>
+                                    <button onClick={handleSaveLogo} disabled={isSavingLogo} className={styles.saveBtn}>
+                                        {isSavingLogo ? 'SAVING...' : 'SAVE LOGO'}
+                                    </button>
+                                </div>
+                            </div>
+                        </>
                     )}
 
                     <div className={styles.section}>
@@ -122,7 +182,11 @@ export default function AgencySettings({ agency, onClose }: Props) {
                     <div className={styles.actions}>
                         {/* Hide Leave button for default Batch 3 agency */}
                         {agency.invite_code !== 'BATCH3-DEFAULT' && (
-                            <button onClick={() => leaveAgency()} className={styles.actionBtn}>
+                            <button onClick={async () => {
+                                await leaveAgency();
+                                onClose();
+                                router.push('/batch3');
+                            }} className={styles.actionBtn}>
                                 <LogOut size={16} /> LEAVE AGENCY
                             </button>
                         )}

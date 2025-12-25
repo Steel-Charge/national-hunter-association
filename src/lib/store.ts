@@ -197,6 +197,7 @@ interface HunterState {
     joinAgency: (inviteCode: string, asSolo?: boolean) => Promise<{ success: boolean; error?: string }>;
     leaveAgency: (promoNext?: boolean) => Promise<void>;
     kickMember: (memberId: string) => Promise<void>;
+    promoteToCaptain: (memberId: string) => Promise<void>;
     disbandAgency: () => Promise<void>;
     updateAgency: (data: Partial<Agency>) => Promise<void>;
     getAgencyMembers: (agencyId: string) => Promise<UserProfile[]>;
@@ -714,7 +715,8 @@ export const useHunterStore = create<HunterState>((set, get) => ({
 
     approveRequest: async (requestId: string, username: string) => {
         const profile = get().profile;
-        if (!profile || !profile.isAdmin) return;
+        // Allow both Admins and Captains to approve requests
+        if (!profile || (profile.role !== 'Admin' && profile.role !== 'Captain')) return;
 
         try {
             // Get the request details
@@ -726,17 +728,25 @@ export const useHunterStore = create<HunterState>((set, get) => ({
 
             if (!request) return;
 
-            // Get target profile ID
+            // Get target profile
             const { data: targetProfile } = await supabase
                 .from('profiles')
-                .select('id')
+                .select('id, agency_id')
                 .eq('name', username)
                 .single();
 
             if (!targetProfile) return;
 
-            // Get admin profile ID
-            const { data: adminProfile } = await supabase
+            // If Captain, verify target is in same agency
+            if (profile.role === 'Captain') {
+                if (targetProfile.agency_id !== profile.agencyId) {
+                    console.error('Captain can only approve requests from their own agency');
+                    return;
+                }
+            }
+
+            // Get reviewer profile ID
+            const { data: reviewerProfile } = await supabase
                 .from('profiles')
                 .select('id')
                 .eq('name', profile.name)
@@ -761,7 +771,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                 .update({
                     status: 'approved',
                     reviewed_at: new Date().toISOString(),
-                    reviewed_by: adminProfile?.id
+                    reviewed_by: reviewerProfile?.id
                 })
                 .eq('id', requestId);
         } catch (error) {
@@ -771,11 +781,12 @@ export const useHunterStore = create<HunterState>((set, get) => ({
 
     denyRequest: async (requestId: string) => {
         const profile = get().profile;
-        if (!profile || !profile.isAdmin) return;
+        // Allow both Admins and Captains to deny requests
+        if (!profile || (profile.role !== 'Admin' && profile.role !== 'Captain')) return;
 
         try {
-            // Get admin profile ID
-            const { data: adminProfile } = await supabase
+            // Get reviewer profile ID
+            const { data: reviewerProfile } = await supabase
                 .from('profiles')
                 .select('id')
                 .eq('name', profile.name)
@@ -787,7 +798,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                 .update({
                     status: 'denied',
                     reviewed_at: new Date().toISOString(),
-                    reviewed_by: adminProfile?.id
+                    reviewed_by: reviewerProfile?.id
                 })
                 .eq('id', requestId);
         } catch (error) {
@@ -1238,6 +1249,24 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         const profile = get().profile;
         if (!profile) return { success: false, error: 'No profile' };
 
+        // If current user is Captain, promote next member before leaving
+        if (profile.role === 'Captain' && profile.agencyId) {
+            const { data: members } = await supabase
+                .from('profiles')
+                .select('id, created_at')
+                .eq('agency_id', profile.agencyId)
+                .neq('id', profile.id)
+                .order('created_at', { ascending: true });
+
+            const nextMember = members?.[0];
+            if (nextMember) {
+                // Update agency captain
+                await supabase.from('agencies').update({ captain_id: nextMember.id }).eq('id', profile.agencyId);
+                // Promote next member to Captain
+                await supabase.from('profiles').update({ role: 'Captain' }).eq('id', nextMember.id);
+            }
+        }
+
         const { data: agency, error } = await supabase
             .from('agencies')
             .select('id')
@@ -1298,6 +1327,27 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             .update({ agency_id: null, role: 'Solo' })
             .eq('id', memberId)
             .eq('agency_id', profile.agencyId);
+    },
+
+    promoteToCaptain: async (memberId: string) => {
+        const profile = get().profile;
+        if (!profile || profile.role !== 'Captain' || !profile.agencyId) return;
+
+        try {
+            // Demote current captain to Hunter
+            await supabase.from('profiles').update({ role: 'Hunter' }).eq('id', profile.id);
+
+            // Promote member to Captain
+            await supabase.from('profiles').update({ role: 'Captain' }).eq('id', memberId);
+
+            // Update agency captain_id
+            await supabase.from('agencies').update({ captain_id: memberId }).eq('id', profile.agencyId);
+
+            // Refresh profile
+            await get().fetchProfile(profile.name);
+        } catch (error) {
+            console.error('Error promoting to captain:', error);
+        }
     },
 
     disbandAgency: async () => {

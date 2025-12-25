@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import styles from './page.module.css';
 import { useHunterStore, UserProfile, Agency } from '@/lib/store';
 import LoadingScreen from '@/components/LoadingScreen';
-import { Settings as Cog, Lock, X } from 'lucide-react';
+import { Settings as Cog, Lock, X, MoreVertical, Crown, UserX } from 'lucide-react';
 import { calculateOverallPercentage, getRankFromPercentage, Rank } from '@/lib/game-logic';
 import AgencySettings from '@/components/AgencySettings';
 
@@ -21,14 +21,16 @@ export default function AgencyPage() {
     const [inviteCode, setInviteCode] = useState('');
     const [agencyName, setAgencyName] = useState('');
     const [loading, setLoading] = useState(true);
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const router = useRouter();
-    const { getTheme, profile, joinAgency, createAgency } = useHunterStore();
+    const { getTheme, profile, joinAgency, createAgency, promoteToCaptain, kickMember } = useHunterStore();
 
     const themeRank = getTheme();
     const specialTheme = profile?.settings?.specialTheme || null;
     const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
     const isSolo = profile?.role === 'Solo';
+    const isCaptain = profile?.role === 'Captain';
     const isNamelessInBatch3 = isSolo && agency?.name === 'Batch 3';
 
     useEffect(() => {
@@ -116,6 +118,39 @@ export default function AgencyPage() {
         router.push(`/batch3/${name}`);
     };
 
+    const handlePromoteToCaptain = async (memberId: string, memberName: string) => {
+        if (confirm(`Promote ${memberName} to Captain? You will become a Hunter.`)) {
+            await promoteToCaptain(memberId);
+            setOpenMenuId(null);
+            // Refresh data
+            const { data: agencyData } = await supabase
+                .from('agencies')
+                .select('*')
+                .eq('id', profile?.agencyId)
+                .single();
+            if (agencyData) setAgency(agencyData);
+
+            const { data: membersData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('agency_id', profile?.agencyId);
+            if (membersData) setMembers(membersData);
+        }
+    };
+
+    const handleKickMember = async (memberId: string, memberName: string) => {
+        if (confirm(`Kick ${memberName} from the agency? They will be redirected to role selection.`)) {
+            await kickMember(memberId);
+            setOpenMenuId(null);
+            // Refresh members list
+            const { data: membersData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('agency_id', profile?.agencyId);
+            if (membersData) setMembers(membersData);
+        }
+    };
+
     if (loading || !profile) return <LoadingScreen loading={loading} rank={getTheme()} />;
 
     return (
@@ -170,17 +205,52 @@ export default function AgencyPage() {
                 {members.filter(m => m.name !== profile.name).map((member) => (
                     <div
                         key={member.id}
-                        onClick={() => handleHunterClick(member.name)}
                         className={styles.memberCard}
-                        style={{ borderColor: rankColor }}
+                        style={{ borderColor: rankColor, position: 'relative' }}
                     >
-                        <img
-                            src={member.avatarUrl || '/placeholder.png'}
-                            alt={member.name}
-                            className={styles.memberAvatar}
-                        />
-                        <div className={styles.memberOverlay}>
-                            <h3 className={styles.memberName}>{member.name}</h3>
+                        {isCaptain && (
+                            <>
+                                <button
+                                    className={styles.menuButton}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenMenuId(openMenuId === member.id ? null : member.id);
+                                    }}
+                                >
+                                    <MoreVertical size={20} />
+                                </button>
+
+                                {openMenuId === member.id && (
+                                    <div className={styles.dropdown}>
+                                        <button onClick={(e) => {
+                                            e.stopPropagation();
+                                            handlePromoteToCaptain(member.id, member.name);
+                                        }}>
+                                            <Crown size={16} /> Promote to Captain
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleKickMember(member.id, member.name);
+                                            }}
+                                            className={styles.dangerOption}
+                                        >
+                                            <UserX size={16} /> Kick Member
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        <div onClick={() => handleHunterClick(member.name)} style={{ cursor: 'pointer' }}>
+                            <img
+                                src={member.avatarUrl || '/placeholder.png'}
+                                alt={member.name}
+                                className={styles.memberAvatar}
+                            />
+                            <div className={styles.memberOverlay}>
+                                <h3 className={styles.memberName}>{member.name}</h3>
+                            </div>
                         </div>
                     </div>
                 ))}
