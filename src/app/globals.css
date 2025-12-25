@@ -31,6 +31,8 @@
   /* Gold */
   --rarity-mythic: #ff2a57;
   /* Red */
+  --rarity-event: #ff1cd2;
+  /* Pink */
   --rarity-epic: #c0c0c0;
   /* Silver - making it distinct from white */
   --rarity-rare: #cd7f32;

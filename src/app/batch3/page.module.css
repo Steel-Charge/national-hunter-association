@@ -72,14 +72,21 @@
 
 .titleBadge {
     background: transparent;
-    border: 1px solid var(--cyan);
-    color: var(--cyan);
+    border: 1px solid var(--rank-color);
+    color: var(--rank-color);
     padding: 4px 12px;
     border-radius: 15px;
     font-size: 0.75rem;
     font-weight: 800;
     text-transform: uppercase;
-    box-shadow: inset 0 0 5px var(--cyan-glow);
+    box-shadow: inset 0 0 5px var(--rank-glow);
+}
+
+.commonTitle {
+    color: var(--rarity-common);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
 }
 
 .agencyLogoContainer {

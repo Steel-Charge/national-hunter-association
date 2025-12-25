@@ -8,9 +8,15 @@ import LoadingScreen from '@/components/LoadingScreen';
 import styles from './page.module.css';
 
 export default function MissionsPage() {
-    const { profile, claimQuest, requestTitle, getPendingRequests, getOverallRank, getTheme } = useHunterStore();
+    const { profile, claimQuest, requestTitle, getPendingRequests, getTheme, toggleTrackQuest } = useHunterStore();
     const [selectedPath, setSelectedPath] = useState<MissionPath>(MISSION_PATHS[0]);
     const [pendingRequests, setPendingRequests] = useState<string[]>([]);
+    const [selectedEventQuest, setSelectedEventQuest] = useState<Quest | null>({
+        id: 'event_debut',
+        name: 'Debut',
+        description: 'Update your Profile Image dressed up as your Hunter',
+        reward: { name: 'Rising star', rarity: 'Event' }
+    });
 
     useEffect(() => {
         const fetchPendingRequests = async () => {
@@ -30,14 +36,16 @@ export default function MissionsPage() {
         return profile.completedQuests.includes(questId);
     };
 
+    const isQuestTracked = (questId: string) => {
+        return profile.trackedQuests?.includes(questId);
+    };
+
     const canClaimMythic = (path: MissionPath) => {
-        // Can claim mythic if all 3 regular quests are complete
         const regularQuests = path.quests.slice(0, 3);
         return regularQuests.every(q => isQuestCompleted(q.id));
     };
 
     const handleClaimQuest = async (quest: Quest) => {
-        // For mythic quests, check if all previous quests are complete
         if (quest.reward.rarity === 'Mythic') {
             if (!canClaimMythic(selectedPath)) {
                 alert('Complete all previous quests first!');
@@ -45,13 +53,10 @@ export default function MissionsPage() {
             }
         }
 
-        // Users who can self-manage (admins, solo hunters, captains) can claim directly
-        // Regular hunters in agencies must request approval
         if (canSelfManage(profile)) {
             await claimQuest(quest.id, quest.reward);
         } else {
             await requestTitle(quest.id, quest.reward);
-            // Refresh pending requests
             const requests = await getPendingRequests();
             setPendingRequests(requests);
         }
@@ -66,6 +71,18 @@ export default function MissionsPage() {
         return `var(--rarity-${rarity.toLowerCase()})`;
     };
 
+    const getTrackedQuest = (index: number) => {
+        const id = profile.trackedQuests?.[index];
+        if (!id) return null;
+
+        // Find quest in all paths
+        for (const path of MISSION_PATHS) {
+            const quest = path.quests.find(q => q.id === id);
+            if (quest) return { ...quest, pathName: path.name.replace('Path of the ', '') };
+        }
+        return null;
+    };
+
     const themeRank = getTheme();
     const specialTheme = profile?.settings?.specialTheme || null;
     const rankColorVar = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
@@ -76,11 +93,72 @@ export default function MissionsPage() {
                 {/* Header */}
                 <div className={styles.header}>
                     <h1 className={styles.pageTitle}>MISSIONS</h1>
-                    <p className={styles.subtitle}>Complete quests to unlock titles</p>
+                    <p className={styles.subtitle}>Complete quests to unlock Titles</p>
                 </div>
 
-                {/* Two-panel layout */}
-                <div className={styles.panels}>
+                {/* ACTIVE Section */}
+                <h2 className={styles.sectionHeader} style={{ textAlign: 'center' }}>ACTIVE</h2>
+                <div className={styles.activeSlots}>
+                    {[0, 1, 2].map(i => {
+                        const tracked = getTrackedQuest(i);
+                        return (
+                            <div key={i} className={styles.slot} onClick={() => tracked && toggleTrackQuest(tracked.id)}>
+                                {tracked ? (
+                                    <div className={styles.slotContent}>
+                                        <span className={styles.slotName}>{tracked.name}</span>
+                                        <span className={styles.slotPath}>{tracked.pathName}</span>
+                                    </div>
+                                ) : (
+                                    <span className={styles.slotPlus}>+</span>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* EVENT Section */}
+                <h2 className={styles.sectionHeader} style={{ textAlign: 'center' }}>EVENT</h2>
+                <div className={styles.eventSection}>
+                    <div className={styles.eventGrid}>
+                        <div
+                            className={`${styles.eventCard} ${selectedEventQuest?.id === 'event_debut' ? styles.active : ''}`}
+                            onClick={() => setSelectedEventQuest({
+                                id: 'event_debut',
+                                name: 'Debut',
+                                description: 'Update your Profile Image dressed up as your Hunter',
+                                reward: { name: 'Rising star', rarity: 'Event' }
+                            })}
+                        >
+                            <span className={styles.eventCardTitle}>Debut</span>
+                            <span className={styles.eventCardProgress}>{isQuestCompleted('event_debut') ? '1/1' : '0/1'}</span>
+                        </div>
+                    </div>
+
+                    {selectedEventQuest && (
+                        <div className={styles.eventDetailCard}>
+                            <h3 className={styles.eventMissionTitle}>Mission: {selectedEventQuest.name}</h3>
+                            <p className={styles.eventMissionDesc}>{selectedEventQuest.description}</p>
+                            <p className={styles.eventMissionDesc}>
+                                Rewards: <span className={styles.rewardText}>Title: {selectedEventQuest.reward.name}</span>
+                            </p>
+
+                            {!isQuestCompleted(selectedEventQuest.id) ? (
+                                <button
+                                    className={styles.claimButtonEvent}
+                                    onClick={() => handleClaimQuest(selectedEventQuest)}
+                                    disabled={pendingRequests.includes(selectedEventQuest.id)}
+                                >
+                                    {pendingRequests.includes(selectedEventQuest.id) ? 'PENDING' : 'CLAIM'}
+                                </button>
+                            ) : (
+                                <div style={{ color: 'var(--rarity-event)', textAlign: 'center', fontWeight: 'bold' }}>✓ CLAIMED</div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Two-panel layout - Path selection */}
+                <div className={styles.panels} style={{ marginTop: '60px' }}>
                     {/* Left Panel - Mission List */}
                     <div className={styles.missionList}>
                         {MISSION_PATHS.map((path) => (
@@ -103,20 +181,24 @@ export default function MissionsPage() {
                         </div>
 
                         <div className={styles.questList}>
-                            {selectedPath.quests.map((quest, index) => {
+                            {selectedPath.quests.map((quest) => {
                                 const completed = isQuestCompleted(quest.id);
+                                const tracked = isQuestTracked(quest.id);
                                 const isMythic = quest.reward.rarity === 'Mythic';
                                 const canClaim = isMythic ? canClaimMythic(selectedPath) : true;
 
                                 return (
                                     <div
                                         key={quest.id}
-                                        className={`${styles.questCard} ${completed ? styles.completed : ''} ${isMythic ? styles.mythic : ''}`}
+                                        className={`${styles.questCard} ${completed ? styles.completed : ''} ${isMythic ? styles.mythic : ''} ${tracked ? styles.tracked : ''}`}
+                                        onClick={() => !completed && toggleTrackQuest(quest.id)}
+                                        style={{ cursor: completed ? 'default' : 'pointer' }}
                                     >
                                         <div className={styles.questHeader}>
                                             <div className={styles.questTitle}>
                                                 {isMythic && <span className={styles.mythicBadge}>MYTHIC</span>}
                                                 Mission: {quest.name}
+                                                {tracked && <span style={{ color: 'var(--rank-color)', marginLeft: '10px', fontSize: '0.7rem' }}>[TRACKING]</span>}
                                             </div>
                                             <div
                                                 className={styles.questRarity}
@@ -141,7 +223,10 @@ export default function MissionsPage() {
                                         {!completed && canClaim && (
                                             <button
                                                 className={styles.claimButton}
-                                                onClick={() => handleClaimQuest(quest)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleClaimQuest(quest);
+                                                }}
                                                 style={pendingRequests.includes(quest.id) ? {
                                                     backgroundColor: '#f59e0b',
                                                     cursor: 'not-allowed',

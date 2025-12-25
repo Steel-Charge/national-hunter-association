@@ -178,7 +178,7 @@ export default function AgencyPage() {
 
                     <div className={styles.agencyTitles}>
                         <p className={styles.label}>TITLES:</p>
-                        <div className={styles.titleBadge}>UPSTART</div>
+                        <div className={styles.commonTitle}>UPSTART</div>
                     </div>
                 </div>
 

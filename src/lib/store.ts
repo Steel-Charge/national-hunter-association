@@ -5,7 +5,7 @@ import { MISSION_PATHS } from './missions';
 
 export interface Title {
     name: string;
-    rarity: 'Legendary' | 'Epic' | 'Rare' | 'Common' | 'Mythic';
+    rarity: 'Legendary' | 'Epic' | 'Rare' | 'Common' | 'Mythic' | 'Event';
     is_hidden?: boolean;
 }
 
@@ -28,6 +28,7 @@ export interface UserProfile {
     unlockedTitles: Title[];
     testScores: Record<string, number>; // Test Name -> Value
     completedQuests: string[]; // Quest IDs that have been completed
+    trackedQuests: string[];   // Assigned active mission slots (max 3)
     settings: UserSettings;
     isAdmin: boolean; // Admin flag
     profileType: string; // Profile type for attribute targets
@@ -103,7 +104,8 @@ const DEFAULT_PROFILE: UserProfile = {
     settings: { statsCalculator: true, theme: null, specialTheme: null }, // Admin has statsCalculator enabled
     isAdmin: true, // Edgelord is admin
     profileType: 'male_20_25',
-    role: 'Solo'
+    role: 'Solo',
+    trackedQuests: []
 };
 
 const TOTO_PROFILE: Partial<UserProfile> = {
@@ -155,7 +157,8 @@ const NEW_HUNTER_PROFILE: UserProfile = {
     settings: DEFAULT_SETTINGS,
     isAdmin: false,
     profileType: 'male_20_25',
-    role: 'Solo'
+    role: 'Solo',
+    trackedQuests: []
 };
 
 interface HunterState {
@@ -201,6 +204,7 @@ interface HunterState {
     disbandAgency: () => Promise<void>;
     updateAgency: (data: Partial<Agency>) => Promise<void>;
     getAgencyMembers: (agencyId: string) => Promise<UserProfile[]>;
+    toggleTrackQuest: (questId: string) => Promise<void>;
 }
 
 export const useHunterStore = create<HunterState>((set, get) => ({
@@ -277,7 +281,8 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         bio: profileData.bio,
                         managerComment: profileData.manager_comment,
                         email: profileData.email,
-                        phone: profileData.phone
+                        phone: profileData.phone,
+                        trackedQuests: profileData.tracked_quests || []
                     }
                 });
             }
@@ -370,7 +375,8 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                     role: initialProfile.role,
                     agencyId: newProfile.agency_id,
                     bio: newProfile.bio,
-                    managerComment: newProfile.manager_comment
+                    managerComment: newProfile.manager_comment,
+                    trackedQuests: newProfile.tracked_quests || []
                 }
             });
         } catch (error) {
@@ -1402,6 +1408,33 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             activeTitle: p.active_title,
             role: p.role,
         })) as any[];
+    },
+
+    toggleTrackQuest: async (questId: string) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        let newTracked = [...(profile.trackedQuests || [])];
+        if (newTracked.includes(questId)) {
+            newTracked = newTracked.filter(id => id !== questId);
+        } else {
+            if (newTracked.length >= 3) {
+                alert('You can only track 3 missions at a time.');
+                return;
+            }
+            newTracked.push(questId);
+        }
+
+        const { error } = await supabase
+            .from('profiles')
+            .update({ tracked_quests: newTracked })
+            .eq('id', profile.id);
+
+        if (!error) {
+            set({ profile: { ...profile, trackedQuests: newTracked } });
+        } else {
+            console.error('Error toggling tracked quest:', error);
+        }
     }
 }));
 
