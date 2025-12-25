@@ -62,7 +62,8 @@ export default function HunterStatsPage() {
                 settings: profileData.settings || { statsCalculator: true, theme: null },
                 isAdmin: profileData.is_admin || false,
                 profileType: profileData.profile_type || 'Male',
-                role: profileData.role || 'Hunter'
+                role: profileData.role || 'Hunter',
+                trackedQuests: profileData.tracked_quests || []
             };
 
             setViewedProfile(userProfile);
