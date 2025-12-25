@@ -133,7 +133,7 @@
     border-radius: 12px;
     overflow: hidden;
     position: relative;
-    aspect-ratio: 1;
+    aspect-ratio: 9 / 16;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
 }

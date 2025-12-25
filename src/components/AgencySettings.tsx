@@ -59,6 +59,8 @@ export default function AgencySettings({ agency, onClose }: Props) {
         setIsSavingLogo(true);
         await updateAgency({ logo_url: logoPreview });
         setIsSavingLogo(false);
+        // Refresh the page to show updated logo
+        router.refresh();
     };
 
     const handleCopyCode = () => {
