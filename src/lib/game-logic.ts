@@ -26,12 +26,16 @@ export const PROFILE_TYPES = {
   MALE_20_25: 'male_20_25',
   FEMALE_15_20: 'female_15_20',
   FEMALE_20_24: 'female_20_24',
+  MALE_25_34: 'male_25_34',
+  FEMALE_25_34: 'female_25_34',
 } as const;
 
 export const PROFILE_LABELS: Record<string, string> = {
   [PROFILE_TYPES.MALE_20_25]: 'Male: 20 - 24 years old',
   [PROFILE_TYPES.FEMALE_15_20]: 'Female: 15 - 19 years old',
-  'female_20_24': 'Female: 20 - 24 years old',
+  [PROFILE_TYPES.FEMALE_20_24]: 'Female: 20 - 24 years old',
+  [PROFILE_TYPES.MALE_25_34]: 'Male: 25 - 34 years old',
+  [PROFILE_TYPES.FEMALE_25_34]: 'Female: 25 - 34 years old',
 };
 
 const MALE_20_25_TARGETS: Record<string, Attribute> = {
@@ -53,7 +57,7 @@ const MALE_20_25_TARGETS: Record<string, Attribute> = {
   Stamina: {
     name: 'Stamina',
     tests: [
-      { name: 'Plank Hold', maxScore: 15, unit: 'min' },
+      { name: 'Plank Hold', maxScore: 6, unit: 'min' },
       { name: 'Burpees in 1-minute', maxScore: 40, unit: 'reps' },
       { name: '1-mile run', maxScore: 6.3, unit: 'min', inverse: true },
     ],
@@ -92,7 +96,7 @@ const FEMALE_15_20_TARGETS: Record<string, Attribute> = {
   Stamina: {
     name: 'Stamina',
     tests: [
-      { name: 'Plank Hold', maxScore: 15, unit: 'min' },
+      { name: 'Plank Hold', maxScore: 6, unit: 'min' },
       { name: 'Burpees in 1-minute', maxScore: 20, unit: 'reps' },
       { name: '1-mile run', maxScore: 7.5, unit: 'min', inverse: true },
     ],
@@ -131,7 +135,7 @@ const FEMALE_20_24_TARGETS: Record<string, Attribute> = {
   Stamina: {
     name: 'Stamina',
     tests: [
-      { name: 'Plank Hold', maxScore: 15, unit: 'min' },
+      { name: 'Plank Hold', maxScore: 6, unit: 'min' },
       { name: 'Burpees in 1-minute', maxScore: 20, unit: 'reps' },
       { name: '1-mile run', maxScore: 6, unit: 'min', inverse: true },
     ],
@@ -151,12 +155,96 @@ const FEMALE_20_24_TARGETS: Record<string, Attribute> = {
   },
 };
 
+const MALE_25_34_TARGETS: Record<string, Attribute> = {
+  Strength: {
+    name: 'Strength',
+    tests: [
+      { name: 'Bench Press', maxScore: 180, unit: 'kg' },
+      { name: 'Deadlift', maxScore: 245, unit: 'kg' },
+      { name: 'Squat', maxScore: 220, unit: 'kg' },
+    ],
+  },
+  Endurance: {
+    name: 'Endurance',
+    tests: [
+      { name: 'Pull-ups', maxScore: 40, unit: 'reps' },
+      { name: 'Push-ups', maxScore: 50, unit: 'reps' },
+    ],
+  },
+  Stamina: {
+    name: 'Stamina',
+    tests: [
+      { name: 'Plank Hold', maxScore: 6, unit: 'min' },
+      { name: 'Burpees in 1-minute', maxScore: 30, unit: 'reps' },
+      { name: '1-mile run', maxScore: 5.10, unit: 'min', inverse: true },
+    ],
+  },
+  Speed: {
+    name: 'Speed',
+    tests: [
+      { name: '100m Sprint', maxScore: 10.2, unit: 's', inverse: true },
+      { name: '40-yard Dash', maxScore: 4.2, unit: 's', inverse: true },
+    ],
+  },
+  Agility: {
+    name: 'Agility',
+    tests: [
+      { name: 'Pro Agility Shuttle', maxScore: 4.4, unit: 's', inverse: true },
+    ],
+  },
+};
+
+const FEMALE_25_34_TARGETS: Record<string, Attribute> = {
+  Strength: {
+    name: 'Strength',
+    tests: [
+      { name: 'Bench Press', maxScore: 90, unit: 'kg' },
+      { name: 'Deadlift', maxScore: 180, unit: 'kg' },
+      { name: 'Squat', maxScore: 135, unit: 'kg' },
+    ],
+  },
+  Endurance: {
+    name: 'Endurance',
+    tests: [
+      { name: 'Pull-ups', maxScore: 22, unit: 'reps' },
+      { name: 'Push-ups', maxScore: 40, unit: 'reps' },
+    ],
+  },
+  Stamina: {
+    name: 'Stamina',
+    tests: [
+      { name: 'Plank Hold', maxScore: 6, unit: 'min' },
+      { name: 'Burpees in 1-minute', maxScore: 30, unit: 'reps' },
+      { name: '1-mile run', maxScore: 6.05, unit: 'min', inverse: true },
+    ],
+  },
+  Speed: {
+    name: 'Speed',
+    tests: [
+      { name: '100m Sprint', maxScore: 10.5, unit: 's', inverse: true },
+      { name: '40-yard Dash', maxScore: 5.2, unit: 's', inverse: true },
+    ],
+  },
+  Agility: {
+    name: 'Agility',
+    tests: [
+      { name: 'Pro Agility Shuttle', maxScore: 4.7, unit: 's', inverse: true },
+    ],
+  },
+};
+
 export function getAttributes(profileType: string = PROFILE_TYPES.MALE_20_25): Record<string, Attribute> {
   if (profileType === PROFILE_TYPES.FEMALE_15_20) {
     return FEMALE_15_20_TARGETS;
   }
   if (profileType === PROFILE_TYPES.FEMALE_20_24) {
     return FEMALE_20_24_TARGETS;
+  }
+  if (profileType === PROFILE_TYPES.MALE_25_34) {
+    return MALE_25_34_TARGETS;
+  }
+  if (profileType === PROFILE_TYPES.FEMALE_25_34) {
+    return FEMALE_25_34_TARGETS;
   }
   return MALE_20_25_TARGETS;
 }
