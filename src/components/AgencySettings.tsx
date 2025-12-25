@@ -33,11 +33,10 @@ export default function AgencySettings({ agency, onClose }: Props) {
 
     const handleSaveName = async () => {
         setIsSavingName(true);
+        console.log('Attempting to save name:', newName);
         await updateAgency({ name: newName });
         setIsSavingName(false);
-        // Force reload with cache bypass
-        onClose();
-        window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
+        alert('Name save process finished. Check console for "Updated rows" result.');
     };
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
