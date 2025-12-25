@@ -110,6 +110,15 @@ export default function MissionsPage() {
     const specialTheme = profile?.settings?.specialTheme || null;
     const rankColorVar = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
+    const completedQuests = profile.completedQuests.map(id => {
+        for (const path of MISSION_PATHS) {
+            const q = path.quests.find(quest => quest.id === id);
+            if (q) return q;
+        }
+        if (id === 'event_debut') return { id: 'event_debut', name: 'Debut', reward: { name: 'Rising star', rarity: 'Event' } } as Quest;
+        return null;
+    }).filter((q): q is Quest => q !== null);
+
     return (
         <div className={styles.container} style={{ '--rank-color': rankColorVar } as React.CSSProperties}>
             <div className={styles.content}>
@@ -120,7 +129,7 @@ export default function MissionsPage() {
                 </div>
 
                 {/* ACTIVE Section */}
-                <h2 className={styles.sectionHeader} style={{ textAlign: 'center' }}>ACTIVE</h2>
+                <h2 className={styles.sectionHeader}>ACTIVE</h2>
                 <div className={styles.activeSlots}>
                     {[0, 1, 2].map(i => {
                         const tracked = getTrackedQuest(i);
@@ -142,7 +151,7 @@ export default function MissionsPage() {
                 {/* EVENT Section */}
                 {!isSelecting && (
                     <div style={{ marginTop: '40px' }}>
-                        <h2 className={styles.sectionHeader} style={{ textAlign: 'center' }}>EVENT</h2>
+                        <h2 className={styles.sectionHeader}>EVENT</h2>
                         <div className={styles.eventSection}>
                             <div className={styles.eventGrid}>
                                 <div
@@ -182,13 +191,32 @@ export default function MissionsPage() {
                                 </div>
                             )}
                         </div>
+
+                        {/* COMPLETED Section */}
+                        <div className={styles.completedMissionsSection}>
+                            <h2 className={styles.sectionHeader}>COMPLETED</h2>
+                            {completedQuests.length > 0 ? (
+                                <div className={styles.completedGrid}>
+                                    {completedQuests.map(quest => (
+                                        <div key={quest.id} className={styles.completedItem}>
+                                            <span className={styles.completedName}>{quest.name}</span>
+                                            <span className={styles.completedReward} style={{ color: getRarityColor(quest.reward.rarity) }}>
+                                                {quest.reward.name}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className={styles.emptyMessage}>Completed missions will be displayed here</p>
+                            )}
+                        </div>
                     </div>
                 )}
 
                 {/* Selection Panel (Mission Picker) */}
                 {isSelecting && (
                     <div style={{ marginTop: '40px' }}>
-                        <h2 className={styles.sectionHeader} style={{ textAlign: 'center' }}>SELECT A MISSION</h2>
+                        <h2 className={styles.sectionHeader}>SELECT A MISSION</h2>
                         <button className={styles.cancelSelection} onClick={() => setIsSelecting(false)} style={{ marginBottom: '30px' }}>CANCEL</button>
 
                         <div className={styles.panels}>

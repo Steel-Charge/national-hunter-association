@@ -20,19 +20,27 @@
     color: var(--rank-color);
     font-size: 1.5rem;
     font-weight: 800;
-    margin: 30px 0 20px;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--rank-color);
+    margin: 40px 0 20px 0;
+    text-transform: uppercase;
     letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    text-align: left;
 }
 
 .activeSlots {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     gap: 15px;
     margin-bottom: 40px;
+    flex-wrap: wrap;
 }
 
 .slot {
-    width: 32%;
+    flex: 1 1 30%;
+    min-width: 100px;
     height: 100px;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -43,6 +51,13 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 600px) {
+    .slot {
+        flex: 1 1 100%;
+        height: 80px;
+    }
 }
 
 .slot:hover {
@@ -422,6 +437,46 @@
     background: #fff;
     box-shadow: 0 0 20px var(--rank-color);
     transform: translateY(-2px);
+}
+
+.completedMissionsSection {
+    margin-top: 40px;
+    padding-bottom: 40px;
+}
+
+.emptyMessage {
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    font-size: 0.9rem;
+    padding: 20px 0;
+}
+
+.completedGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.completedItem {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.completedName {
+    font-weight: 800;
+    color: #fff;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.completedReward {
+    font-size: 0.8rem;
+    font-weight: 700;
 }
 
 .claimedBadge {
