@@ -94,9 +94,13 @@ export default function RoleSelectionPage() {
     return (
         <main className={styles.main}>
             <div className={styles.container}>
-                <img src="/logo.png" alt="NHA Logo" className={styles.logo} />
-                <h1 className={styles.welcome}>WELCOME TO THE NHA</h1>
-                <p className={styles.subtitle}>PLEASE SELECT YOUR ROLE</p>
+                <div className={styles.logoContainer}>
+                    <img src="/logo.png" alt="NHA Logo" className={styles.logo} />
+                    <h1 className={styles.welcome}>NHA</h1>
+                    <p className={styles.subtitle}>NATIONAL HUNTER ASSOCIATION</p>
+                </div>
+
+                <h2 className={styles.title}>SELECT YOUR PATH</h2>
 
                 <div className={styles.options}>
                     <button className={styles.optionButton} onClick={() => setStep('join')}>

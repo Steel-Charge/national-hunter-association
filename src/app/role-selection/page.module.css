@@ -1,6 +1,42 @@
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 15px var(--cyan)) drop-shadow(0 0 30px var(--cyan));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 25px var(--cyan)) drop-shadow(0 0 50px var(--cyan)) drop-shadow(0 0 70px var(--cyan));
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
 .main {
     min-height: 100vh;
-    background: #000;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -9,44 +45,56 @@
 
 .container {
     width: 100%;
-    max-width: 400px;
-    background: rgba(10, 20, 20, 0.8);
+    max-width: 450px;
+    background: rgba(0, 0, 0, 0.85);
     border: 2px solid var(--cyan);
     border-radius: 40px;
-    padding: 40px 20px;
+    padding: 60px 40px;
     text-align: center;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.2);
     display: flex;
     flex-direction: column;
     align-items: center;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.logoContainer {
+    text-align: center;
+    margin-bottom: 40px;
 }
 
 .logo {
     width: 120px;
-    margin-bottom: 30px;
+    height: 120px;
+    margin-bottom: 20px;
+    animation: pulse 2.5s ease-in-out infinite, float 4s ease-in-out infinite;
 }
 
 .welcome {
     color: #fff;
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     font-weight: 900;
     margin-bottom: 10px;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--cyan), 0 0 20px var(--cyan);
+}
+
+.subtitle {
+    color: var(--cyan);
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 40px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
 }
 
 .title {
     color: #fff;
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 30px;
     text-transform: uppercase;
-}
-
-.subtitle {
-    color: #fff;
-    font-size: 1rem;
-    margin-bottom: 40px;
-    opacity: 0.8;
+    letter-spacing: 1px;
 }
 
 .options {
@@ -57,101 +105,165 @@
 }
 
 .optionButton {
-    background: transparent;
-    border: 2px solid #fff;
-    border-radius: 50px;
-    padding: 20px;
+    background: rgba(0, 255, 255, 0.05);
+    border: 2px solid rgba(0, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 24px;
     color: #fff;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.optionButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.optionButton:hover::before {
+    left: 100%;
 }
 
 .optionButton:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 255, 255, 0.15);
     border-color: var(--cyan);
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+    transform: translateY(-5px);
 }
 
 .optionTitle {
-    font-size: 1.2rem;
-    font-weight: 800;
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 2px;
 }
 
 .optionSub {
     font-size: 0.8rem;
-    opacity: 0.7;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .input {
-    width: 80%;
-    background: transparent;
-    border: 2px solid #fff;
-    border-radius: 20px;
-    padding: 10px 20px;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(0, 255, 255, 0.3);
+    border-radius: 15px;
+    padding: 15px 20px;
     color: #fff;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     text-align: center;
     margin-bottom: 30px;
     outline: none;
+    transition: all 0.3s ease;
+}
+
+.input:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+    background: rgba(0, 255, 255, 0.05);
 }
 
 .enterButton {
     background: transparent;
-    border: 1px solid var(--cyan);
-    border-radius: 40px;
-    padding: 15px 60px;
-    color: #fff;
-    font-size: 1.5rem;
+    border: 2px solid var(--cyan);
+    border-radius: 15px;
+    padding: 16px 40px;
+    color: var(--cyan);
+    font-size: 1.2rem;
     font-weight: 900;
     cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
 }
 
 .enterButton:hover {
-    box-shadow: 0 0 20px var(--cyan);
-    background: rgba(0, 255, 255, 0.1);
+    background: var(--cyan);
+    color: #000;
+    box-shadow: 0 0 30px var(--cyan);
+    transform: translateY(-2px);
 }
 
 .backButton {
     background: transparent;
     border: none;
-    color: #fff;
-    margin-top: 20px;
+    color: var(--cyan);
+    margin-top: 25px;
     cursor: pointer;
-    opacity: 0.6;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.7;
+    transition: all 0.3s;
 }
 
 .backButton:hover {
     opacity: 1;
+    text-shadow: 0 0 10px var(--cyan);
 }
 
 .field {
     width: 100%;
     margin-bottom: 30px;
+    text-align: left;
 }
 
-.field p {
-    color: #fff;
-    font-weight: 700;
+.field label {
+    display: block;
+    color: var(--cyan);
+    font-size: 0.8rem;
+    font-weight: 800;
     margin-bottom: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.logoUpload {
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.logoUpload p {
+    color: var(--cyan);
+    font-size: 0.8rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .logoPreview {
-    width: 150px;
-    height: 150px;
-    border: 2px solid #fff;
+    width: 120px;
+    height: 120px;
+    border: 2px solid var(--cyan);
+    border-radius: 15px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0 auto 20px;
+    margin: 0 auto;
+    background: rgba(0, 255, 255, 0.05);
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
 }
 
 .logoPreview img {
-    max-width: 90%;
-    max-height: 90%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
