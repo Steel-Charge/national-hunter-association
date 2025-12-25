@@ -16,11 +16,11 @@
     width: 90%;
     max-width: 500px;
     background: #050505;
-    border: 2px solid var(--cyan);
+    border: 2px solid var(--rank-color);
     border-radius: 20px;
     padding: 30px;
     position: relative;
-    box-shadow: 0 0 30px var(--cyan-glow);
+    box-shadow: 0 0 30px var(--rank-color);
 }
 
 .closeBtn {
@@ -34,7 +34,7 @@
 }
 
 .title {
-    color: var(--cyan);
+    color: var(--rank-color);
     text-align: center;
     margin-bottom: 30px;
     font-size: 1.5rem;
@@ -75,7 +75,7 @@
 
 .saveBtn {
     width: 100%;
-    background: var(--cyan);
+    background: var(--rank-color);
     border: none;
     border-radius: 8px;
     padding: 12px;
@@ -83,6 +83,12 @@
     font-weight: 900;
     margin-top: 15px;
     cursor: pointer;
+    transition: all 0.3s;
+}
+
+.saveBtn:hover {
+    box-shadow: 0 0 20px var(--rank-color);
+    transform: translateY(-2px);
 }
 
 .codeBox {
@@ -92,7 +98,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    color: var(--cyan);
+    color: var(--rank-color);
     font-family: monospace;
     font-size: 1.2rem;
 }
@@ -100,7 +106,7 @@
 .codeBox button {
     background: transparent;
     border: none;
-    color: var(--cyan);
+    color: var(--rank-color);
     cursor: pointer;
 }
 
@@ -126,6 +132,7 @@
 
 .actionBtn:hover {
     background: rgba(255, 255, 255, 0.1);
+    border-color: var(--rank-color);
 }
 
 .danger {

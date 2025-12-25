@@ -13,7 +13,7 @@ interface Props {
 
 export default function AgencySettings({ agency, onClose }: Props) {
     const router = useRouter();
-    const { profile, updateAgency, leaveAgency, kickMember, disbandAgency, joinAgency, createAgency } = useHunterStore();
+    const { profile, updateAgency, leaveAgency, kickMember, disbandAgency, joinAgency, createAgency, getTheme } = useHunterStore();
     const [newName, setNewName] = useState(agency.name);
     const [newLogo, setNewLogo] = useState(agency.logo_url);
     const [isSaving, setIsSaving] = useState(false);
@@ -24,6 +24,11 @@ export default function AgencySettings({ agency, onClose }: Props) {
 
     const isCaptain = profile?.role === 'Captain' && profile?.id === agency.captain_id;
     const isSolo = profile?.role === 'Solo';
+
+    // Get user's theme color
+    const themeRank = getTheme();
+    const specialTheme = profile?.settings?.specialTheme || null;
+    const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -62,7 +67,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
     };
 
     return (
-        <div className={styles.overlay}>
+        <div className={styles.overlay} style={{ '--rank-color': rankColor } as React.CSSProperties}>
             <div className={styles.modal}>
                 <button className={styles.closeBtn} onClick={onClose}><X /></button>
                 <h2 className={styles.title}>AGENCY SETTINGS</h2>
