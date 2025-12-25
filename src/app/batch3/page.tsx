@@ -43,7 +43,7 @@ export default function AgencyPage() {
                 return;
             }
 
-            // 1. Fetch Agency Data
+            // 1. Fetch Agency Data (with cache busting)
             const { data: agencyData, error: agencyError } = await supabase
                 .from('agencies')
                 .select('*')
@@ -53,6 +53,7 @@ export default function AgencyPage() {
             if (agencyError) {
                 console.error('Error fetching agency:', agencyError);
             } else {
+                console.log('Fetched agency data:', agencyData);
                 setAgency(agencyData);
             }
 

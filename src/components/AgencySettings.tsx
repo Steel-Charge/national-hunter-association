@@ -35,6 +35,9 @@ export default function AgencySettings({ agency, onClose }: Props) {
         setIsSavingName(true);
         await updateAgency({ name: newName });
         setIsSavingName(false);
+        // Force reload with cache bypass
+        onClose();
+        window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
     };
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,11 +64,12 @@ export default function AgencySettings({ agency, onClose }: Props) {
         await updateAgency({ logo_url: logoPreview });
         setIsSavingLogo(false);
         console.log('Logo save complete, reloading page');
-        // Close modal and refresh to show updated logo
+        // Set a timestamp to force cache bypass
+        sessionStorage.setItem('agency_updated', Date.now().toString());
+        // Close modal and force reload
         onClose();
-        router.refresh();
-        // Force a hard reload to ensure logo updates
-        window.location.reload();
+        // Use location.href for hard reload with cache bypass
+        window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
     };
 
     const handleCopyCode = () => {
