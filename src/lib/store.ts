@@ -539,11 +539,14 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             ? profile.unlockedTitles
             : [...profile.unlockedTitles, title];
 
+        const newTrackedQuests = (profile.trackedQuests || []).filter(id => id !== questId);
+
         set({
             profile: {
                 ...profile,
                 completedQuests: newCompletedQuests,
-                unlockedTitles: newUnlockedTitles
+                unlockedTitles: newUnlockedTitles,
+                trackedQuests: newTrackedQuests
             }
         });
 
