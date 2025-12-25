@@ -31,13 +31,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
     const specialTheme = profile?.settings?.specialTheme || null;
     const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
-    const handleSaveName = async () => {
-        setIsSavingName(true);
-        console.log('Attempting to save name:', newName);
-        await updateAgency({ name: newName });
-        setIsSavingName(false);
-        alert('Name save process finished. Check console for "Updated rows" result.');
-    };
+
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -70,12 +64,30 @@ export default function AgencySettings({ agency, onClose }: Props) {
 
     const handleSaveName = async () => {
         setIsSavingName(true);
+        console.log('Attempting to save name:', newName);
         await updateAgency({ name: newName });
         setIsSavingName(false);
         // Force reload with cache bypass
         sessionStorage.setItem('agency_updated', Date.now().toString());
         onClose();
         window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
+    };
+
+    const handleCopyCode = () => {
+        navigator.clipboard.writeText(agency.invite_code);
+        alert('Invite code copied!');
+    };
+
+    const handleJoinAgency = async () => {
+        if (!inviteCode) return;
+        const res = await joinAgency(inviteCode);
+        if (res.success) {
+            setShowJoinModal(false);
+            onClose();
+            router.refresh();
+        } else {
+            alert(res.error || 'Invalid invite code');
+        }
     };
 
     const handleCreateAgency = async () => {
