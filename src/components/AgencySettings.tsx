@@ -63,13 +63,8 @@ export default function AgencySettings({ agency, onClose }: Props) {
         setIsSavingLogo(true);
         await updateAgency({ logo_url: logoPreview });
         setIsSavingLogo(false);
-        console.log('Logo save complete, reloading page');
-        // Set a timestamp to force cache bypass
-        sessionStorage.setItem('agency_updated', Date.now().toString());
-        // Close modal and force reload
-        onClose();
-        // Use location.href for hard reload with cache bypass
-        window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
+        console.log('Logo save process finished.');
+        alert('Logo save process finished. Check console for "Updated rows" result.');
     };
 
     const handleCopyCode = () => {
