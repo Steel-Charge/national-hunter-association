@@ -382,6 +382,30 @@
     font-size: 0.9rem;
 }
 
+.trackButton {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    cursor: pointer;
+    width: fit-content;
+    margin-top: 10px;
+}
+
+.trackButton:hover {
+    background: #ccc;
+    box-shadow: none;
+    transform: none;
+}
+
+.trackButton.active {
+    background: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+}
+
 .claimButton {
     background: var(--rank-color);
     color: #000;

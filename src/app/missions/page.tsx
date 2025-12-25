@@ -79,7 +79,7 @@ export default function MissionsPage() {
         // Find quest in all paths
         for (const path of MISSION_PATHS) {
             const quest = path.quests.find(q => q.id === id);
-            if (quest) return { ...quest, pathName: path.name.replace('Path of the ', '') };
+            if (quest) return { ...quest, pathName: path.name.replace('Path of the ', ''), pathObject: path };
         }
         return null;
     };
@@ -87,11 +87,24 @@ export default function MissionsPage() {
     const handleToggleTrack = async (questId: string) => {
         const wasTracked = isQuestTracked(questId);
         await toggleTrackQuest(questId);
-        // If we were selecting and just turned it ON, close the picker
+        // Only auto-close if we just ADDED a new mission
         if (isSelecting && !wasTracked) {
             setIsSelecting(false);
         }
     };
+
+    const handleSlotClick = (i: number) => {
+        const tracked = getTrackedQuest(i);
+        if (tracked) {
+            // Find path and open it
+            setSelectedPath(tracked.pathObject as MissionPath);
+            setIsSelecting(true);
+        } else {
+            setIsSelecting(true);
+        }
+    };
+
+    const currentPathTrackedQuestId = selectedPath.quests.find(q => isQuestTracked(q.id))?.id;
 
     const themeRank = getTheme();
     const specialTheme = profile?.settings?.specialTheme || null;
@@ -112,11 +125,11 @@ export default function MissionsPage() {
                     {[0, 1, 2].map(i => {
                         const tracked = getTrackedQuest(i);
                         return (
-                            <div key={i} className={styles.slot} onClick={() => tracked ? handleToggleTrack(tracked.id) : setIsSelecting(true)}>
+                            <div key={i} className={styles.slot} onClick={() => handleSlotClick(i)}>
                                 {tracked ? (
-                                    <div className={styles.slotContent}>
-                                        <span className={styles.slotName}>{tracked.name}</span>
-                                        <span className={styles.slotPath}>{tracked.pathName}</span>
+                                    <div className={styles.slotContent} style={{ textAlign: 'center' }}>
+                                        <div className={styles.slotName} style={{ fontSize: '0.8rem', fontWeight: '900', color: '#fff', textTransform: 'uppercase' }}>{tracked.name}</div>
+                                        <div className={styles.slotPath} style={{ fontSize: '0.6rem', color: 'var(--rank-color)', fontWeight: '800' }}>{tracked.pathName}</div>
                                     </div>
                                 ) : (
                                     <span className={styles.slotPlus}>+</span>
@@ -159,7 +172,7 @@ export default function MissionsPage() {
                                             className={styles.claimButtonEvent}
                                             onClick={() => handleClaimQuest(selectedEventQuest)}
                                             disabled={pendingRequests.includes(selectedEventQuest.id)}
-                                            style={{ backgroundColor: 'var(--rarity-event)', color: '#fff', borderRadius: '999px', padding: '12px 0', border: 'none', width: '100%', fontWeight: '900', marginTop: '20px', cursor: 'pointer' }}
+                                            style={{ backgroundColor: 'var(--rarity-event)', color: '#fff', borderRadius: '4px', padding: '12px 0', border: 'none', width: '100%', fontWeight: '900', marginTop: '20px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' }}
                                         >
                                             {pendingRequests.includes(selectedEventQuest.id) ? 'PENDING' : 'CLAIM'}
                                         </button>
@@ -176,7 +189,7 @@ export default function MissionsPage() {
                 {isSelecting && (
                     <div style={{ marginTop: '40px' }}>
                         <h2 className={styles.sectionHeader} style={{ textAlign: 'center' }}>SELECT A MISSION</h2>
-                        <button className={styles.cancelSelection} onClick={() => setIsSelecting(false)}>CANCEL</button>
+                        <button className={styles.cancelSelection} onClick={() => setIsSelecting(false)} style={{ marginBottom: '30px' }}>CANCEL</button>
 
                         <div className={styles.panels}>
                             {/* Mission Paths (Horizontal Scroll) */}
@@ -196,16 +209,24 @@ export default function MissionsPage() {
                             {/* Quest Details (Vertical) */}
                             <div className={styles.questDetails}>
                                 <div className={styles.pathHeader}>
-                                    <h2 className={styles.pathTitle}>{selectedPath.name.toUpperCase()}</h2>
-                                    <p className={styles.pathTheme}>Focus Stats: <span>{selectedPath.focusStats.join(', ')}</span></p>
+                                    <div>
+                                        <h2 className={styles.pathTitle}>{selectedPath.name.toUpperCase()}</h2>
+                                        <p className={styles.pathTheme} style={{ margin: '5px 0 0 0', opacity: 0.7 }}>Focus Stats: <span>{selectedPath.focusStats.join(', ')}</span></p>
+                                    </div>
+                                    {currentPathTrackedQuestId && (
+                                        <button
+                                            className={styles.untrackHeaderButton}
+                                            onClick={() => handleToggleTrack(currentPathTrackedQuestId)}
+                                        >
+                                            UNTRACK
+                                        </button>
+                                    )}
                                 </div>
 
                                 <div className={styles.questList}>
                                     {selectedPath.quests.map((quest) => {
                                         const completed = isQuestCompleted(quest.id);
                                         const tracked = isQuestTracked(quest.id);
-
-                                        if (completed) return null;
 
                                         const isMythic = quest.reward.rarity === 'Mythic';
                                         const canClaim = isMythic ? canClaimMythic(selectedPath) : true;
@@ -241,17 +262,33 @@ export default function MissionsPage() {
                                                 </div>
 
                                                 {!completed && (
-                                                    <button
-                                                        className={styles.trackButton}
-                                                        onClick={() => handleToggleTrack(quest.id)}
-                                                        style={tracked ? { backgroundColor: 'transparent', border: '1px solid var(--rank-color)', color: 'var(--rank-color)' } : {}}
-                                                    >
-                                                        {tracked ? 'UNTRACK' : 'TRACK'}
-                                                    </button>
+                                                    <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                                                        <button
+                                                            className={`${styles.trackButton} ${tracked ? styles.active : ''}`}
+                                                            onClick={() => handleToggleTrack(quest.id)}
+                                                        >
+                                                            {tracked ? 'TRACKED' : 'TRACK'}
+                                                        </button>
+
+                                                        {canClaim && (
+                                                            <button
+                                                                className={styles.claimButton}
+                                                                onClick={() => handleClaimQuest(quest)}
+                                                                disabled={pendingRequests.includes(quest.id)}
+                                                                style={{ padding: '2px 12px', fontSize: '0.7rem', fontWeight: '900', borderRadius: '4px' }}
+                                                            >
+                                                                {pendingRequests.includes(quest.id) ? 'PENDING' : 'CLAIM'}
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 )}
 
-                                                {!canClaim && isMythic && (
-                                                    <div className={styles.lockedMessage}>
+                                                {completed && (
+                                                    <div style={{ color: 'var(--rank-color)', fontWeight: '900', fontSize: '0.8rem', marginTop: '10px' }}>✓ COMPLETED</div>
+                                                )}
+
+                                                {!completed && !canClaim && isMythic && (
+                                                    <div className={styles.lockedMessage} style={{ marginTop: '10px' }}>
                                                         Complete all quests to unlock
                                                     </div>
                                                 )}
