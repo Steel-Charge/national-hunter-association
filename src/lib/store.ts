@@ -1362,9 +1362,20 @@ export const useHunterStore = create<HunterState>((set, get) => ({
 
     updateAgency: async (data: Partial<Agency>) => {
         const profile = get().profile;
-        if (!profile || profile.role !== 'Captain' || !profile.agencyId) return;
+        if (!profile || profile.role !== 'Captain' || !profile.agencyId) {
+            console.error('updateAgency failed: missing profile or not captain', { profile });
+            return;
+        }
 
-        await supabase.from('agencies').update(data).eq('id', profile.agencyId);
+        console.log('Updating agency with data:', data);
+        const { error } = await supabase.from('agencies').update(data).eq('id', profile.agencyId);
+
+        if (error) {
+            console.error('Error updating agency:', error);
+        } else {
+            console.log('Agency updated successfully');
+        }
+
         await get().fetchProfile(profile.name);
     },
 

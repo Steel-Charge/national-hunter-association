@@ -56,9 +56,11 @@ export default function AgencySettings({ agency, onClose }: Props) {
     };
 
     const handleSaveLogo = async () => {
+        console.log('Saving logo, preview length:', logoPreview?.length);
         setIsSavingLogo(true);
         await updateAgency({ logo_url: logoPreview });
         setIsSavingLogo(false);
+        console.log('Logo save complete, reloading page');
         // Close modal and refresh to show updated logo
         onClose();
         router.refresh();
