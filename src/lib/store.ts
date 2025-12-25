@@ -1367,13 +1367,22 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             return;
         }
 
-        console.log('Updating agency with data:', data);
-        const { error } = await supabase.from('agencies').update(data).eq('id', profile.agencyId);
+        console.log('Attempting to update agency ID:', profile.agencyId, 'with data:', data);
+        const { data: updatedData, error } = await supabase
+            .from('agencies')
+            .update(data)
+            .eq('id', profile.agencyId)
+            .select();
 
         if (error) {
             console.error('Error updating agency:', error);
         } else {
-            console.log('Agency updated successfully');
+            console.log('Agency update query completed. Updated rows:', updatedData);
+            if (!updatedData || updatedData.length === 0) {
+                console.warn('SUCCESS returned but 0 rows were updated. Check if agency ID exists or RLS policy allows updates.');
+            } else {
+                console.log('Agency updated successfully:', updatedData[0]);
+            }
         }
 
         await get().fetchProfile(profile.name);
