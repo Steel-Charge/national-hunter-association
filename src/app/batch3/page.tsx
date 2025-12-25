@@ -243,7 +243,10 @@ export default function AgencyPage() {
                             </>
                         )}
 
-                        <div onClick={() => handleHunterClick(member.name)} style={{ cursor: 'pointer' }}>
+                        <div
+                            onClick={() => handleHunterClick(member.name)}
+                            className={styles.memberContentWrapper}
+                        >
                             <img
                                 src={member.avatarUrl || '/placeholder.png'}
                                 alt={member.name}

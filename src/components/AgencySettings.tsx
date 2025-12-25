@@ -58,29 +58,24 @@ export default function AgencySettings({ agency, onClose }: Props) {
     };
 
     const handleSaveLogo = async () => {
-        console.log('Saving logo, preview length:', logoPreview?.length);
         setIsSavingLogo(true);
         await updateAgency({ logo_url: logoPreview });
         setIsSavingLogo(false);
-        console.log('Logo save process finished.');
-        alert('Logo save process finished. Check console for "Updated rows" result.');
+        // Set a timestamp to force cache bypass
+        sessionStorage.setItem('agency_updated', Date.now().toString());
+        // Close modal and force reload with cache bypass
+        onClose();
+        window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
     };
 
-    const handleCopyCode = () => {
-        navigator.clipboard.writeText(agency.invite_code);
-        alert('Invite code copied!');
-    };
-
-    const handleJoinAgency = async () => {
-        if (!inviteCode) return;
-        const res = await joinAgency(inviteCode);
-        if (res.success) {
-            setShowJoinModal(false);
-            onClose();
-            router.refresh();
-        } else {
-            alert(res.error || 'Invalid invite code');
-        }
+    const handleSaveName = async () => {
+        setIsSavingName(true);
+        await updateAgency({ name: newName });
+        setIsSavingName(false);
+        // Force reload with cache bypass
+        sessionStorage.setItem('agency_updated', Date.now().toString());
+        onClose();
+        window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
     };
 
     const handleCreateAgency = async () => {
