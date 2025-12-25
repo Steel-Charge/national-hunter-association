@@ -35,15 +35,12 @@ export default function RoleSelectionPage() {
 
     const handleSolo = async () => {
         // Nameless users join 'Batch 3' by default as Solo
-        // We use the known invite code from our migration
-        const res = await joinAgency('BATCH3-DEFAULT');
+        // Pass asSolo=true to ensure role is set to 'Solo' instead of 'Hunter'
+        const res = await joinAgency('BATCH3-DEFAULT', true);
         if (res.success) {
             router.push('/batch3');
         } else {
             console.error('Failed to join default agency:', res.error);
-            // Fallback: still push them, but they might get redirected back if logic isn't perfect.
-            // But since joinAgency failed, they lack agency_id.
-            // We should probably show an error.
             alert('Failed to initialize Nameless path. Please try again.');
         }
     };

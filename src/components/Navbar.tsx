@@ -60,7 +60,7 @@ export default function Navbar() {
                 style={isActive('/batch3') || pathname.startsWith('/batch3') ? { color: rankColor, textShadow: `0 0 5px ${rankColor}` } : {}}
             >
                 <Users size={24} style={isActive('/batch3') || pathname.startsWith('/batch3') ? { filter: `drop-shadow(0 0 5px ${rankColor})` } : {}} />
-                <span>Agency</span>
+                <span>Hub</span>
             </Link>
             <Link
                 href="/rankings"

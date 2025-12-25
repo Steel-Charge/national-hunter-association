@@ -194,7 +194,7 @@ interface HunterState {
     initialize: () => void;
     // Agency Actions
     createAgency: (name: string, logoUrl: string) => Promise<void>;
-    joinAgency: (inviteCode: string) => Promise<{ success: boolean; error?: string }>;
+    joinAgency: (inviteCode: string, asSolo?: boolean) => Promise<{ success: boolean; error?: string }>;
     leaveAgency: (promoNext?: boolean) => Promise<void>;
     kickMember: (memberId: string) => Promise<void>;
     disbandAgency: () => Promise<void>;
@@ -1234,7 +1234,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         await get().fetchProfile(profile.name);
     },
 
-    joinAgency: async (inviteCode: string) => {
+    joinAgency: async (inviteCode: string, asSolo: boolean = false) => {
         const profile = get().profile;
         if (!profile) return { success: false, error: 'No profile' };
 
@@ -1246,9 +1246,12 @@ export const useHunterStore = create<HunterState>((set, get) => ({
 
         if (error || !agency) return { success: false, error: 'Invalid invite code' };
 
+        // If joining as Solo (Nameless), set role to 'Solo', otherwise 'Hunter'
+        const role = asSolo ? 'Solo' : 'Hunter';
+
         await supabase
             .from('profiles')
-            .update({ agency_id: agency.id, role: 'Hunter' })
+            .update({ agency_id: agency.id, role })
             .eq('id', profile.id);
 
         await get().fetchProfile(profile.name);
