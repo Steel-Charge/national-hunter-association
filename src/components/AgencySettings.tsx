@@ -23,7 +23,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
     const [inviteCode, setInviteCode] = useState('');
     const [agencyName, setAgencyName] = useState('');
 
-    const isCaptain = profile?.role === 'Captain' && profile?.id === agency.captain_id;
+    const isCaptain = profile?.role === 'Captain';
     const isSolo = profile?.role === 'Solo';
 
     // Get user's theme color

@@ -32,7 +32,7 @@ export default function HunterMissionsPage() {
             setLoading(false);
         };
 
-        if (viewerProfile?.isAdmin) {
+        if (viewerProfile?.isAdmin || viewerProfile?.role === 'Captain') {
             fetchRequests();
         }
     }, [username, viewerProfile, getRequestsForUser]);
@@ -40,7 +40,7 @@ export default function HunterMissionsPage() {
     const themeRank = getTheme();
     const rankColor = `var(--rank-${themeRank.toLowerCase()})`;
 
-    if (!viewerProfile?.isAdmin) {
+    if (!viewerProfile?.isAdmin && viewerProfile?.role !== 'Captain') {
         return (
             <div className={styles.container}>
                 <div className={styles.content} style={{
@@ -72,7 +72,7 @@ export default function HunterMissionsPage() {
                         maxWidth: '400px',
                         margin: 0
                     }}>
-                        Only administrators can view and manage title requests.
+                        Only administrators and captains can view and manage title requests.
                     </p>
                     <button
                         onClick={() => router.push('/batch3')}
