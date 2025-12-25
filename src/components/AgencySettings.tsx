@@ -55,6 +55,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
         setIsSavingLogo(true);
         await updateAgency({ logo_url: logoPreview });
         setIsSavingLogo(false);
+        alert('Agency Logo Updated Successfully!');
         // Set a timestamp to force cache bypass
         sessionStorage.setItem('agency_updated', Date.now().toString());
         // Close modal and force reload with cache bypass
@@ -67,6 +68,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
         console.log('Attempting to save name:', newName);
         await updateAgency({ name: newName });
         setIsSavingName(false);
+        alert('Agency Name Updated Successfully!');
         // Force reload with cache bypass
         sessionStorage.setItem('agency_updated', Date.now().toString());
         onClose();
