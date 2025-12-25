@@ -59,8 +59,11 @@ export default function AgencySettings({ agency, onClose }: Props) {
         setIsSavingLogo(true);
         await updateAgency({ logo_url: logoPreview });
         setIsSavingLogo(false);
-        // Refresh the page to show updated logo
+        // Close modal and refresh to show updated logo
+        onClose();
         router.refresh();
+        // Force a hard reload to ensure logo updates
+        window.location.reload();
     };
 
     const handleCopyCode = () => {
