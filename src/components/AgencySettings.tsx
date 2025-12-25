@@ -25,6 +25,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
 
     const isCaptain = profile?.role === 'Captain';
     const isSolo = profile?.role === 'Solo';
+    const isHunter = profile?.role === 'Hunter';
 
     // Get user's theme color
     const themeRank = getTheme();
@@ -111,11 +112,14 @@ export default function AgencySettings({ agency, onClose }: Props) {
                 <h2 className={styles.title}>AGENCY SETTINGS</h2>
 
                 <div className={styles.content}>
-                    {isSolo && (
+                    {(isSolo || isHunter) && (
                         <div className={styles.section}>
-                            <h3>JOIN OR CREATE AGENCY</h3>
+                            <h3>{isSolo ? 'JOIN OR CREATE AGENCY' : 'SWITCH OR START AGENCY'}</h3>
                             <p style={{ color: '#aaa', marginBottom: '1rem', fontSize: '0.9rem' }}>
-                                As a Solo hunter, you can join an existing agency or create your own.
+                                {isSolo
+                                    ? 'As a Solo hunter, you can join an existing agency or create your own.'
+                                    : 'You can join a different agency using a code, or start your own and become Captain.'
+                                }
                             </p>
                             <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
                                 <button
