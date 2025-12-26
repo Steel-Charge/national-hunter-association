@@ -183,7 +183,7 @@ export default function MissionsPage() {
                                             disabled={pendingRequests.includes(selectedEventQuest.id)}
                                             style={{ backgroundColor: 'var(--rarity-event)', color: '#fff', borderRadius: '4px', padding: '12px 0', border: 'none', width: '100%', fontWeight: '900', marginTop: '20px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' }}
                                         >
-                                            {pendingRequests.includes(selectedEventQuest.id) ? 'PENDING' : 'CLAIM'}
+                                            {pendingRequests.includes(selectedEventQuest.id) ? 'PENDING' : (canSelfManage(profile) ? 'CLAIM' : 'REQUEST')}
                                         </button>
                                     ) : (
                                         <div style={{ color: 'var(--rarity-event)', textAlign: 'center', fontWeight: 'bold', marginTop: '20px' }}>✓ CLAIMED</div>
@@ -305,7 +305,7 @@ export default function MissionsPage() {
                                                                 disabled={pendingRequests.includes(quest.id)}
                                                                 style={{ padding: '2px 12px', fontSize: '0.7rem', fontWeight: '900', borderRadius: '4px' }}
                                                             >
-                                                                {pendingRequests.includes(quest.id) ? 'PENDING' : 'CLAIM'}
+                                                                {pendingRequests.includes(quest.id) ? 'PENDING' : (canSelfManage(profile) ? 'CLAIM' : 'REQUEST')}
                                                             </button>
                                                         )}
                                                     </div>
