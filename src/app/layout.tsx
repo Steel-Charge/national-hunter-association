@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "Global Hunters Association",
   description: "The official app for the Global Hunters Association.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/logo_new.png",
+    apple: "/logo_new.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

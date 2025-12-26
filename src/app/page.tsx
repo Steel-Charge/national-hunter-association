@@ -29,7 +29,7 @@ export default function LoginPage() {
       <div className={styles.loginContainer}>
         {/* NHA Logo */}
         <div className={styles.logoContainer}>
-          <img src="/logo.png" alt="NHA Logo" className={styles.logoImage} />
+          <img src="/logo_new.png" alt="NHA Logo" className={styles.logoImage} />
           <h1 className={styles.logoText}>NHA</h1>
           <p className={styles.logoSub}>NATIONAL HUNTER ASSOCIATION</p>
         </div>

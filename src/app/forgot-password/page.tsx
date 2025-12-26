@@ -63,7 +63,7 @@ export default function ForgotPasswordPage() {
         <main className={styles.main}>
             <div className={styles.loginContainer}>
                 <div className={styles.logoContainer}>
-                    <img src="/logo.png" alt="NHA Logo" className={styles.logoImage} />
+                    <img src="/logo_new.png" alt="NHA Logo" className={styles.logoImage} />
                     <h1 className={styles.logoText}>NHA</h1>
                     <p className={styles.logoSub}>PASSWORD RECOVERY</p>
                 </div>

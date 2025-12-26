@@ -49,7 +49,7 @@ export default function RoleSelectionPage() {
         return (
             <main className={styles.main}>
                 <div className={styles.container}>
-                    <img src="/logo.png" alt="NHA Logo" className={styles.logo} />
+                    <img src="/logo_new.png" alt="NHA Logo" className={styles.logo} />
                     <h2 className={styles.title}>ENTER YOUR AGENCY CODE</h2>
                     <input
                         type="text"
@@ -72,7 +72,7 @@ export default function RoleSelectionPage() {
                     <div className={styles.logoUpload}>
                         <p>AGENCY LOGO</p>
                         <div className={styles.logoPreview}>
-                            <img src={agencyLogo || '/logo.png'} alt="Preview" />
+                            <img src={agencyLogo || '/logo_new.png'} alt="Preview" />
                         </div>
                     </div>
                     <div className={styles.field}>
@@ -95,7 +95,7 @@ export default function RoleSelectionPage() {
         <main className={styles.main}>
             <div className={styles.container}>
                 <div className={styles.logoContainer}>
-                    <img src="/logo.png" alt="NHA Logo" className={styles.logo} />
+                    <img src="/logo_new.png" alt="NHA Logo" className={styles.logo} />
                     <h1 className={styles.welcome}>NHA</h1>
                     <p className={styles.subtitle}>NATIONAL HUNTER ASSOCIATION</p>
                 </div>
