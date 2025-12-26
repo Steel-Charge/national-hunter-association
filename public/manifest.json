@@ -1,6 +1,6 @@
 {
     "name": "Global Hunters Association",
-    "short_name": "Hunters",
+    "short_name": "NHA",
     "description": "The official app for the Global Hunters Association.",
     "start_url": "/home",
     "display": "standalone",
