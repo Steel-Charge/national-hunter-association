@@ -24,7 +24,8 @@ export interface UserProfile {
     videoUrl?: string; // Existing
     bio?: string;      // New
     managerComment?: string; // New
-    activeTitle: Title;
+    activeTitle: Title | null;
+    activeFrame?: string;
     unlockedTitles: Title[];
     testScores: Record<string, number>; // Test Name -> Value
     completedQuests: string[]; // Quest IDs that have been completed
@@ -638,7 +639,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                 : profile.completedQuests;
 
             let newActive = profile.activeTitle;
-            if (profile.activeTitle.name === titleName) {
+            if (profile.activeTitle && profile.activeTitle.name === titleName) {
                 newActive = { name: 'Hunter', rarity: 'Common' };
                 await get().setActiveTitle(newActive);
             }

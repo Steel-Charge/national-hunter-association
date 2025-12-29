@@ -26,14 +26,14 @@
     background-color: color-mix(in srgb, var(--rank-hex) 10%, transparent);
     border: 1px solid color-mix(in srgb, var(--rank-hex) 30%, transparent);
     border-radius: var(--radius-md);
-    padding: 10px 0;
+    padding: 20px 0;
     width: 100%;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 40px;
-    height: 420px;
+    min-height: 420px;
 }
 
 .tabs {
@@ -179,28 +179,55 @@
 
 /* Glitch theme for special profile (animated, local-only) */
 .glitchTheme {
-    background: repeating-linear-gradient(45deg, rgba(58,187,189,0.06), rgba(58,187,189,0.06) 2px, transparent 2px, transparent 6px);
+    background: repeating-linear-gradient(45deg, rgba(58, 187, 189, 0.06), rgba(58, 187, 189, 0.06) 2px, transparent 2px, transparent 6px);
     animation: subtleNoise 3s infinite linear;
 }
 
 @keyframes subtleNoise {
-    0% { background-position: 0 0; }
-    50% { background-position: 100px 100px; filter: hue-rotate(0deg); }
-    100% { background-position: 0 0; filter: hue-rotate(20deg); }
+    0% {
+        background-position: 0 0;
+    }
+
+    50% {
+        background-position: 100px 100px;
+        filter: hue-rotate(0deg);
+    }
+
+    100% {
+        background-position: 0 0;
+        filter: hue-rotate(20deg);
+    }
 }
 
 /* Small text glitch effect (used on overlay) */
 .glitchText {
     color: #0ff;
-    text-shadow: 0 0 8px #0ff, 2px 0 6px rgba(255,0,255,0.2);
+    text-shadow: 0 0 8px #0ff, 2px 0 6px rgba(255, 0, 255, 0.2);
     animation: jitter 0.35s infinite linear;
 }
 
 @keyframes jitter {
-    0% { transform: translateX(0); }
-    20% { transform: translateX(-1px); }
-    40% { transform: translateX(1px); }
-    60% { transform: translateX(-1px); }
-    80% { transform: translateX(1px); }
-    100% { transform: translateX(0); }
+    0% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-1px);
+    }
+
+    40% {
+        transform: translateX(1px);
+    }
+
+    60% {
+        transform: translateX(-1px);
+    }
+
+    80% {
+        transform: translateX(1px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
 }

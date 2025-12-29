@@ -4,6 +4,7 @@ import { UserProfile, useHunterStore, Title, canSelfManage } from '@/lib/store';
 import { getAttributes, RANK_COLORS, Rank } from '@/lib/game-logic';
 
 import RadarChart from '@/components/RadarChart';
+import ProfileFrame from '@/components/ProfileFrame';
 import styles from '@/app/stats/page.module.css';
 
 interface StatsViewProps {
@@ -275,15 +276,15 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
 
             {/* Radar Chart Section */}
             <div className={styles.chartContainer} style={{ position: 'relative' }}>
-                <RadarChart
-                    labels={radarLabels}
-                    data={radarData}
-                    rankColor={RANK_COLORS[themeRank as Rank]}
-                    comparisonData={comparisonData}
-                    comparisonColor={viewerRankColor}
-                />
-
-
+                <ProfileFrame rarity={profile.activeTitle?.rarity || 'Common'}>
+                    <RadarChart
+                        labels={radarLabels}
+                        data={radarData}
+                        rankColor={RANK_COLORS[themeRank as Rank]}
+                        comparisonData={comparisonData}
+                        comparisonColor={viewerRankColor}
+                    />
+                </ProfileFrame>
             </div>
 
             {/* Attribute Tabs */}
