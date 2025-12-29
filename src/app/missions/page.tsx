@@ -12,6 +12,7 @@ export default function MissionsPage() {
     const [selectedPath, setSelectedPath] = useState<MissionPath>(MISSION_PATHS[0]);
     const [pendingRequests, setPendingRequests] = useState<string[]>([]);
     const [isSelecting, setIsSelecting] = useState(false);
+    const [isFilterMode, setIsFilterMode] = useState(false);
     const [selectedEventQuest, setSelectedEventQuest] = useState<Quest | null>({
         id: 'event_debut',
         name: 'Debut',
@@ -46,7 +47,23 @@ export default function MissionsPage() {
         return regularQuests.every(q => isQuestCompleted(q.id));
     };
 
+    const isQuestLocked = (questId: string, path: MissionPath) => {
+        const questIndex = path.quests.findIndex(q => q.id === questId);
+        if (questIndex <= 0) return false; // First quest or not found is never locked by path
+
+        // Check all previous quests in the path
+        for (let i = 0; i < questIndex; i++) {
+            if (!isQuestCompleted(path.quests[i].id)) return true;
+        }
+        return false;
+    };
+
     const handleClaimQuest = async (quest: Quest) => {
+        if (isQuestLocked(quest.id, selectedPath)) {
+            alert('Complete previous missions in this path first!');
+            return;
+        }
+
         if (quest.reward.rarity === 'Mythic') {
             if (!canClaimMythic(selectedPath)) {
                 alert('Complete all previous quests first!');
@@ -85,6 +102,11 @@ export default function MissionsPage() {
     };
 
     const handleToggleTrack = async (questId: string) => {
+        if (!isQuestTracked(questId) && isQuestLocked(questId, selectedPath)) {
+            alert('Complete previous missions in this path first!');
+            return;
+        }
+
         const wasTracked = isQuestTracked(questId);
         await toggleTrackQuest(questId);
         // Only auto-close if we just ADDED a new mission
@@ -96,10 +118,13 @@ export default function MissionsPage() {
     const handleSlotClick = (i: number) => {
         const tracked = getTrackedQuest(i);
         if (tracked) {
-            // Find path and open it
+            // Find path and open it in FILTER mode
             setSelectedPath(tracked.pathObject as MissionPath);
+            setIsFilterMode(true);
             setIsSelecting(true);
         } else {
+            // Open full picker
+            setIsFilterMode(false);
             setIsSelecting(true);
         }
     };
@@ -222,7 +247,7 @@ export default function MissionsPage() {
                         <div className={styles.panels}>
                             {/* Mission Paths (Horizontal Scroll) */}
                             <div className={styles.missionList}>
-                                {MISSION_PATHS.map((path) => (
+                                {MISSION_PATHS.filter(p => !isFilterMode || p.id === selectedPath.id).map((path) => (
                                     <button
                                         key={path.id}
                                         className={`${styles.missionCard} ${selectedPath.id === path.id ? styles.active : ''}`}
@@ -291,22 +316,30 @@ export default function MissionsPage() {
 
                                                 {!completed && (
                                                     <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                                                        <button
-                                                            className={`${styles.trackButton} ${tracked ? styles.active : ''}`}
-                                                            onClick={() => handleToggleTrack(quest.id)}
-                                                        >
-                                                            {tracked ? 'TRACKED' : 'TRACK'}
-                                                        </button>
+                                                        {!isQuestLocked(quest.id, selectedPath) ? (
+                                                            <>
+                                                                <button
+                                                                    className={`${styles.trackButton} ${tracked ? styles.active : ''}`}
+                                                                    onClick={() => handleToggleTrack(quest.id)}
+                                                                >
+                                                                    {tracked ? 'TRACKED' : 'TRACK'}
+                                                                </button>
 
-                                                        {canClaim && (
-                                                            <button
-                                                                className={styles.claimButton}
-                                                                onClick={() => handleClaimQuest(quest)}
-                                                                disabled={pendingRequests.includes(quest.id)}
-                                                                style={{ padding: '2px 12px', fontSize: '0.7rem', fontWeight: '900', borderRadius: '4px' }}
-                                                            >
-                                                                {pendingRequests.includes(quest.id) ? 'PENDING' : (canSelfManage(profile) ? 'CLAIM' : 'REQUEST')}
-                                                            </button>
+                                                                {canClaim && (
+                                                                    <button
+                                                                        className={styles.claimButton}
+                                                                        onClick={() => handleClaimQuest(quest)}
+                                                                        disabled={pendingRequests.includes(quest.id)}
+                                                                        style={{ padding: '2px 12px', fontSize: '0.7rem', fontWeight: '900', borderRadius: '4px' }}
+                                                                    >
+                                                                        {pendingRequests.includes(quest.id) ? 'PENDING' : (canSelfManage(profile) ? 'CLAIM' : 'REQUEST')}
+                                                                    </button>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <div className={styles.lockedMessage} style={{ opacity: 0.6, fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                                                LOCKED: COMPLETE PREVIOUS MISSIONS
+                                                            </div>
                                                         )}
                                                     </div>
                                                 )}
@@ -315,7 +348,7 @@ export default function MissionsPage() {
                                                     <div style={{ color: 'var(--rank-color)', fontWeight: '900', fontSize: '0.8rem', marginTop: '10px' }}>✓ COMPLETED</div>
                                                 )}
 
-                                                {!completed && !canClaim && isMythic && (
+                                                {!completed && !canClaim && isMythic && !isQuestLocked(quest.id, selectedPath) && (
                                                     <div className={styles.lockedMessage} style={{ marginTop: '10px' }}>
                                                         Complete all quests to unlock
                                                     </div>
