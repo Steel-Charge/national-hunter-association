@@ -478,3 +478,100 @@
     filter: grayscale(1);
     opacity: 0.5;
 }
+
+.statusBadge {
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.requestedBtn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.5);
+    padding: 6px 15px;
+    border-radius: 40px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    cursor: not-allowed;
+}
+
+.actionGroup {
+    display: flex;
+    gap: 10px;
+}
+
+.acceptBtn {
+    border: none;
+    border-radius: 40px;
+    padding: 6px 15px;
+    color: #000;
+    font-weight: 900;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.declineBtn {
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid #ff444450;
+    color: #ff4444;
+    padding: 6px 15px;
+    border-radius: 40px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.acceptBtn:hover,
+.declineBtn:hover {
+    transform: scale(1.05);
+}
+
+.pendingSection {
+    margin-bottom: 40px;
+}
+
+.pendingTitle {
+    font-size: 0.9rem;
+    font-weight: 900;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.pendingList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pendingItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid;
+    padding: 10px 15px;
+    border-radius: 12px;
+}
+
+.pendingInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.miniAvatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.pendingActions {
+    display: flex;
+    gap: 10px;
+}

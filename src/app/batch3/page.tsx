@@ -27,7 +27,7 @@ export default function AgencyPage() {
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const router = useRouter();
-    const { getTheme, profile, joinAgency, createAgency, promoteToCaptain, kickMember, connections, fetchConnections, addConnection, searchHunters } = useHunterStore();
+    const { getTheme, profile, joinAgency, createAgency, promoteToCaptain, kickMember, connections, pendingRequests, sentRequestIds, fetchConnections, addConnection, acceptRequest, declineRequest, searchHunters } = useHunterStore();
 
     const themeRank = getTheme();
     const specialTheme = profile?.settings?.specialTheme || null;
@@ -334,22 +334,56 @@ export default function AgencyPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    {hunter.id !== profile.id && !connections.some(c => c.id === hunter.id) && (
-                                        <button
-                                            onClick={() => handleAddFriend(hunter.id)}
-                                            className={styles.addFriendBtn}
-                                            style={{ backgroundColor: rankColor }}
-                                        >
-                                            ADD
-                                        </button>
+                                    {hunter.id !== profile.id && (
+                                        <>
+                                            {connections.some(c => c.id === hunter.id) ? (
+                                                <span className={styles.statusBadge} style={{ color: rankColor }}>FRIENDS</span>
+                                            ) : sentRequestIds.includes(hunter.id) ? (
+                                                <button className={styles.requestedBtn} disabled>REQUESTED</button>
+                                            ) : pendingRequests.some(r => r.id === hunter.id) ? (
+                                                <div className={styles.actionGroup}>
+                                                    <button onClick={() => acceptRequest(hunter.id)} className={styles.acceptBtn}>ACCEPT</button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleAddFriend(hunter.id)}
+                                                    className={styles.addFriendBtn}
+                                                    style={{ backgroundColor: rankColor }}
+                                                >
+                                                    ADD
+                                                </button>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             ))}
                         </div>
                     )}
 
+                    {pendingRequests.length > 0 && (
+                        <div className={styles.pendingSection}>
+                            <h3 className={styles.pendingTitle} style={{ color: rankColor }}>PENDING REQUESTS</h3>
+                            <div className={styles.pendingList}>
+                                {pendingRequests.map((req) => (
+                                    <div key={req.id} className={styles.pendingItem} style={{ borderColor: `${rankColor}44` }}>
+                                        <div className={styles.pendingInfo}>
+                                            <img src={req.avatarUrl || '/placeholder.png'} alt={req.name} className={styles.miniAvatar} />
+                                            <span>{req.name}</span>
+                                        </div>
+                                        <div className={styles.pendingActions}>
+                                            <button onClick={() => acceptRequest(req.id)} className={styles.acceptBtn} style={{ backgroundColor: rankColor }}>ACCEPT</button>
+                                            <button onClick={() => declineRequest(req.id)} className={styles.declineBtn}>DECLINE</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className={styles.connectionsSection}>
-                        <p className={styles.connectionHint}>CONNECTIONS'S ADDED WILL BE DISPLAYED HERE.</p>
+                        <p className={styles.connectionHint}>
+                            {connections.length > 0 ? "YOUR NETWORK" : "CONNECTIONS'S ADDED WILL BE DISPLAYED HERE."}
+                        </p>
                         <div className={styles.connectionsGrid}>
                             {connections.map((conn) => (
                                 <div

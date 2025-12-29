@@ -208,15 +208,21 @@ interface HunterState {
     toggleTrackQuest: (questId: string) => Promise<void>;
     // Friend System Actions
     connections: UserProfile[];
+    pendingRequests: UserProfile[];
+    sentRequestIds: string[];
     fetchConnections: () => Promise<void>;
     addConnection: (friendId: string) => Promise<void>;
     removeConnection: (friendId: string) => Promise<void>;
+    acceptRequest: (friendId: string) => Promise<void>;
+    declineRequest: (friendId: string) => Promise<void>;
     searchHunters: (query: string) => Promise<UserProfile[]>;
 }
 
 export const useHunterStore = create<HunterState>((set, get) => ({
     profile: null,
     connections: [],
+    pendingRequests: [],
+    sentRequestIds: [],
     loading: true,
     setProfile: (profile) => set({ profile }),
     setLoading: (loading) => set({ loading }),
@@ -1457,39 +1463,61 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             const { data, error } = await supabase
                 .from('connections')
                 .select(`
+                    id,
+                    user_id,
                     friend_id,
-                    profiles!friend_id (
-                        id,
-                        name,
-                        avatar_url,
-                        active_title,
-                        test_scores,
-                        profile_type,
-                        role,
-                        agency_id,
-                        agencies!agency_id ( name )
+                    status,
+                    sender:profiles!user_id (
+                        id, name, avatar_url, active_title, test_scores, profile_type, role, agency_id, agencies!agency_id ( name )
+                    ),
+                    receiver:profiles!friend_id (
+                        id, name, avatar_url, active_title, test_scores, profile_type, role, agency_id, agencies!agency_id ( name )
                     )
                 `)
-                .eq('user_id', profile.id);
+                .or(`user_id.eq.${profile.id},friend_id.eq.${profile.id}`);
 
             if (error) throw error;
 
-            const mappedConnections = (data || []).map((conn: any) => {
-                const p = conn.profiles;
-                return {
-                    id: p.id,
-                    name: p.name,
-                    avatarUrl: p.avatar_url,
-                    activeTitle: p.active_title,
-                    testScores: p.test_scores || {},
-                    profileType: p.profile_type || 'male_20_25',
-                    role: p.role,
-                    agencyId: p.agency_id,
-                    agencyName: p.agencies?.name
-                } as any as UserProfile;
+            const connections: UserProfile[] = [];
+            const pendingRequests: UserProfile[] = [];
+            const sentRequestIds: string[] = [];
+
+            (data || []).forEach((conn: any) => {
+                if (conn.status === 'accepted') {
+                    const other = conn.user_id === profile.id ? conn.receiver : conn.sender;
+                    connections.push({
+                        id: other.id,
+                        name: other.name,
+                        avatarUrl: other.avatar_url,
+                        activeTitle: other.active_title,
+                        testScores: other.test_scores || {},
+                        profileType: other.profile_type || 'male_20_25',
+                        role: other.role,
+                        agencyId: other.agency_id,
+                        agencyName: other.agencies?.name
+                    } as any as UserProfile);
+                } else if (conn.status === 'pending') {
+                    if (conn.friend_id === profile.id) {
+                        // Incoming request
+                        pendingRequests.push({
+                            id: conn.sender.id,
+                            name: conn.sender.name,
+                            avatarUrl: conn.sender.avatar_url,
+                            activeTitle: conn.sender.active_title,
+                            testScores: conn.sender.test_scores || {},
+                            profileType: conn.sender.profile_type || 'male_20_25',
+                            role: conn.sender.role,
+                            agencyId: conn.sender.agency_id,
+                            agencyName: conn.sender.agencies?.name
+                        } as any as UserProfile);
+                    } else {
+                        // Outgoing request
+                        sentRequestIds.push(conn.friend_id);
+                    }
+                }
             });
 
-            set({ connections: mappedConnections });
+            set({ connections, pendingRequests, sentRequestIds });
         } catch (error) {
             console.error('Error fetching connections:', error);
         }
@@ -1502,14 +1530,14 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         try {
             const { error } = await supabase
                 .from('connections')
-                .insert({ user_id: profile.id, friend_id: friendId });
+                .insert({ user_id: profile.id, friend_id: friendId, status: 'pending' });
 
             if (error) throw error;
 
             await get().fetchConnections();
         } catch (error: any) {
             if (error.code === '23505') {
-                alert('Connection already exists.');
+                alert('Request already sent or connection exists.');
             } else {
                 console.error('Error adding connection:', error);
             }
@@ -1524,17 +1552,37 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             const { error } = await supabase
                 .from('connections')
                 .delete()
-                .eq('user_id', profile.id)
-                .eq('friend_id', friendId);
+                .or(`and(user_id.eq.${profile.id},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${profile.id})`);
 
             if (error) throw error;
 
-            set({
-                connections: get().connections.filter(c => c.id !== friendId)
-            });
+            await get().fetchConnections();
         } catch (error) {
             console.error('Error removing connection:', error);
         }
+    },
+
+    acceptRequest: async (friendId: string) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        try {
+            const { error } = await supabase
+                .from('connections')
+                .update({ status: 'accepted' })
+                .eq('user_id', friendId)
+                .eq('friend_id', profile.id);
+
+            if (error) throw error;
+
+            await get().fetchConnections();
+        } catch (error) {
+            console.error('Error accepting request:', error);
+        }
+    },
+
+    declineRequest: async (friendId: string) => {
+        await get().removeConnection(friendId);
     },
 
     searchHunters: async (query: string) => {
