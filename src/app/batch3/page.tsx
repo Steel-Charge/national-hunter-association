@@ -109,8 +109,6 @@ export default function AgencyPage() {
 
     const handleAddFriend = async (friendId: string) => {
         await addConnection(friendId);
-        setSearchQuery('');
-        setSearchResults([]);
     };
 
     const handleJoinAgency = async () => {
