@@ -3,28 +3,27 @@ import React from 'react';
 interface ProfileFrameProps {
     children?: React.ReactNode;
     frameId: string;
+    rank?: string;
     className?: string;
 }
 
-export default function ProfileFrame({ children, frameId, className = '' }: ProfileFrameProps) {
-    const idLower = frameId.toLowerCase().replace(/ /g, '-');
+export default function ProfileFrame({ children, frameId, rank, className = '' }: ProfileFrameProps) {
+    const frameClass = frameId.toLowerCase().replace(/ /g, '-');
+    const rankClass = rank ? rank.toLowerCase() : '';
 
     return (
-        <div className={`profile-frame-container ${idLower} ${className}`}>
+        <div className={`profile-frame-container ${frameClass} ${className}`}>
+            <div className={`rank-overlay ${rankClass}`}>
+                <div className="rank-bit top-left"></div>
+                <div className="rank-bit top-right"></div>
+                <div className="rank-bit bottom-left"></div>
+                <div className="rank-bit bottom-right"></div>
+                <div className="rank-sweep"></div>
+            </div>
+
             <div className="profile-frame-inner">
                 {children}
             </div>
-
-            {/* Base Decorative Accents */}
-            <div className="frame-corner top-left"><div className="corner-accent"></div></div>
-            <div className="frame-corner top-right"><div className="corner-accent"></div></div>
-            <div className="frame-corner bottom-left"><div className="corner-accent"></div></div>
-            <div className="frame-corner bottom-right"><div className="corner-accent"></div></div>
-
-            <div className="side-accent top"></div>
-            <div className="side-accent bottom"></div>
-            <div className="side-accent left"></div>
-            <div className="side-accent right"></div>
 
             <style jsx>{`
                 .profile-frame-container {
@@ -37,176 +36,199 @@ export default function ProfileFrame({ children, frameId, className = '' }: Prof
                     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
                 }
 
-                .frame-corner {
+                .profile-frame-inner {
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                }
+
+                /* RANK OVERLAY SYSTEM - Corner/Edge decorations */
+                .rank-overlay {
                     position: absolute;
-                    width: 40px;
-                    height: 40px;
-                    z-index: 55;
+                    inset: -2px;
+                    pointer-events: none;
                 }
 
-                .corner-accent {
+                .rank-bit {
                     position: absolute;
-                    width: 10px;
-                    height: 10px;
-                    background: #fff;
-                    filter: blur(2px);
-                    opacity: 0;
+                    width: 15px;
+                    height: 15px;
+                    opacity: 0.6;
+                    border: 1px solid transparent;
                 }
 
-                .side-accent {
+                /* Rank Specific Overlays */
+                .rank-overlay.c .rank-bit, .rank-overlay.d .rank-bit, .rank-overlay.e .rank-bit { 
+                    border-color: rgba(0, 242, 255, 0.3); 
+                }
+
+                .rank-overlay.c .rank-bit { 
+                    animation: cornerPulse 2s infinite; 
+                    border-color: #0096ff;
+                }
+
+                .rank-overlay.b .rank-bit { 
+                    border-color: #00ff00; 
+                    width: 20px; 
+                    height: 20px;
+                }
+                .rank-overlay.b:before, .rank-overlay.b:after {
+                    content: '●'; position: absolute; top: 50%; font-size: 6px; color: #00ff00; transform: translateY(-50%);
+                }
+                .rank-overlay.b:before { left: -5px; } .rank-overlay.b:after { right: -5px; }
+
+                .rank-overlay.a .rank-bit { 
+                    border-color: #ffd700; 
+                    border-width: 2px; 
+                    width: 25px; 
+                    height: 25px;
+                }
+                .rank-overlay.a .rank-sweep {
                     position: absolute;
-                    background: rgba(255, 255, 255, 0.05);
-                    opacity: 0;
+                    top: 0; left: 0; right: 0; height: 1px;
+                    background: linear-gradient(90deg, transparent, #ffd700, transparent);
+                    animation: horizontalSweep 6s infinite linear;
+                    opacity: 0.2;
                 }
 
-                /* Default / Common */
-                .common { border-color: rgba(0, 229, 255, 0.3); }
-
-                /* RANK FRAMES - Progressive decoration */
-                .e { border-color: #555; }
-                .d { border: 2px solid var(--rank-d); box-shadow: inset 0 0 15px rgba(100, 240, 100, 0.1); }
-                .c { border: 2px solid var(--rank-c); box-shadow: inset 0 0 20px rgba(0, 150, 255, 0.2); }
-                .b { 
-                    border: 3px solid var(--rank-b); 
-                    box-shadow: inset 0 0 25px rgba(255, 215, 0, 0.2), 0 0 10px rgba(255, 215, 0, 0.1); 
+                .rank-overlay.s .rank-bit { 
+                    border-color: #ff00ff; 
+                    border-width: 2px; 
+                    box-shadow: 0 0 10px #ff00ff; 
+                    width: 30px; 
+                    height: 30px;
                 }
-                .b .frame-corner { border: 4px solid var(--rank-b); width: 50px; height: 50px; }
+                .rank-overlay.s:before {
+                    content: 'OVERCLOCK // S-RANK'; position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+                    font-size: 7px; color: #ff00ff; letter-spacing: 2px; font-weight: 900; opacity: 0.8;
+                }
+                .rank-overlay.s { animation: heatHaze 1s infinite alternate; }
+
+                /* RARITY BASE FRAMES (Tactical Style) */
                 
-                .a { 
-                    border: 3px solid var(--rank-a); 
-                    box-shadow: inset 0 0 35px rgba(255, 120, 0, 0.3), 0 0 20px rgba(255, 120, 0, 0.2); 
-                    border-style: double;
+                /* Common - Cyan Utilitarian */
+                .common { border-color: rgba(0, 229, 255, 0.4); }
+                .common:before { content: 'STANDARD ISSUE'; position: absolute; bottom: 2px; right: 8px; font-size: 6px; color: rgba(0, 229, 255, 0.4); letter-spacing: 1px; }
+
+                /* Rare - Bronze Field Certified */
+                .rare { border: 1px solid #cd7f32; border-radius: 6px; }
+                .rare:after { content: ''; position: absolute; inset: 2px; border: 1px solid rgba(205, 127, 50, 0.3); border-radius: 4px; }
+                
+                /* Epic - Silver Operational */
+                .epic { border: 1px solid rgba(255,255,255,0.2); }
+                .epic:before { content: ''; position: absolute; inset: -1px; border: 1px solid #fff; clip-path: polygon(0 0, 15px 0, 0 15px); }
+                .epic:after { content: ''; position: absolute; inset: 4px; border: 1px solid rgba(255,255,255,0.1); border-style: dashed; }
+
+                /* Legendary - Gold High Authority */
+                .legendary { border: 1px solid #ffd700; background: rgba(255, 215, 0, 0.02); }
+                .legendary:before { 
+                    content: 'SECURED DATA UNIT'; position: absolute; top: -10px; left: 20px; font-size: 7px; 
+                    color: #ffd700; background: #000; padding: 0 6px; border: 1px solid #ffd700;
                 }
-                .a .frame-corner { border: 5px solid var(--rank-a); width: 60px; height: 60px; }
-
-                .s { 
-                    border: 4px solid var(--rank-s); 
-                    box-shadow: inset 0 0 50px rgba(255, 0, 255, 0.4), 0 0 30px rgba(255, 0, 255, 0.3);
-                    animation: pulseS 2s infinite linear;
+                .legendary:after { 
+                    content: ''; position: absolute; right: -2px; top: 20%; bottom: 20%; width: 1px; 
+                    background: repeating-linear-gradient(to bottom, #ffd700, #ffd700 2px, transparent 2px, transparent 4px);
                 }
-                .s .frame-corner { border: 6px solid #fff; width: 70px; height: 70px; mix-blend-mode: overlay; }
 
-                /* TITLE SPECIFIC FRAMES */
+                /* Mythic - Red Classified */
+                .mythic { border: 1px solid #ff2a57; box-shadow: inset 0 0 15px rgba(255, 42, 87, 0.1); }
+                .mythic:before { content: 'CLASS:X'; position: absolute; top: 10px; left: -10px; transform: rotate(-90deg); font-size: 8px; color: #ff2a57; font-weight: 900; }
+                .mythic:after { 
+                    content: ''; position: absolute; inset: 0; 
+                    background: linear-gradient(rgba(255, 42, 87, 0.05) 50%, transparent 50%);
+                    background-size: 100% 4px; pointer-events: none;
+                }
 
-                /* Electric/Lightning Themes */
+                /* Event - Special Dispensation */
+                .event { border: 1px solid rgba(255, 28, 210, 0.5); }
+                .event:before { content: '※'; position: absolute; top: -5px; left: -5px; font-size: 12px; color: #ff1cd2; }
+
+                /* TITLE SPECIFIC TACTICAL FRAMES */
+
+                /* Lightning / Flash / Thunder */
                 .streak-of-lightning, .flashstorm, .thunderborn-tyrant {
-                    border: 2px solid #00f2ff;
-                    box-shadow: inset 0 0 30px rgba(0, 242, 255, 0.3), 0 0 20px rgba(0, 242, 255, 0.2);
-                    animation: thunderFlicker 4s infinite step-end;
+                    border: 1px solid #00f2ff;
+                    box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
                 }
                 .streak-of-lightning:after, .flashstorm:after, .thunderborn-tyrant:after {
-                    content: ''; position: absolute; inset: -5px; border: 1px solid #fff; opacity: 0.1; mix-blend-mode: overlay;
+                    content: 'VOLTAGE HIGH'; position: absolute; bottom: 2px; right: 5px; font-size: 6px; color: #00f2ff; letter-spacing: 2px;
                 }
 
-                /* Wind/Gale Theme */
+                /* Gale / Wind */
                 .sovreign-of-the-gale {
                     border: 1px solid #b2ffda;
-                    box-shadow: inset 0 0 40px rgba(178, 255, 218, 0.2);
-                    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-                    animation: windMorph 8s infinite ease-in-out;
+                    clip-path: polygon(0 10%, 10% 0, 90% 0, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0 90%);
                 }
 
-                /* King/Will Theme */
+                /* Will / King / Authority */
                 .unshakable-will, .the-unfallen-king {
-                    border: 5px solid #ffd700;
-                    border-image: linear-gradient(to bottom, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c) 1;
-                    box-shadow: inset 0 0 50px rgba(191, 149, 63, 0.4);
+                    border: 1px solid #ffd700;
+                    background: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 215, 0, 0.03) 5px, rgba(255, 215, 0, 0.03) 10px);
                 }
 
-                /* Tactical/Plans Theme */
+                /* tactical / Plans */
                 .tactical-master, .echo-of-a-thousand-plans {
                     border: 1px solid #00ffcc;
-                    background: repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(0, 255, 204, 0.05) 20px, rgba(0, 255, 204, 0.05) 40px);
-                    box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
-                    clip-path: polygon(5% 0, 95% 0, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0 95%, 0 5%);
+                    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="1" height="1" fill="rgba(0,255,204,0.1)"/></svg>');
                 }
 
-                /* Flame/Phoenix Theme */
+                /* Flame / Phoenix */
                 .flame-of-will, .phoenix-soul {
-                    border: 2px solid #ff4d00;
-                    box-shadow: inset 0 0 40px rgba(255, 77, 0, 0.4), 0 0 20px rgba(255, 77, 0, 0.3);
-                    animation: flamePulse 2s infinite ease-in-out;
+                    border: 1px solid #ff4d00;
+                    box-shadow: 0 0 15px rgba(255, 77, 0, 0.2);
+                }
+                .flame-of-will:after, .phoenix-soul:after {
+                    content: 'THERMAL'; position: absolute; top: 10px; right: -8px; transform: rotate(90deg); font-size: 6px; color: #ff4d00;
                 }
 
-                /* Beast/Wild Theme */
+                /* Wild / Beast */
                 .wild-instinct, .beastmaster {
-                    border: 4px solid #4a2c0f;
-                    border-style: solid;
-                    box-shadow: inset 0 0 20px rgba(74, 44, 15, 0.5);
-                    border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><path d="M0 0 L10 20 L20 0 L30 20" stroke="brown" fill="none"/></svg>') 30 stretch;
+                    border: 1px solid #fff;
+                    border-image: linear-gradient(to bottom, #4a2c0f, #fff, #4a2c0f) 1;
                 }
 
-                /* Crimson/Relentless Theme */
+                /* Crimson / Seeker / Chase */
                 .relentless-chase, .crimson-seeker {
-                    border: 3px solid #ff0000;
-                    box-shadow: inset 0 0 45px rgba(255, 0, 0, 0.4);
-                    filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5));
+                    border: 1px solid #ff0000;
+                    border-left-width: 4px;
+                }
+                .relentless-chase:after, .crimson-seeker:after {
+                    content: 'TARGET ACQUIRED'; position: absolute; top: -12px; left: 0; font-size: 7px; color: #ff0000; font-weight: 800;
                 }
 
-                /* Ruin/Breaker Theme */
+                /* Ruin / Breaker / Fist */
                 .precision-breaker, .fist-of-ruin {
-                    border: 2px solid #fff;
-                    box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.2);
-                    border-image: linear-gradient(45deg, #fff, #555) 1;
-                    filter: contrast(150%);
+                    border: 1px dashed rgba(255, 255, 255, 0.5);
                 }
 
-                /* Abyss Theme */
+                /* Abyss / Rise / Sink */
                 .sink-or-rise, .warden-of-the-abyss {
-                    border: 2px solid #001233;
-                    background: linear-gradient(to bottom, transparent, rgba(0, 18, 51, 0.4));
-                    box-shadow: inset 0 0 60px rgba(0, 18, 51, 0.8);
+                    border: 1px solid #001233;
+                    box-shadow: inset 0 0 30px #001233;
                 }
 
-                /* Chaos/Sage Theme */
+                /* Chaos / Sage / Balance */
                 .balance-through-chaos, .soulbreaker-sage {
-                    border: 2px solid #9d00ff;
-                    box-shadow: inset 0 0 40px rgba(157, 0, 255, 0.3), 0 0 20px rgba(255, 0, 255, 0.2);
-                    animation: chaosRotate 10s infinite linear;
+                    border: 1px solid #9d00ff;
+                }
+                .balance-through-chaos:before, .soulbreaker-sage:before {
+                    content: ''; position: absolute; inset: -2px; border: 1px dotted #ff00ff; opacity: 0.5;
                 }
 
-                /* Edge Theme */
+                /* Edge / Dancer / Ghost */
                 .edge-dancer, .ghost-of-the-edge {
                     border: 1px solid #fff;
-                    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-                    transform: skew(-2deg);
-                    opacity: 0.9;
+                    opacity: 0.7;
+                    filter: blur(0.3px);
                 }
 
                 /* ANIMATIONS */
-                @keyframes pulseS {
-                    0% { border-color: var(--rank-s); box-shadow: inset 0 0 40px rgba(255, 0, 255, 0.4); }
-                    50% { border-color: #fff; box-shadow: inset 0 0 70px rgba(255, 0, 255, 0.7); }
-                    100% { border-color: var(--rank-s); box-shadow: inset 0 0 40px rgba(255, 0, 255, 0.4); }
-                }
+                @keyframes cornerPulse { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
+                @keyframes horizontalSweep { 0% { top: 0; opacity: 0; } 10% { opacity: 0.3; } 90% { opacity: 0.3; } 100% { top: 100%; opacity: 0; } }
+                @keyframes verticalScan { 0% { top: 0; } 100% { top: 100%; } }
+                @keyframes heatHaze { from { filter: brightness(1); } to { filter: brightness(1.2) contrast(1.1); } }
 
-                @keyframes thunderFlicker {
-                    0% { opacity: 1; }
-                    92% { opacity: 1; }
-                    93% { opacity: 0.5; }
-                    94% { opacity: 1; }
-                    95% { opacity: 0.2; }
-                    96% { opacity: 1; }
-                }
-
-                @keyframes windMorph {
-                    0%, 100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
-                    50% { border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; }
-                }
-
-                @keyframes flamePulse {
-                    0%, 100% { transform: scale(1); filter: brightness(1); }
-                    50% { transform: scale(1.02); filter: brightness(1.3); }
-                }
-
-                @keyframes chaosRotate {
-                    0% { border-style: solid; }
-                    25% { border-style: dotted; }
-                    50% { border-style: dashed; }
-                    75% { border-style: double; }
-                }
-
-                /* Alignment for Corners */
+                /* Corner Alignment */
                 .top-left { top: -2px; left: -2px; border-top: inherit; border-left: inherit; }
                 .top-right { top: -2px; right: -2px; border-top: inherit; border-right: inherit; }
                 .bottom-left { bottom: -2px; left: -2px; border-bottom: inherit; border-left: inherit; }
