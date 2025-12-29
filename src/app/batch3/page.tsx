@@ -196,7 +196,11 @@ export default function AgencyPage() {
                         {isSolo ? 'NAMELESS' : (agency?.name?.toUpperCase() || 'LOADING...')}
                     </h2>
 
-                    {!isSolo && (
+                    {isSolo ? (
+                        <div className={styles.associationMessageInternal}>
+                            <strong>Message:</strong> "While no manager has been assigned to you, rest assured the Association is monitoring your development. Like all our agents, strive for growth. Your progress matters."
+                        </div>
+                    ) : (
                         <>
                             <div className={styles.agencyStats}>
                                 <p>MEMBERS: [{members.length}/10]</p>
@@ -213,7 +217,7 @@ export default function AgencyPage() {
 
                 <div className={styles.agencyLogoContainer}>
                     <img
-                        src={agency?.logo_url || '/placeholder.png'}
+                        src={isSolo ? '/logo_new.png' : (agency?.logo_url || '/placeholder.png')}
                         alt="Agency Logo"
                         className={styles.agencyLogo}
                     />
@@ -227,36 +231,23 @@ export default function AgencyPage() {
                 </button>
             </div>
 
-            {!isSolo && (
-                <h2 className={styles.sectionTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
-                    {agency?.name?.toUpperCase() || 'AGENCY'} MEMBERS
-                </h2>
-            )}
-
-            {!isSolo && (
-                <div className={styles.tabContainer}>
-                    <button
-                        className={`${styles.tabButton} ${activeTab === 'agency' ? styles.activeTab : ''}`}
-                        onClick={() => setActiveTab('agency')}
-                        style={activeTab === 'agency' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
-                    >
-                        AGENCY
-                    </button>
-                    <button
-                        className={`${styles.tabButton} ${activeTab === 'network' ? styles.activeTab : ''}`}
-                        onClick={() => setActiveTab('network')}
-                        style={activeTab === 'network' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
-                    >
-                        NETWORK
-                    </button>
-                </div>
-            )}
-
-            {isSolo && (
-                <div className={styles.associationMessage}>
-                    "While no manager has been assigned to you, rest assured the Association is monitoring your development. Like all our agents, strive for growth. Your progress matters."
-                </div>
-            )}
+            <div className={styles.tabContainer}>
+                <button
+                    className={`${styles.tabButton} ${activeTab === 'agency' ? styles.activeTab : ''} ${isSolo ? styles.disabledTab : ''}`}
+                    onClick={() => !isSolo && setActiveTab('agency')}
+                    style={activeTab === 'agency' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
+                    disabled={isSolo}
+                >
+                    AGENCY
+                </button>
+                <button
+                    className={`${styles.tabButton} ${activeTab === 'network' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('network')}
+                    style={activeTab === 'network' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
+                >
+                    NETWORK
+                </button>
+            </div>
 
             {activeTab === 'agency' ? (
                 <div className={styles.membersGrid}>
