@@ -195,23 +195,35 @@ export default function MissionsPage() {
 
                             {selectedEventQuest && (
                                 <div className={styles.eventDetailCard}>
-                                    <h3 className={styles.eventMissionTitle}>MISSION: {selectedEventQuest.name.toUpperCase()}</h3>
-                                    <p className={styles.eventMissionDesc}>{selectedEventQuest.description}</p>
-                                    <p className={styles.eventMissionDesc}>
-                                        Rewards: <span className={styles.rewardText} style={{ color: 'var(--rarity-event)' }}>Title: {selectedEventQuest.reward.name}</span>
-                                    </p>
+                                    <div className={styles.questHeader}>
+                                        <div className={styles.questTitle}>
+                                            Mission: {selectedEventQuest.name}
+                                        </div>
+                                        <div className={styles.questRarity} style={{ color: 'var(--rarity-event)' }}>
+                                            EVENT
+                                        </div>
+                                    </div>
+
+                                    <p className={styles.questDescription}>{selectedEventQuest.description}</p>
+
+                                    <div className={styles.questReward}>
+                                        <span className={styles.rewardLabel}>Rewards:</span>
+                                        <span className={styles.rewardTitle} style={{ color: 'var(--rarity-event)' }}>
+                                            Title: {selectedEventQuest.reward.name}
+                                        </span>
+                                    </div>
 
                                     {!isQuestCompleted(selectedEventQuest.id) ? (
                                         <button
-                                            className={styles.claimButtonEvent}
+                                            className={styles.claimButton}
                                             onClick={() => handleClaimQuest(selectedEventQuest)}
                                             disabled={pendingRequests.includes(selectedEventQuest.id)}
-                                            style={{ backgroundColor: 'var(--rarity-event)', color: '#fff', borderRadius: '4px', padding: '12px 0', border: 'none', width: '100%', fontWeight: '900', marginTop: '20px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' }}
+                                            style={{ backgroundColor: 'var(--rarity-event)', color: '#fff', marginTop: '20px' }}
                                         >
                                             {pendingRequests.includes(selectedEventQuest.id) ? 'PENDING' : (canSelfManage(profile) ? 'CLAIM' : 'REQUEST')}
                                         </button>
                                     ) : (
-                                        <div style={{ color: 'var(--rarity-event)', textAlign: 'center', fontWeight: 'bold', marginTop: '20px' }}>✓ CLAIMED</div>
+                                        <div style={{ color: 'var(--rarity-event)', textAlign: 'center', fontWeight: 'bold', marginTop: '20px', fontSize: '0.8rem' }}>✓ CLAIMED</div>
                                     )}
                                 </div>
                             )}
