@@ -2,7 +2,7 @@ export type Rank = 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
 // Force redeploy
 
 export const RANK_COLORS: Record<Rank, string> = {
-  'S': '#ff2a57', // Red
+  'S': '#e0e0e0', // Silver/Prismatic Base
   'A': '#ffe597', // Gold
   'B': '#8247ff', // Purple
   'C': '#00abff', // Blue

@@ -29,8 +29,9 @@
   /* Rarities */
   --rarity-legendary: #ffd700;
   /* Gold */
-  --rarity-mythic: #ff2a57;
-  /* Red */
+  --rarity-mythic: #e0e0e0;
+  /* Shimmering Base */
+  --rarity-mythic-glow: rgba(255, 255, 255, 0.8);
   --rarity-event: #ff1cd2;
   /* Pink */
   --rarity-epic: #c0c0c0;
@@ -39,6 +40,15 @@
   /* Bronze */
   --rarity-common: #00e5ff;
   /* Blue (Hunter default) */
+
+  /* Prismatic Gradient Colors */
+  --pris-1: #ff0000;
+  --pris-2: #ff7f00;
+  --pris-3: #ffff00;
+  --pris-4: #00ff00;
+  --pris-5: #0000ff;
+  --pris-6: #4b0082;
+  --pris-7: #8b00ff;
 
   /* Spacing */
   --spacing-xs: 4px;

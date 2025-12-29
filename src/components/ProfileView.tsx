@@ -31,11 +31,17 @@ export default function ProfileView({ profile, overallRank, themeRank, specialTh
         <div className={styles.content}>
             <div className={styles.profileSection}>
                 <div className={styles.info}>
-                    <h1 className={styles.name} style={{ color: colorVar, textShadow: `0 0 10px ${colorVar}` }}>
+                    <h1
+                        className={`${styles.name} ${specialTheme === 'mythic' ? 'mythic-text' : ''}`}
+                        style={specialTheme === 'mythic' ? {} : { color: colorVar, textShadow: `0 0 10px ${colorVar}` }}
+                    >
                         {profile.name}
                     </h1>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
-                        <p className={styles.title} style={{ color: `var(--rarity-${profile.activeTitle?.rarity?.toLowerCase() || 'common'})`, margin: 0 }}>
+                        <p
+                            className={`${styles.title} ${profile.activeTitle?.rarity?.toLowerCase() === 'mythic' ? 'mythic-text' : ''}`}
+                            style={profile.activeTitle?.rarity?.toLowerCase() === 'mythic' ? { margin: 0 } : { color: `var(--rarity-${profile.activeTitle?.rarity?.toLowerCase() || 'common'})`, margin: 0 }}
+                        >
                             {profile.activeTitle?.name || 'Hunter'}
                         </p>
                         {isOwnProfile && (
@@ -50,33 +56,43 @@ export default function ProfileView({ profile, overallRank, themeRank, specialTh
                     </div>
 
                     <div className={styles.badges}>
-                        {displayedTitles.map((title, i) => (
-                            <div
-                                key={i}
-                                className={styles.badge}
-                                style={{
-                                    borderColor: `var(--rarity-${title.rarity?.toLowerCase() || 'common'})`,
-                                    color: `var(--rarity-${title.rarity?.toLowerCase() || 'common'})`,
-                                    background: 'transparent',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px'
-                                }}
-                            >
-                                {title.name}
-                                {canRemoveTitles && title.name !== 'Hunter' && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleRemoveTitle(title.name);
-                                        }}
-                                        style={{ background: 'transparent', border: 'none', color: 'red', cursor: 'pointer', padding: 0, display: 'flex' }}
-                                    >
-                                        <X size={12} />
-                                    </button>
-                                )}
-                            </div>
-                        ))}
+                        {displayedTitles.map((title, i) => {
+                            const isMythicTitle = title.rarity?.toLowerCase() === 'mythic';
+                            return (
+                                <div
+                                    key={i}
+                                    className={`${styles.badge} ${isMythicTitle ? 'mythic-text' : ''}`}
+                                    style={isMythicTitle ? {
+                                        background: 'transparent',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        borderColor: 'var(--rarity-mythic)',
+                                        borderWidth: '2px'
+                                    } : {
+                                        borderColor: `var(--rarity-${title.rarity?.toLowerCase() || 'common'})`,
+                                        color: `var(--rarity-${title.rarity?.toLowerCase() || 'common'})`,
+                                        background: 'transparent',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                    }}
+                                >
+                                    {title.name}
+                                    {canRemoveTitles && title.name !== 'Hunter' && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleRemoveTitle(title.name);
+                                            }}
+                                            style={{ background: 'transparent', border: 'none', color: 'red', cursor: 'pointer', padding: 0, display: 'flex' }}
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 

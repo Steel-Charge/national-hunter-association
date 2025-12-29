@@ -1,127 +1,34 @@
 'use client';
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProfileFrameProps {
     children?: React.ReactNode;
     frameId: string;
-    rank?: string;
     className?: string;
 }
 
-const RANK_CONFIG: Record<string, { color: string; pattern: string; detail: string }> = {
-    'e': { color: '#888', pattern: 'M 0 0 L 10 0 L 10 10', detail: 'SEC-E' },
-    'd': { color: '#00ff00', pattern: 'M 0 0 L 15 0 L 15 5 L 10 5 L 10 15 L 0 15 Z', detail: 'FLD-D' },
-    'c': { color: '#0096ff', pattern: 'M 0 0 L 20 0 L 20 5 L 5 5 L 5 20 L 0 20 Z', detail: 'OPR-C' },
-    'b': { color: '#ffff00', pattern: 'M 0 0 L 25 0 L 25 8 L 8 8 L 8 25 L 0 25 Z', detail: 'TAC-B' },
-    'a': { color: '#ff7800', pattern: 'M 0 0 L 30 0 L 30 10 L 10 10 L 10 30 L 0 30 Z', detail: 'AUTH-A' },
-    's': { color: '#ff00ff', pattern: 'M 0 0 L 35 0 L 35 12 L 12 12 L 12 35 L 0 35 Z', detail: 'SPEC-S' }
-};
-
-export default function ProfileFrame({ children, frameId, rank, className = '' }: ProfileFrameProps) {
-    const frameClass = frameId.toLowerCase().replace(/ /g, '-');
-    const rankKey = rank ? rank.toLowerCase() : 'e';
-    const config = RANK_CONFIG[rankKey] || RANK_CONFIG['e'];
+export default function ProfileFrame({ children, frameId, className = '' }: ProfileFrameProps) {
+    const idLower = frameId.toLowerCase().replace(/ /g, '-');
+    const isMythic = idLower === 'mythic' || idLower === 'sovreign-of-the-gale' || idLower === 'the-unfallen-king' || idLower === 'echo-of-a-thousand-plans' || idLower === 'phoenix-soul' || idLower === 'beastmaster' || idLower === 'crimson-seeker' || idLower === 'fist-of-ruin' || idLower === 'warden-of-the-abyss' || idLower === 'thunderborn-tyrant' || idLower === 'soulbreaker-sage' || idLower === 'ghost-of-the-edge';
 
     return (
-        <div className={`profile-frame-container ${frameClass} ${className}`}>
-            <AnimatePresence mode="wait">
-                <div key={rankKey} className="rank-overlay">
-                    {/* Corner Brackets using SVG for precise hardware look */}
-                    <motion.svg
-                        className="corner top-left"
-                        viewBox="0 0 40 40"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                        <motion.path
-                            d={config.pattern}
-                            stroke={config.color}
-                            fill="none"
-                            strokeWidth="2"
-                        />
-                    </motion.svg>
-
-                    <motion.svg
-                        className="corner top-right"
-                        viewBox="0 0 40 40"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-                    >
-                        <motion.path
-                            d={config.pattern}
-                            stroke={config.color}
-                            fill="none"
-                            strokeWidth="2"
-                            style={{ transform: 'rotate(90deg)', transformOrigin: 'center' }}
-                        />
-                    </motion.svg>
-
-                    <motion.svg
-                        className="corner bottom-right"
-                        viewBox="0 0 40 40"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-                    >
-                        <motion.path
-                            d={config.pattern}
-                            stroke={config.color}
-                            fill="none"
-                            strokeWidth="2"
-                            style={{ transform: 'rotate(180deg)', transformOrigin: 'center' }}
-                        />
-                    </motion.svg>
-
-                    <motion.svg
-                        className="corner bottom-left"
-                        viewBox="0 0 40 40"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
-                    >
-                        <motion.path
-                            d={config.pattern}
-                            stroke={config.color}
-                            fill="none"
-                            strokeWidth="2"
-                            style={{ transform: 'rotate(270deg)', transformOrigin: 'center' }}
-                        />
-                    </motion.svg>
-
-                    {/* Midpoint hardware details */}
-                    <motion.div
-                        className="mid-hardware left"
-                        initial={{ scaleY: 0 }}
-                        animate={{ scaleY: 1 }}
-                        style={{ backgroundColor: config.color }}
-                    />
-                    <motion.div
-                        className="mid-hardware right"
-                        initial={{ scaleY: 0 }}
-                        animate={{ scaleY: 1 }}
-                        style={{ backgroundColor: config.color }}
-                    />
-                </div>
-            </AnimatePresence>
-
-            {/* Sideways HUD Label - Positoned center-right */}
-            <motion.div
-                className="hud-label-v"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 0.8, x: 0 }}
-                transition={{ delay: 1 }}
-            >
-                <span className="label-text">{frameId.toUpperCase().replace(/ /g, '_')}</span>
-                <span className="label-serial">[{config.detail}-{Math.floor(Math.random() * 900) + 100}]</span>
-            </motion.div>
-
+        <div className={`profile-frame-container ${idLower} ${isMythic ? 'prismatic-mythic' : ''} ${className}`}>
             <div className="profile-frame-inner">
                 {children}
             </div>
+
+            {/* Decorative Corner Accents */}
+            <div className="frame-corner top-left"><div className="corner-accent"></div></div>
+            <div className="frame-corner top-right"><div className="corner-accent"></div></div>
+            <div className="frame-corner bottom-left"><div className="corner-accent"></div></div>
+            <div className="frame-corner bottom-right"><div className="corner-accent"></div></div>
+
+            {/* Side Accents for more decoration */}
+            <div className="side-accent top"></div>
+            <div className="side-accent bottom"></div>
+            <div className="side-accent left"></div>
+            <div className="side-accent right"></div>
 
             <style jsx>{`
                 .profile-frame-container {
@@ -140,95 +47,125 @@ export default function ProfileFrame({ children, frameId, rank, className = '' }
                     height: 100%;
                 }
 
-                .rank-overlay {
-                    position: absolute;
-                    inset: -8px;
-                }
-
-                .corner {
+                .frame-corner {
                     position: absolute;
                     width: 40px;
                     height: 40px;
+                    z-index: 55;
                 }
 
-                .top-left { top: 0; left: 0; }
-                .top-right { top: 0; right: 0; }
-                .bottom-right { bottom: 0; right: 0; }
-                .bottom-left { bottom: 0; left: 0; }
-
-                .mid-hardware {
+                .corner-accent {
                     position: absolute;
-                    width: 2px;
-                    height: 40px;
-                    top: calc(50% - 20px);
-                    opacity: 0.3;
+                    width: 12px;
+                    height: 12px;
+                    background: #fff;
+                    filter: blur(2px);
+                    opacity: 0.8;
+                    box-shadow: 0 0 10px #fff;
                 }
-                .mid-hardware.left { left: 0; }
-                .mid-hardware.right { right: 0; }
 
-                /* Sideways HUD Label */
-                .hud-label-v {
+                .side-accent {
                     position: absolute;
-                    right: 8px;
-                    top: 50%;
-                    transform: translateY(-50%) rotate(90deg);
-                    transform-origin: center right;
-                    display: flex;
-                    flex-direction: row;
-                    gap: 15px;
-                    white-space: nowrap;
-                    font-family: monospace;
-                    pointer-events: none;
-                    z-index: 100;
+                    background: rgba(255, 255, 255, 0.1);
+                    opacity: 0.5;
                 }
 
-                .label-text {
-                    font-size: 10px;
-                    font-weight: 900;
-                    color: #fff;
-                    letter-spacing: 2px;
-                    opacity: 0.9;
+                /* PRISMATIC MYTHIC STYLE - Holographic Effect */
+                .prismatic-mythic {
+                    border-width: 3px;
+                    border-style: solid;
+                    animation: prismatic-border 4s linear infinite;
+                    box-shadow: 
+                        inset 0 0 20px rgba(255, 255, 255, 0.3),
+                        0 0 15px rgba(255, 255, 255, 0.2);
+                    background: linear-gradient(
+                        135deg,
+                        rgba(255, 255, 255, 0.05) 0%,
+                        rgba(255, 255, 255, 0.1) 25%,
+                        rgba(255, 0, 0, 0.05) 40%,
+                        rgba(0, 255, 0, 0.05) 50%,
+                        rgba(0, 0, 255, 0.05) 60%,
+                        rgba(255, 255, 255, 0.1) 75%,
+                        rgba(255, 255, 255, 0.05) 100%
+                    );
+                    background-size: 200% 200%;
+                    animation: prismatic-border 4s linear infinite, holographic 8s ease infinite;
                 }
 
-                .label-serial {
-                    font-size: 8px;
-                    color: rgba(255, 255, 255, 0.4);
+                .prismatic-mythic .corner-accent {
+                    background: #fff;
+                    animation: holographic 2s linear infinite;
+                    box-shadow: 0 0 15px #fff, 0 0 30px #fff;
                 }
 
-                /* Rarity Base Frames - High Distinction clip-paths */
-                
-                .common { border: 1px solid rgba(255, 255, 255, 0.2); }
-                
-                .rare { 
-                    border: 1.5px solid #cd7f32; 
-                    clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 0 100%); 
-                }
-
-                .epic { 
-                    border: 1.5px solid #fff; 
-                    clip-path: polygon(10% 0, 90% 0, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0 90%, 0 10%);
-                    box-shadow: inset 0 0 15px rgba(255,255,255,0.1);
-                }
-
+                /* Standard Rarity Styles */
+                .common { border-color: var(--rarity-common); }
+                .rare { border-color: var(--rarity-rare); border-width: 2px; }
+                .epic { border-color: var(--rarity-epic); border-width: 2px; border-style: double; }
                 .legendary { 
-                    border: 1px solid #ffd700;
-                    clip-path: polygon(0 15px, 15px 0, 80% 0, 80% 8px, 100% 8px, 100% 80%, 92% 80%, 92% 100%, 15px 100%, 0 85%);
-                    background: rgba(255, 215, 0, 0.02);
+                    border-color: var(--rarity-legendary); 
+                    border-width: 3px; 
+                    box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.3);
                 }
 
-                .mythic { 
-                    border: 2px solid #ff2a57;
-                    clip-path: polygon(0 0, 30% 0, 35% 10px, 65% 10px, 70% 0, 100% 0, 100% 70%, 90% 75%, 90% 100%, 0 100%);
+                /* Rank-based Styles */
+                .e { border-color: #555; }
+                .d { border: 2px solid var(--rank-d); }
+                .c { border: 2px solid var(--rank-c); box-shadow: inset 0 0 10px rgba(0, 150, 255, 0.2); }
+                .b { border: 3px solid var(--rank-b); box-shadow: inset 0 0 15px rgba(130, 71, 255, 0.3); }
+                .a { border: 3px solid var(--rank-a); border-style: double; box-shadow: inset 0 0 20px rgba(255, 229, 151, 0.4); }
+                .s { border: 4px solid var(--rank-s); box-shadow: inset 0 0 25px rgba(255, 42, 87, 0.5); animation: pulseS 2s infinite; }
+
+                /* ANIMATIONS */
+                @keyframes pulseS {
+                    0% { opacity: 0.8; }
+                    50% { opacity: 1; box-shadow: inset 0 0 40px rgba(255, 42, 87, 0.7); }
+                    100% { opacity: 0.8; }
                 }
 
-                .event {
-                    border: 1.5px solid #ff1cd2;
-                    clip-path: polygon(0 10px, 10px 0, 100% 0, 100% 100%, 0 100%, 0 30%, 10px 30%, 10px 10%);
+                /* Corner Alignment */
+                .top-left { top: -4px; left: -4px; border-top: 3px solid inherit; border-left: 3px solid inherit; }
+                .top-left .corner-accent { top: 0; left: 0; border-top-left-radius: 4px; }
+                
+                .top-right { top: -4px; right: -4px; border-top: 3px solid inherit; border-right: 3px solid inherit; }
+                .top-right .corner-accent { top: 0; right: 0; border-top-right-radius: 4px; }
+                
+                .bottom-left { bottom: -4px; left: -4px; border-bottom: 3px solid inherit; border-left: 3px solid inherit; }
+                .bottom-left .corner-accent { bottom: 0; left: 0; border-bottom-left-radius: 4px; }
+                
+                .bottom-right { bottom: -4px; right: -4px; border-bottom: 3px solid inherit; border-right: 3px solid inherit; }
+                .bottom-right .corner-accent { bottom: 0; right: 0; border-bottom-right-radius: 4px; }
+
+                /* Title-specific additions (keep existing logic) */
+                .sovreign-of-the-gale { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; animation: windMorph 8s infinite ease-in-out; }
+                .the-unfallen-king { border-image: linear-gradient(to bottom, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c) 1; }
+                
+                @keyframes windMorph {
+                    0%, 100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+                    50% { border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; }
                 }
 
-                /* Special Animation for Rank S */
-                .rank-overlay.s {
-                    filter: drop-shadow(0 0 5px #ff00ff);
+                /* Shimmer overlay for all prismatic frames */
+                .prismatic-mythic:before {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    background: linear-gradient(
+                        105deg,
+                        transparent 40%,
+                        rgba(255, 255, 255, 0.4) 45%,
+                        rgba(255, 255, 255, 0.6) 50%,
+                        rgba(255, 255, 255, 0.4) 55%,
+                        transparent 60%
+                    );
+                    background-size: 200% 200%;
+                    animation: shimmer 4s infinite linear;
+                    z-index: 52;
+                }
+
+                @keyframes shimmer {
+                    0% { background-position: 200% 0; }
+                    100% { background-position: -200% 0; }
                 }
             `}</style>
         </div>

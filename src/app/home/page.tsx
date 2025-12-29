@@ -133,10 +133,7 @@ export default function HomePage() {
             </button>
 
             {/* Decorative Profile Frame Border */}
-            <ProfileFrame
-                frameId={profile.activeFrame || profile.activeTitle?.rarity || 'Common'}
-                rank={themeRank}
-            />
+            <ProfileFrame frameId={profile.activeFrame || profile.activeTitle?.rarity || 'Common'} />
 
             {/* Background Image */}
             {/* Background handled globally by BackgroundWrapper */}

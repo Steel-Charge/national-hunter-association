@@ -214,14 +214,10 @@ export default function HunterProfilePage() {
         }
     };
 
-
     return (
         <div className={styles.container}>
             {/* Decorative Profile Frame Border */}
-            <ProfileFrame
-                frameId={profile.activeFrame || profile.activeTitle?.rarity || 'Common'}
-                rank={themeRank}
-            />
+            <ProfileFrame frameId={profile.activeFrame || profile.activeTitle?.rarity || 'Common'} />
 
             {/* Close Button */}
             <button
