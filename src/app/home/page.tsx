@@ -8,14 +8,16 @@ import Navbar from '@/components/Navbar';
 import ProfileView from '@/components/ProfileView';
 import LoadingScreen from '@/components/LoadingScreen';
 import styles from './page.module.css';
-import { Book } from 'lucide-react';
+import { Book, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import ProfileSettings from '@/components/ProfileSettings';
 
 export default function HomePage() {
     const { profile, loading, getOverallRank, getTheme, setProfile } = useHunterStore();
     const router = useRouter();
 
     const [bookOpen, setBookOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     const canUpload = profile?.name === 'Edgelord';
 
@@ -93,10 +95,28 @@ export default function HomePage() {
 
     return (
         <div className={styles.container}>
-            {/* Book icon on logged-in profile */}
+            {/* Book icon - MOVED TO TOP LEFT */}
             <button
                 onClick={() => setBookOpen(!bookOpen)}
                 aria-label={bookOpen ? 'Close profile book' : 'Open profile book'}
+                style={{
+                    position: 'absolute',
+                    top: '20px',
+                    left: '20px',
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'white',
+                    cursor: 'pointer',
+                    zIndex: 100
+                }}
+            >
+                <Book size={36} />
+            </button>
+
+            {/* Profile Settings button - NEW TOP RIGHT */}
+            <button
+                onClick={() => setSettingsOpen(true)}
+                aria-label="Open profile settings"
                 style={{
                     position: 'absolute',
                     top: '20px',
@@ -108,7 +128,7 @@ export default function HomePage() {
                     zIndex: 100
                 }}
             >
-                <Book size={36} />
+                <Settings size={36} />
             </button>
             {/* Background Image */}
             {/* Background handled globally by BackgroundWrapper */}
@@ -200,6 +220,12 @@ export default function HomePage() {
                     </div>
                 </div>
             )}
+
+            {/* Profile Settings Overlay */}
+            <ProfileSettings
+                isOpen={settingsOpen}
+                onClose={() => setSettingsOpen(false)}
+            />
 
             <Navbar />
         </div>

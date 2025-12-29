@@ -26,6 +26,7 @@ export interface UserProfile {
     managerComment?: string; // New
     activeTitle: Title | null;
     activeFrame?: string;
+    unlockedFrames?: string[];
     unlockedTitles: Title[];
     testScores: Record<string, number>; // Test Name -> Value
     completedQuests: string[]; // Quest IDs that have been completed
@@ -68,6 +69,8 @@ const DEFAULT_PROFILE: UserProfile = {
     name: 'Edgelord',
     avatarUrl: '/placeholder.png',
     activeTitle: { name: 'Challenger of Storms', rarity: 'Legendary' },
+    activeFrame: 'Legendary',
+    unlockedFrames: ['Common', 'Rare', 'Epic', 'Legendary', 'Mythic'],
     unlockedTitles: [
         { name: 'Windrunner', rarity: 'Mythic' },
         { name: 'Challenger of Storms', rarity: 'Legendary' },
@@ -153,6 +156,8 @@ const NEW_HUNTER_PROFILE: UserProfile = {
     name: '',
     avatarUrl: '/placeholder.png',
     activeTitle: { name: 'Hunter', rarity: 'Common' },
+    activeFrame: 'Common',
+    unlockedFrames: ['Common'],
     unlockedTitles: [{ name: 'Hunter', rarity: 'Common' }],
     testScores: {}, // Empty scores = 0 in UI
     completedQuests: [],
@@ -181,6 +186,7 @@ interface HunterState {
     denyRequest: (requestId: string) => Promise<void>;
     setActiveTitle: (title: Title) => Promise<void>;
     updateAvatar: (url: string) => Promise<void>;
+    setActiveFrame: (frame: string) => Promise<void>;
     updateSettings: (newSettings: Partial<UserSettings>) => Promise<void>;
     updateName: (newName: string) => Promise<{ success: boolean; error?: string }>;
     updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
@@ -297,7 +303,9 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         managerComment: profileData.manager_comment,
                         email: profileData.email,
                         phone: profileData.phone,
-                        trackedQuests: profileData.tracked_quests || []
+                        trackedQuests: profileData.tracked_quests || [],
+                        activeFrame: profileData.active_frame || (isExclusive ? 'Mythic' : 'Common'),
+                        unlockedFrames: profileData.unlocked_frames || ['Common']
                     }
                 });
             }
@@ -351,7 +359,9 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                     is_admin: initialProfile.isAdmin,
                     profile_type: initialProfile.profileType,
                     email: initialProfile.email,
-                    phone: initialProfile.phone
+                    phone: initialProfile.phone,
+                    active_frame: initialProfile.activeFrame,
+                    unlocked_frames: initialProfile.unlockedFrames
                 }])
                 .select()
                 .single();
@@ -844,6 +854,22 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             .eq('id', profile.id);
 
         if (error) console.error('Error setting active title:', error);
+    },
+
+    setActiveFrame: async (frame: string) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        // Optimistic update
+        set({ profile: { ...profile, activeFrame: frame } });
+
+        // DB Update
+        const { error } = await supabase
+            .from('profiles')
+            .update({ active_frame: frame })
+            .eq('id', profile.id);
+
+        if (error) console.error('Error setting active frame:', error);
     },
 
     updateAvatar: async (url: string) => {

@@ -276,7 +276,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
 
             {/* Radar Chart Section */}
             <div className={styles.chartContainer} style={{ position: 'relative' }}>
-                <ProfileFrame rarity={profile.activeTitle?.rarity || 'Common'}>
+                <ProfileFrame rarity={(profile.activeFrame || profile.activeTitle?.rarity || 'Common') as any}>
                     <RadarChart
                         labels={radarLabels}
                         data={radarData}

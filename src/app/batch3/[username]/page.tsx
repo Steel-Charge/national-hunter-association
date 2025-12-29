@@ -212,14 +212,14 @@ export default function HunterProfilePage() {
                 <X size={40} />
             </button>
 
-            {/* Book icon to open profile interview modal */}
+            {/* Book icon to open profile interview modal - MOVED TO TOP LEFT */}
             <button
                 onClick={() => setBookOpen(!bookOpen)}
                 aria-label={bookOpen ? 'Close profile book' : 'Open profile book'}
                 style={{
                     position: 'absolute',
                     top: '20px',
-                    right: '80px',
+                    left: '20px',
                     background: 'transparent',
                     border: 'none',
                     color: 'white',

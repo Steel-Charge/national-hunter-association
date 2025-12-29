@@ -185,91 +185,7 @@ export default function SettingsPage() {
                 </h1>
             </div>
 
-            {/* Profile Image Section */}
-            <div className={styles.section} style={{ borderColor: `${rankColor}44` }}>
-                <h2 className={styles.sectionTitle} style={{ color: rankColor }}>
-                    <ImageIcon size={20} /> Change Profile Image
-                </h2>
-                {localAvatar && (
-                    <div className={styles.avatarPreview} style={{ backgroundImage: `url(${localAvatar})` }} />
-                )}
-                <div className={styles.row} style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className={styles.fileInput}
-                        ref={fileInputRef}
-                    />
-                    <button
-                        className={styles.themeBtn}
-                        onClick={() => fileInputRef.current?.click()}
-                        style={{ marginTop: '10px' }}
-                    >
-                        Upload Image
-                    </button>
-                </div>
-
-                {/* Change Hunter Name Sub-section */}
-                <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
-                    <h3 className={styles.sectionTitle} style={{ color: rankColor, fontSize: '1rem', marginBottom: '10px' }}>
-                        Change Hunter Name
-                    </h3>
-                    <div className={styles.row}>
-                        <input
-                            type="text"
-                            value={localName}
-                            onChange={handleNameChange}
-                            placeholder="Enter Hunter Name"
-                            className={styles.select}
-                            style={{ borderColor: rankColor }}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Active Title Section */}
-            <div className={styles.section} style={{ borderColor: `${rankColor}44` }}>
-                <h2 className={styles.sectionTitle} style={{ color: rankColor }}>
-                    <Award size={20} /> Set Active Title
-                </h2>
-                <div className={styles.row}>
-                    <select
-                        className={styles.select}
-                        value={localActiveTitle?.name || ''}
-                        onChange={handleTitleChange}
-                        style={{ borderColor: rankColor }}
-                    >
-                        {profile.unlockedTitles.map((title, i) => (
-                            <option key={i} value={title.name}>
-                                {title.name} ({title.rarity})
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-
-            {/* Stats Calculator Section - Only visible for admins */}
-            {profile.isAdmin && (
-                <div className={styles.section} style={{ borderColor: `${rankColor}44` }}>
-                    <h2 className={styles.sectionTitle} style={{ color: rankColor }}>
-                        <Calculator size={20} /> Stats Calculator
-                    </h2>
-                    <div className={styles.row}>
-                        <span className={styles.label}>Enable Stats Updates</span>
-                        <label className={styles.toggle}>
-                            <input
-                                type="checkbox"
-                                checked={localStatsCalc}
-                                onChange={toggleStatsCalculator}
-                            />
-                            <span className={styles.slider}></span>
-                        </label>
-                    </div>
-                </div>
-            )}
-
-            {/* Theme Section (includes Rarity Themes) */}
+            {/* Theme Section - FILTERED TO ONLY SHOW UNLOCKED */}
             <div className={styles.section} style={{ borderColor: `${rankColor}44` }}>
                 <h2 className={styles.sectionTitle} style={{ color: rankColor }}>
                     <Palette size={20} /> Change Theme
@@ -277,6 +193,8 @@ export default function SettingsPage() {
                 <div className={styles.themeGrid}>
                     {RANKS.map((rank) => {
                         const unlocked = isRankUnlocked(rank);
+                        if (!unlocked) return null; // HIDE LOCKED THEMES
+
                         const isActive = (localTheme || overallRank) === rank;
                         const rColor = `var(--rank-${rank.toLowerCase()})`;
 
@@ -284,56 +202,54 @@ export default function SettingsPage() {
                             <button
                                 key={rank}
                                 className={`${styles.themeBtn} ${isActive ? styles.active : ''}`}
-                                onClick={() => unlocked && handleThemeChange(rank)}
-                                disabled={!unlocked}
+                                onClick={() => handleThemeChange(rank)}
                                 style={isActive ? { borderColor: rColor, boxShadow: `0 0 10px ${rColor}`, color: rColor } : {}}
                             >
                                 {rank}-Rank
-                                {!unlocked && <span style={{ display: 'block', fontSize: '0.7rem' }}>[LOCKED]</span>}
                             </button>
                         );
                     })}
 
-                    {/* Rarity theme buttons grouped with rank options */}
-                    <button
-                        className={`${styles.themeBtn} ${localSpecialTheme === 'rare' ? styles.active : ''}`}
-                        onClick={() => rareUnlocked && toggleSpecialTheme('rare')}
-                        disabled={!rareUnlocked}
-                        style={localSpecialTheme === 'rare' ? { borderColor: 'var(--rarity-rare)', boxShadow: `0 0 10px var(--rarity-rare)`, color: 'var(--rarity-rare)' } : {}}
-                    >
-                        Rare Theme
-                        {!rareUnlocked && <span style={{ display: 'block', fontSize: '0.7rem' }}>[LOCKED]</span>}
-                    </button>
+                    {/* Rarity themes - ALSO HIDE LOCKED */}
+                    {rareUnlocked && (
+                        <button
+                            className={`${styles.themeBtn} ${localSpecialTheme === 'rare' ? styles.active : ''}`}
+                            onClick={() => toggleSpecialTheme('rare')}
+                            style={localSpecialTheme === 'rare' ? { borderColor: 'var(--rarity-rare)', boxShadow: `0 0 10px var(--rarity-rare)`, color: 'var(--rarity-rare)' } : {}}
+                        >
+                            Rare Theme
+                        </button>
+                    )}
 
-                    <button
-                        className={`${styles.themeBtn} ${localSpecialTheme === 'epic' ? styles.active : ''}`}
-                        onClick={() => epicUnlocked && toggleSpecialTheme('epic')}
-                        disabled={!epicUnlocked}
-                        style={localSpecialTheme === 'epic' ? { borderColor: 'var(--rarity-epic)', boxShadow: `0 0 10px var(--rarity-epic)`, color: 'var(--rarity-epic)' } : {}}
-                    >
-                        Epic Theme
-                        {!epicUnlocked && <span style={{ display: 'block', fontSize: '0.7rem' }}>[LOCKED]</span>}
-                    </button>
+                    {epicUnlocked && (
+                        <button
+                            className={`${styles.themeBtn} ${localSpecialTheme === 'epic' ? styles.active : ''}`}
+                            onClick={() => toggleSpecialTheme('epic')}
+                            style={localSpecialTheme === 'epic' ? { borderColor: 'var(--rarity-epic)', boxShadow: `0 0 10px var(--rarity-epic)`, color: 'var(--rarity-epic)' } : {}}
+                        >
+                            Epic Theme
+                        </button>
+                    )}
 
-                    <button
-                        className={`${styles.themeBtn} ${localSpecialTheme === 'legendary' ? styles.active : ''}`}
-                        onClick={() => legendaryUnlocked && toggleSpecialTheme('legendary')}
-                        disabled={!legendaryUnlocked}
-                        style={localSpecialTheme === 'legendary' ? { borderColor: 'var(--rarity-legendary)', boxShadow: `0 0 10px var(--rarity-legendary)`, color: 'var(--rarity-legendary)' } : {}}
-                    >
-                        Legendary Theme
-                        {!legendaryUnlocked && <span style={{ display: 'block', fontSize: '0.7rem' }}>[LOCKED]</span>}
-                    </button>
+                    {legendaryUnlocked && (
+                        <button
+                            className={`${styles.themeBtn} ${localSpecialTheme === 'legendary' ? styles.active : ''}`}
+                            onClick={() => toggleSpecialTheme('legendary')}
+                            style={localSpecialTheme === 'legendary' ? { borderColor: 'var(--rarity-legendary)', boxShadow: `0 0 10px var(--rarity-legendary)`, color: 'var(--rarity-legendary)' } : {}}
+                        >
+                            Legendary Theme
+                        </button>
+                    )}
 
-                    <button
-                        className={`${styles.themeBtn} ${localSpecialTheme === 'mythic' ? styles.active : ''}`}
-                        onClick={() => mythicUnlocked && toggleSpecialTheme('mythic')}
-                        disabled={!mythicUnlocked}
-                        style={localSpecialTheme === 'mythic' ? { borderColor: 'var(--rarity-mythic)', boxShadow: `0 0 10px var(--rarity-mythic)`, color: 'var(--rarity-mythic)' } : {}}
-                    >
-                        Mythic Theme
-                        {!mythicUnlocked && <span style={{ display: 'block', fontSize: '0.7rem' }}>[LOCKED]</span>}
-                    </button>
+                    {mythicUnlocked && (
+                        <button
+                            className={`${styles.themeBtn} ${localSpecialTheme === 'mythic' ? styles.active : ''}`}
+                            onClick={() => toggleSpecialTheme('mythic')}
+                            style={localSpecialTheme === 'mythic' ? { borderColor: 'var(--rarity-mythic)', boxShadow: `0 0 10px var(--rarity-mythic)`, color: 'var(--rarity-mythic)' } : {}}
+                        >
+                            Mythic Theme
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -369,7 +285,7 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            {/* Save Button */}
+            {/* Save Button for Theme */}
             {hasChanges && (
                 <div className={styles.saveContainer}>
                     <button className={styles.saveBtn} onClick={saveChanges} style={{ backgroundColor: rankColor, boxShadow: `0 0 15px ${rankColor}` }}>
