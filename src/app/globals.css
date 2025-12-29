@@ -209,3 +209,110 @@ h3 {
 .rank-E {
   color: var(--rank-e);
 }
+
+/* --- PRISMATIC & MYTHIC EFFECTS --- */
+
+@keyframes prismatic-swirl {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes holographic-shine {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes prismatic-border {
+  0% {
+    border-color: var(--pris-1);
+  }
+
+  14% {
+    border-color: var(--pris-2);
+  }
+
+  28% {
+    border-color: var(--pris-3);
+  }
+
+  42% {
+    border-color: var(--pris-4);
+  }
+
+  57% {
+    border-color: var(--pris-5);
+  }
+
+  71% {
+    border-color: var(--pris-6);
+  }
+
+  85% {
+    border-color: var(--pris-7);
+  }
+
+  100% {
+    border-color: var(--pris-1);
+  }
+}
+
+.mythic-text {
+  background: linear-gradient(45deg,
+      #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff,
+      #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff) !important;
+  background-size: 400% 400% !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+  animation: prismatic-swirl 8s ease-in-out infinite !important;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.4)) !important;
+  font-weight: 900 !important;
+  display: inline-block !important;
+  /* Helps with background clipping on some elements */
+}
+
+.mythic-bg {
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.2) 25%,
+      var(--pris-1) 35%,
+      var(--pris-3) 45%,
+      var(--pris-4) 55%,
+      var(--pris-5) 65%,
+      rgba(255, 255, 255, 0.2) 75%,
+      rgba(255, 255, 255, 0.1) 100%);
+  background-size: 300% 300%;
+  animation: holographic-shine 10s linear infinite;
+  position: relative;
+}
+
+.mythic-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.3) 45%,
+      rgba(255, 255, 255, 0.5) 50%,
+      rgba(255, 255, 255, 0.3) 55%,
+      transparent 60%);
+  background-size: 200% 200%;
+  animation: holographic-shine 4s infinite linear;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
