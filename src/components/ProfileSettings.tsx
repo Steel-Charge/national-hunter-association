@@ -11,22 +11,48 @@ interface ProfileSettingsProps {
 }
 
 const AVAILABLE_FRAMES = [
-    { id: 'Common', name: 'Common Frame' },
-    { id: 'Rare', name: 'Rare Frame' },
-    { id: 'Epic', name: 'Epic Frame' },
-    { id: 'Legendary', name: 'Legendary Frame' },
-    { id: 'Mythic', name: 'Mythic Frame' },
-    { id: 'Event', name: 'Event Frame' },
-    { id: 'E', name: 'E-Rank Frame' },
-    { id: 'D', name: 'D-Rank Frame' },
-    { id: 'C', name: 'C-Rank Frame' },
-    { id: 'B', name: 'B-Rank Frame' },
-    { id: 'A', name: 'A-Rank Frame' },
-    { id: 'S', name: 'S-Rank Frame' }
+    { id: 'Common', name: 'Common' },
+    { id: 'Rare', name: 'Rare' },
+    { id: 'Epic', name: 'Epic' },
+    { id: 'Legendary', name: 'Legendary' },
+    { id: 'Mythic', name: 'Mythic' },
+    { id: 'Event', name: 'Event' },
+    { id: 'E', name: 'E-Rank' },
+    { id: 'D', name: 'D-Rank' },
+    { id: 'C', name: 'C-Rank' },
+    { id: 'B', name: 'B-Rank' },
+    { id: 'A', name: 'A-Rank' },
+    { id: 'S', name: 'S-Rank' },
+    { id: 'Streak of Lightning', name: 'Streak of Lightning' },
+    { id: 'Sovreign of the Gale', name: 'Sovreign of the Gale' },
+    { id: 'Unshakable Will', name: 'Unshakable Will' },
+    { id: 'The Unfallen King', name: 'The Unfallen King' },
+    { id: 'Tactical Master', name: 'Tactical Master' },
+    { id: 'Echo of a Thousand Plans', name: 'Echo of a Thousand Plans' },
+    { id: 'Flame of Will', name: 'Flame of Will' },
+    { id: 'Phoenix Soul', name: 'Phoenix Soul' },
+    { id: 'Wild Instinct', name: 'Wild Instinct' },
+    { id: 'Beastmaster', name: 'Beastmaster' },
+    { id: 'Relentless Chase', name: 'Relentless Chase' },
+    { id: 'Crimson Seeker', name: 'Crimson Seeker' },
+    { id: 'Precision Breaker', name: 'Precision Breaker' },
+    { id: 'Fist of Ruin', name: 'Fist of Ruin' },
+    { id: 'Sink or Rise', name: 'Sink or Rise' },
+    { id: 'Warden of the Abyss', name: 'Warden of the Abyss' },
+    { id: 'Flashstorm', name: 'Flashstorm' },
+    { id: 'Thunderborn Tyrant', name: 'Thunderborn Tyrant' },
+    { id: 'Balance Through Chaos', name: 'Balance Through Chaos' },
+    { id: 'Soulbreaker Sage', name: 'Soulbreaker Sage' },
+    { id: 'Edge Dancer', name: 'Edge Dancer' },
+    { id: 'Ghost of the Edge', name: 'Ghost of the Edge' }
 ];
 
+import { RANK_COLORS, Rank, calculateOverallRank } from '@/lib/game-logic';
+
 export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProps) {
-    const { profile, updateAvatar, updateName, setActiveTitle, setActiveFrame } = useHunterStore();
+    const { profile, updateAvatar, updateName, setActiveTitle, setActiveFrame, getTheme } = useHunterStore();
+    const themeRank = getTheme();
+    const rankColor = RANK_COLORS[themeRank as Rank] || '#00e5ff';
     const [localName, setLocalName] = useState('');
     const [localAvatar, setLocalAvatar] = useState('');
     const [localTitle, setLocalTitle] = useState<Title | null>(null);
@@ -94,12 +120,12 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
 
     return (
         <div className={styles.overlay}>
-            <div className={styles.modal}>
+            <div className={styles.modal} style={{ '--theme-color': rankColor } as React.CSSProperties}>
                 <button onClick={onClose} className={styles.closeBtn}>
                     <X size={24} />
                 </button>
 
-                <h2 className={styles.title}>PROFILE SETTINGS</h2>
+                <h2 className={styles.title} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}44` }}>PROFILE SETTINGS</h2>
 
                 <div className={styles.content}>
                     {/* Avatar Section */}
@@ -107,11 +133,15 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                         <div className={styles.avatarContainer}>
                             <div
                                 className={styles.avatarPreview}
-                                style={{ backgroundImage: `url(${localAvatar || '/placeholder.png'})` }}
+                                style={{
+                                    backgroundImage: `url(${localAvatar || '/placeholder.png'})`,
+                                    borderColor: `${rankColor}44`
+                                }}
                             />
                             <button
                                 className={styles.cameraBtn}
                                 onClick={() => fileInputRef.current?.click()}
+                                style={{ backgroundColor: rankColor }}
                             >
                                 <Camera size={16} />
                             </button>
@@ -127,7 +157,7 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
 
                     {/* Name Section */}
                     <div className={styles.section}>
-                        <label className={styles.label}>
+                        <label className={styles.label} style={{ color: `${rankColor}aa` }}>
                             <UserIcon size={16} /> HUNTER NAME
                         </label>
                         <input
@@ -136,12 +166,13 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                             value={localName}
                             onChange={(e) => setLocalName(e.target.value)}
                             placeholder="Enter Name"
+                            style={{ borderColor: `${rankColor}33` }}
                         />
                     </div>
 
                     {/* Title Section */}
                     <div className={styles.section}>
-                        <label className={styles.label}>
+                        <label className={styles.label} style={{ color: `${rankColor}aa` }}>
                             <Award size={16} /> ACTIVE TITLE
                         </label>
                         <select
@@ -151,6 +182,7 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                                 const title = profile.unlockedTitles.find(t => t.name === e.target.value);
                                 if (title) setLocalTitle(title);
                             }}
+                            style={{ borderColor: `${rankColor}33` }}
                         >
                             {profile.unlockedTitles.map((t) => (
                                 <option key={t.name} value={t.name}>
@@ -162,13 +194,14 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
 
                     {/* Frame Section */}
                     <div className={styles.section}>
-                        <label className={styles.label}>
+                        <label className={styles.label} style={{ color: `${rankColor}aa` }}>
                             <Layout size={16} /> PROFILE FRAME
                         </label>
                         <select
                             className={styles.select}
                             value={localFrame}
                             onChange={(e) => setLocalFrame(e.target.value)}
+                            style={{ borderColor: `${rankColor}33` }}
                         >
                             {AVAILABLE_FRAMES.filter(f => unlockedFrames.includes(f.id)).map((f) => (
                                 <option key={f.id} value={f.id}>
@@ -183,6 +216,11 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                     className={styles.saveBtn}
                     onClick={handleSave}
                     disabled={isSaving}
+                    style={{
+                        backgroundColor: rankColor,
+                        boxShadow: `0 0 20px ${rankColor}44`,
+                        color: '#000'
+                    }}
                 >
                     <Save size={20} /> {isSaving ? 'SAVING...' : 'SAVE CHANGES'}
                 </button>

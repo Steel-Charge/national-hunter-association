@@ -14,13 +14,13 @@
 
 .modal {
     background: #0a0a12;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--theme-color, rgba(255, 255, 255, 0.1));
     border-radius: 20px;
     padding: 2.5rem;
     width: 90%;
     max-width: 450px;
     position: relative;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 20px var(--theme-color, transparent);
     animation: slideUp 0.3s ease-out;
 }
 
@@ -48,7 +48,7 @@
 }
 
 .closeBtn:hover {
-    color: #fff;
+    color: var(--theme-color, #fff);
 }
 
 .title {
@@ -87,13 +87,13 @@
     background-position: center;
     border: 2px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
 }
 
 .cameraBtn {
     position: absolute;
     bottom: 0;
     right: 0;
-    background: #fff;
     color: #000;
     border: none;
     border-radius: 50%;
@@ -110,10 +110,11 @@
 .label {
     font-size: 0.8rem;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.5);
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .input,
@@ -125,13 +126,15 @@
     color: #fff;
     font-size: 1rem;
     width: 100%;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
 }
 
 .input:focus,
 .select:focus {
     outline: none;
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--theme-color, rgba(255, 255, 255, 0.3));
+    box-shadow: 0 0 10px var(--theme-color, transparent);
 }
 
 .saveBtn {
@@ -140,8 +143,6 @@
     padding: 1rem;
     border-radius: 12px;
     border: none;
-    background: #fff;
-    color: #000;
     font-weight: 800;
     font-size: 1rem;
     display: flex;
@@ -149,16 +150,17 @@
     justify-content: center;
     gap: 0.8rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .saveBtn:hover {
-    background: #e0e0e0;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
+    filter: brightness(1.1);
 }
 
 .saveBtn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
+    filter: grayscale(1);
 }
