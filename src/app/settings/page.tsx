@@ -146,7 +146,7 @@ export default function SettingsPage() {
             });
         }
 
-        if (localActiveTitle && localActiveTitle.name !== profile.activeTitle.name) {
+        if (localActiveTitle && localActiveTitle.name !== profile.activeTitle?.name) {
             await setActiveTitle(localActiveTitle);
         }
 
