@@ -129,6 +129,11 @@
     transition: all 0.2s;
 }
 
+.select option {
+    background-color: #0a0a12;
+    color: #fff;
+}
+
 .input:focus,
 .select:focus {
     outline: none;
