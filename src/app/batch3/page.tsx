@@ -387,154 +387,169 @@ export default function AgencyPage() {
                                 <div
                                     key={conn.id}
                                     className={styles.connectionCard}
-                                    onClick={() => handleHunterClick(conn.name)}
                                     style={{ borderColor: rankColor }}
                                 >
-                                    <img src={conn.avatarUrl || '/placeholder.png'} alt={conn.name} className={conn.avatarUrl ? '' : styles.grayscale} />
-                                    <div className={styles.connectionInfo}>
-                                        <h3>{conn.name}</h3>
+                                    <div
+                                        className={styles.memberContentWrapper}
+                                        onClick={() => handleHunterClick(conn.name)}
+                                    >
+                                        <img
+                                            src={conn.avatarUrl || '/placeholder.png'}
+                                            alt={conn.name}
+                                            className={`${styles.memberAvatar} ${conn.avatarUrl ? '' : styles.grayscale}`}
+                                        />
+                                        <div className={styles.memberOverlay}>
+                                            <h3 className={styles.memberName}>{conn.name}</h3>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
-            {showSettings && agency && (
-                <AgencySettings agency={agency} onClose={() => setShowSettings(false)} />
-            )}
+            {
+                showSettings && agency && (
+                    <AgencySettings agency={agency} onClose={() => setShowSettings(false)} />
+                )
+            }
 
-            {showJoinModal && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0,0,0,0.8)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
+            {
+                showJoinModal && (
                     <div style={{
-                        background: '#1a1a1a',
-                        padding: '2rem',
-                        borderRadius: '8px',
-                        border: `2px solid ${rankColor}`,
-                        minWidth: '400px',
-                        position: 'relative'
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.8)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000
                     }}>
-                        <button
-                            onClick={() => setShowJoinModal(false)}
-                            style={{
-                                position: 'absolute',
-                                top: '1rem',
-                                right: '1rem',
-                                background: 'transparent',
-                                border: 'none',
-                                color: '#fff',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            <X size={24} />
-                        </button>
-                        <h2 style={{ color: rankColor, marginBottom: '1rem' }}>JOIN AGENCY</h2>
-                        <p style={{ color: '#aaa', marginBottom: '1.5rem' }}>Enter your agency invite code</p>
-                        <input
-                            type="text"
-                            value={inviteCode}
-                            onChange={(e) => setInviteCode(e.target.value)}
-                            placeholder="INVITE CODE"
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                background: '#0a0a0a',
-                                border: `1px solid ${rankColor}`,
-                                color: '#fff',
-                                borderRadius: '4px',
-                                marginBottom: '1rem',
-                                fontSize: '1rem'
-                            }}
-                        />
-                        <button
-                            onClick={handleJoinAgency}
-                            className={styles.joinBtn}
-                            style={{ width: '100%' }}
-                        >
-                            JOIN
-                        </button>
+                        <div style={{
+                            background: '#1a1a1a',
+                            padding: '2rem',
+                            borderRadius: '8px',
+                            border: `2px solid ${rankColor}`,
+                            minWidth: '400px',
+                            position: 'relative'
+                        }}>
+                            <button
+                                onClick={() => setShowJoinModal(false)}
+                                style={{
+                                    position: 'absolute',
+                                    top: '1rem',
+                                    right: '1rem',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#fff',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <X size={24} />
+                            </button>
+                            <h2 style={{ color: rankColor, marginBottom: '1rem' }}>JOIN AGENCY</h2>
+                            <p style={{ color: '#aaa', marginBottom: '1.5rem' }}>Enter your agency invite code</p>
+                            <input
+                                type="text"
+                                value={inviteCode}
+                                onChange={(e) => setInviteCode(e.target.value)}
+                                placeholder="INVITE CODE"
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    background: '#0a0a0a',
+                                    border: `1px solid ${rankColor}`,
+                                    color: '#fff',
+                                    borderRadius: '4px',
+                                    marginBottom: '1rem',
+                                    fontSize: '1rem'
+                                }}
+                            />
+                            <button
+                                onClick={handleJoinAgency}
+                                className={styles.joinBtn}
+                                style={{ width: '100%' }}
+                            >
+                                JOIN
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Create Agency Modal */}
-            {showCreateModal && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0,0,0,0.8)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
+            {
+                showCreateModal && (
                     <div style={{
-                        background: '#1a1a1a',
-                        padding: '2rem',
-                        borderRadius: '8px',
-                        border: `2px solid ${rankColor}`,
-                        minWidth: '400px',
-                        position: 'relative'
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.8)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000
                     }}>
-                        <button
-                            onClick={() => setShowCreateModal(false)}
-                            style={{
-                                position: 'absolute',
-                                top: '1rem',
-                                right: '1rem',
-                                background: 'transparent',
-                                border: 'none',
-                                color: '#fff',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            <X size={24} />
-                        </button>
-                        <h2 style={{ color: rankColor, marginBottom: '1rem' }}>CREATE AGENCY</h2>
-                        <p style={{ color: '#aaa', marginBottom: '1.5rem' }}>Choose a name for your agency</p>
-                        <input
-                            type="text"
-                            value={agencyName}
-                            onChange={(e) => setAgencyName(e.target.value)}
-                            placeholder="AGENCY NAME"
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                background: '#0a0a0a',
-                                border: `1px solid ${rankColor}`,
-                                color: '#fff',
-                                borderRadius: '4px',
-                                marginBottom: '1rem',
-                                fontSize: '1rem'
-                            }}
-                        />
-                        <button
-                            onClick={handleCreateAgency}
-                            className={styles.joinBtn}
-                            style={{ width: '100%' }}
-                        >
-                            CREATE
-                        </button>
+                        <div style={{
+                            background: '#1a1a1a',
+                            padding: '2rem',
+                            borderRadius: '8px',
+                            border: `2px solid ${rankColor}`,
+                            minWidth: '400px',
+                            position: 'relative'
+                        }}>
+                            <button
+                                onClick={() => setShowCreateModal(false)}
+                                style={{
+                                    position: 'absolute',
+                                    top: '1rem',
+                                    right: '1rem',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#fff',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <X size={24} />
+                            </button>
+                            <h2 style={{ color: rankColor, marginBottom: '1rem' }}>CREATE AGENCY</h2>
+                            <p style={{ color: '#aaa', marginBottom: '1.5rem' }}>Choose a name for your agency</p>
+                            <input
+                                type="text"
+                                value={agencyName}
+                                onChange={(e) => setAgencyName(e.target.value)}
+                                placeholder="AGENCY NAME"
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    background: '#0a0a0a',
+                                    border: `1px solid ${rankColor}`,
+                                    color: '#fff',
+                                    borderRadius: '4px',
+                                    marginBottom: '1rem',
+                                    fontSize: '1rem'
+                                }}
+                            />
+                            <button
+                                onClick={handleCreateAgency}
+                                className={styles.joinBtn}
+                                style={{ width: '100%' }}
+                            >
+                                CREATE
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <Navbar />
-        </div>
+        </div >
     );
 }
