@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import styles from './page.module.css';
 import { useHunterStore, UserProfile, Agency } from '@/lib/store';
 import LoadingScreen from '@/components/LoadingScreen';
-import { Settings as Cog, Lock, X, MoreVertical, Crown, UserX } from 'lucide-react';
+import { Settings as Cog, Lock, X, MoreVertical, Crown, UserX, Search, UserPlus } from 'lucide-react';
 import { calculateOverallPercentage, getRankFromPercentage, Rank } from '@/lib/game-logic';
 import AgencySettings from '@/components/AgencySettings';
 
@@ -22,8 +22,12 @@ export default function AgencyPage() {
     const [agencyName, setAgencyName] = useState('');
     const [loading, setLoading] = useState(true);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'agency' | 'network'>('agency');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
     const router = useRouter();
-    const { getTheme, profile, joinAgency, createAgency, promoteToCaptain, kickMember } = useHunterStore();
+    const { getTheme, profile, joinAgency, createAgency, promoteToCaptain, kickMember, connections, fetchConnections, addConnection, searchHunters } = useHunterStore();
 
     const themeRank = getTheme();
     const specialTheme = profile?.settings?.specialTheme || null;
@@ -88,10 +92,26 @@ export default function AgencyPage() {
             }
 
             setLoading(false);
+            fetchConnections();
         };
 
         fetchData();
-    }, [profile, router]);
+    }, [profile, router, fetchConnections]);
+
+    const handleSearch = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchQuery.trim()) return;
+        setIsSearching(true);
+        const results = await searchHunters(searchQuery);
+        setSearchResults(results);
+        setIsSearching(false);
+    };
+
+    const handleAddFriend = async (friendId: string) => {
+        await addConnection(friendId);
+        setSearchQuery('');
+        setSearchResults([]);
+    };
 
     const handleJoinAgency = async () => {
         if (!inviteCode) return;
@@ -202,63 +222,152 @@ export default function AgencyPage() {
                 {agency?.name?.toUpperCase() || 'AGENCY'} MEMBERS
             </h2>
 
-            <div className={styles.membersGrid}>
-                {members.filter(m => m.name !== profile.name).map((member) => (
-                    <div
-                        key={member.id}
-                        className={styles.memberCard}
-                        style={{ borderColor: rankColor, position: 'relative' }}
-                    >
-                        {isCaptain && (
-                            <>
-                                <button
-                                    className={styles.menuButton}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenMenuId(openMenuId === member.id ? null : member.id);
-                                    }}
-                                >
-                                    <MoreVertical size={20} />
-                                </button>
+            <div className={styles.tabContainer}>
+                <button
+                    className={`${styles.tabButton} ${activeTab === 'agency' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('agency')}
+                    style={activeTab === 'agency' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
+                >
+                    AGENCY
+                </button>
+                <button
+                    className={`${styles.tabButton} ${activeTab === 'network' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('network')}
+                    style={activeTab === 'network' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
+                >
+                    NETWORK
+                </button>
+            </div>
 
-                                {openMenuId === member.id && (
-                                    <div className={styles.dropdown}>
-                                        <button onClick={(e) => {
-                                            e.stopPropagation();
-                                            handlePromoteToCaptain(member.id, member.name);
-                                        }}>
-                                            <Crown size={16} /> Promote to Captain
-                                        </button>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleKickMember(member.id, member.name);
-                                            }}
-                                            className={styles.dangerOption}
-                                        >
-                                            <UserX size={16} /> Kick Member
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
+            {activeTab === 'agency' ? (
+                <div className={styles.membersGrid}>
+                    {members.filter(m => m.name !== profile.name).map((member) => (
                         <div
-                            onClick={() => handleHunterClick(member.name)}
-                            className={styles.memberContentWrapper}
+                            key={member.id}
+                            className={styles.memberCard}
+                            style={{ borderColor: rankColor, position: 'relative' }}
                         >
-                            <img
-                                src={member.avatarUrl || '/placeholder.png'}
-                                alt={member.name}
-                                className={styles.memberAvatar}
-                            />
-                            <div className={styles.memberOverlay}>
-                                <h3 className={styles.memberName}>{member.name}</h3>
+                            {isCaptain && (
+                                <>
+                                    <button
+                                        className={styles.menuButton}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenMenuId(openMenuId === member.id ? null : member.id);
+                                        }}
+                                    >
+                                        <MoreVertical size={20} />
+                                    </button>
+
+                                    {openMenuId === member.id && (
+                                        <div className={styles.dropdown}>
+                                            <button onClick={(e) => {
+                                                e.stopPropagation();
+                                                handlePromoteToCaptain(member.id, member.name);
+                                            }}>
+                                                <Crown size={16} /> Promote to Captain
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleKickMember(member.id, member.name);
+                                                }}
+                                                className={styles.dangerOption}
+                                            >
+                                                <UserX size={16} /> Kick Member
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            <div
+                                onClick={() => handleHunterClick(member.name)}
+                                className={styles.memberContentWrapper}
+                            >
+                                <img
+                                    src={member.avatarUrl || '/placeholder.png'}
+                                    alt={member.name}
+                                    className={styles.memberAvatar}
+                                />
+                                <div className={styles.memberOverlay}>
+                                    <h3 className={styles.memberName}>{member.name}</h3>
+                                </div>
                             </div>
                         </div>
+                    ))}
+                </div>
+            ) : (
+                <div className={styles.networkView}>
+                    <form onSubmit={handleSearch} className={styles.searchBarContainer}>
+                        <div className={styles.searchInputWrapper} style={{ borderColor: rankColor }}>
+                            <Search className={styles.searchIcon} size={20} style={{ color: rankColor }} />
+                            <input
+                                type="text"
+                                placeholder="SEARCH HUNTER'S USERNAME..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className={styles.searchInput}
+                            />
+                        </div>
+                    </form>
+
+                    {searchResults.length > 0 && (
+                        <div className={styles.searchResults}>
+                            {searchResults.map((hunter) => (
+                                <div key={hunter.id} className={styles.searchResultItem} style={{ borderBottomColor: `${rankColor}33` }}>
+                                    <div className={styles.resultInfo}>
+                                        <div className={styles.resultMain}>
+                                            <span className={styles.resultLabel}>USERNAME: </span>
+                                            <span className={styles.resultValue}>{hunter.name}</span>
+                                        </div>
+                                        <div className={styles.resultSub}>
+                                            <div>
+                                                <span className={styles.resultLabel}>RANK: </span>
+                                                <span className={styles.resultValue} style={{ color: `var(--rank-${calculateOverallPercentage(hunter.testScores, hunter.profileType) < 20 ? 'e' : calculateOverallPercentage(hunter.testScores, hunter.profileType) < 40 ? 'd' : calculateOverallPercentage(hunter.testScores, hunter.profileType) < 60 ? 'c' : calculateOverallPercentage(hunter.testScores, hunter.profileType) < 80 ? 'b' : calculateOverallPercentage(hunter.testScores, hunter.profileType) < 90 ? 'a' : 's'})` }}>
+                                                    {getRankFromPercentage(calculateOverallPercentage(hunter.testScores, hunter.profileType))}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className={styles.resultLabel}>AGENCY: </span>
+                                                <span className={styles.resultValue}>{hunter.role === 'Solo' ? 'NAMELESS' : (hunter.agencyName || 'NAMELESS')}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {hunter.id !== profile.id && !connections.some(c => c.id === hunter.id) && (
+                                        <button
+                                            onClick={() => handleAddFriend(hunter.id)}
+                                            className={styles.addFriendBtn}
+                                            style={{ backgroundColor: rankColor }}
+                                        >
+                                            ADD
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className={styles.connectionsSection}>
+                        <p className={styles.connectionHint}>CONNECTIONS'S ADDED WILL BE DISPLAYED HERE.</p>
+                        <div className={styles.connectionsGrid}>
+                            {connections.map((conn) => (
+                                <div
+                                    key={conn.id}
+                                    className={styles.connectionCard}
+                                    onClick={() => handleHunterClick(conn.name)}
+                                    style={{ borderColor: rankColor }}
+                                >
+                                    <img src={conn.avatarUrl || '/placeholder.png'} alt={conn.name} className={conn.avatarUrl ? '' : styles.grayscale} />
+                                    <div className={styles.connectionInfo}>
+                                        <h3>{conn.name}</h3>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                ))}
-            </div>
+                </div>
+            )}
 
             {showSettings && agency && (
                 <AgencySettings agency={agency} onClose={() => setShowSettings(false)} />

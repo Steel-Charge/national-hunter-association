@@ -292,3 +292,189 @@
 .dangerOption:hover {
     background: rgba(255, 68, 68, 0.1) !important;
 }
+
+/* Friend System Styles */
+.tabContainer {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px auto;
+    max-width: 600px;
+    padding: 0 20px;
+}
+
+.tabButton {
+    flex: 1;
+    background: transparent;
+    border: 2px solid;
+    padding: 12px;
+    border-radius: 40px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+}
+
+.activeTab {
+    border: none !important;
+}
+
+.networkView {
+    padding: 0 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.searchBarContainer {
+    margin-bottom: 30px;
+}
+
+.searchInputWrapper {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid;
+    border-radius: 40px;
+    padding: 0 20px;
+    height: 50px;
+    transition: box-shadow 0.3s;
+}
+
+.searchInputWrapper:focus-within {
+    box-shadow: 0 0 15px var(--rank-color);
+}
+
+.searchIcon {
+    margin-right: 15px;
+    opacity: 0.7;
+}
+
+.searchInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    outline: none;
+}
+
+.searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.searchResults {
+    background: rgba(10, 20, 20, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.searchResultItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid;
+}
+
+.searchResultItem:last-child {
+    border-bottom: none;
+}
+
+.resultInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.resultMain {
+    font-weight: 800;
+}
+
+.resultSub {
+    display: flex;
+    gap: 15px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.resultLabel {
+    opacity: 0.5;
+}
+
+.resultValue {
+    color: #fff;
+}
+
+.addFriendBtn {
+    border: none;
+    border-radius: 40px;
+    padding: 6px 20px;
+    color: #000;
+    font-weight: 900;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.addFriendBtn:hover {
+    transform: scale(1.05);
+}
+
+.connectionsSection {
+    margin-top: 40px;
+}
+
+.connectionHint {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 900;
+    opacity: 0.4;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+.connectionsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 15px;
+}
+
+.connectionCard {
+    background: #0a0a0a;
+    border: 1px solid;
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.connectionCard:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+.connectionCard img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.connectionInfo h3 {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.grayscale {
+    filter: grayscale(1);
+    opacity: 0.5;
+}

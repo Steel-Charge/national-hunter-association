@@ -37,6 +37,7 @@ export interface UserProfile {
     password?: string;
     role: 'Hunter' | 'Captain' | 'Admin' | 'Solo';
     agencyId?: string;
+    agencyName?: string;
 }
 
 export interface Agency {
@@ -205,10 +206,17 @@ interface HunterState {
     updateAgency: (data: Partial<Agency>) => Promise<void>;
     getAgencyMembers: (agencyId: string) => Promise<UserProfile[]>;
     toggleTrackQuest: (questId: string) => Promise<void>;
+    // Friend System Actions
+    connections: UserProfile[];
+    fetchConnections: () => Promise<void>;
+    addConnection: (friendId: string) => Promise<void>;
+    removeConnection: (friendId: string) => Promise<void>;
+    searchHunters: (query: string) => Promise<UserProfile[]>;
 }
 
 export const useHunterStore = create<HunterState>((set, get) => ({
     profile: null,
+    connections: [],
     loading: true,
     setProfile: (profile) => set({ profile }),
     setLoading: (loading) => set({ loading }),
@@ -1437,6 +1445,134 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             set({ profile: { ...profile, trackedQuests: newTracked } });
         } else {
             console.error('Error toggling tracked quest:', error);
+        }
+    },
+
+    // Friend System Implementation
+    fetchConnections: async () => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('connections')
+                .select(`
+                    friend_id,
+                    profiles!friend_id (
+                        id,
+                        name,
+                        avatar_url,
+                        active_title,
+                        test_scores,
+                        profile_type,
+                        role,
+                        agency_id,
+                        agencies!agency_id ( name )
+                    )
+                `)
+                .eq('user_id', profile.id);
+
+            if (error) throw error;
+
+            const mappedConnections = (data || []).map((conn: any) => {
+                const p = conn.profiles;
+                return {
+                    id: p.id,
+                    name: p.name,
+                    avatarUrl: p.avatar_url,
+                    activeTitle: p.active_title,
+                    testScores: p.test_scores || {},
+                    profileType: p.profile_type || 'male_20_25',
+                    role: p.role,
+                    agencyId: p.agency_id,
+                    agencyName: p.agencies?.name
+                } as any as UserProfile;
+            });
+
+            set({ connections: mappedConnections });
+        } catch (error) {
+            console.error('Error fetching connections:', error);
+        }
+    },
+
+    addConnection: async (friendId: string) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        try {
+            const { error } = await supabase
+                .from('connections')
+                .insert({ user_id: profile.id, friend_id: friendId });
+
+            if (error) throw error;
+
+            await get().fetchConnections();
+        } catch (error: any) {
+            if (error.code === '23505') {
+                alert('Connection already exists.');
+            } else {
+                console.error('Error adding connection:', error);
+            }
+        }
+    },
+
+    removeConnection: async (friendId: string) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        try {
+            const { error } = await supabase
+                .from('connections')
+                .delete()
+                .eq('user_id', profile.id)
+                .eq('friend_id', friendId);
+
+            if (error) throw error;
+
+            set({
+                connections: get().connections.filter(c => c.id !== friendId)
+            });
+        } catch (error) {
+            console.error('Error removing connection:', error);
+        }
+    },
+
+    searchHunters: async (query: string) => {
+        if (!query.trim()) return [];
+
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select(`
+                    id,
+                    name,
+                    avatar_url,
+                    active_title,
+                    test_scores,
+                    profile_type,
+                    role,
+                    agency_id,
+                    agencies!agency_id ( name )
+                `)
+                .ilike('name', `%${query}%`)
+                .limit(10);
+
+            if (error) throw error;
+
+            return (data || []).map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                avatarUrl: p.avatar_url,
+                activeTitle: p.active_title,
+                testScores: p.test_scores || {},
+                profileType: p.profile_type || 'male_20_25',
+                role: p.role,
+                agencyId: p.agency_id,
+                agencyName: p.agencies?.name
+            })) as any as UserProfile[];
+        } catch (error) {
+            console.error('Error searching hunters:', error);
+            return [];
         }
     }
 }));
