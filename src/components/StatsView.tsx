@@ -276,15 +276,13 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
 
             {/* Radar Chart Section */}
             <div className={styles.chartContainer} style={{ position: 'relative' }}>
-                <ProfileFrame rarity={(profile.activeFrame || profile.activeTitle?.rarity || 'Common') as any}>
-                    <RadarChart
-                        labels={radarLabels}
-                        data={radarData}
-                        rankColor={RANK_COLORS[themeRank as Rank]}
-                        comparisonData={comparisonData}
-                        comparisonColor={viewerRankColor}
-                    />
-                </ProfileFrame>
+                <RadarChart
+                    labels={radarLabels}
+                    data={radarData}
+                    rankColor={RANK_COLORS[themeRank as Rank]}
+                    comparisonData={comparisonData}
+                    comparisonColor={viewerRankColor}
+                />
             </div>
 
             {/* Attribute Tabs */}

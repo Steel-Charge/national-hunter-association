@@ -16,7 +16,13 @@ const AVAILABLE_FRAMES = [
     { id: 'Epic', name: 'Epic Frame' },
     { id: 'Legendary', name: 'Legendary Frame' },
     { id: 'Mythic', name: 'Mythic Frame' },
-    { id: 'Event', name: 'Event Frame' }
+    { id: 'Event', name: 'Event Frame' },
+    { id: 'E', name: 'E-Rank Frame' },
+    { id: 'D', name: 'D-Rank Frame' },
+    { id: 'C', name: 'C-Rank Frame' },
+    { id: 'B', name: 'B-Rank Frame' },
+    { id: 'A', name: 'A-Rank Frame' },
+    { id: 'S', name: 'S-Rank Frame' }
 ];
 
 export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProps) {
@@ -164,14 +170,11 @@ export default function ProfileSettings({ isOpen, onClose }: ProfileSettingsProp
                             value={localFrame}
                             onChange={(e) => setLocalFrame(e.target.value)}
                         >
-                            {AVAILABLE_FRAMES.map((f) => {
-                                const isUnlocked = unlockedFrames.includes(f.id);
-                                return (
-                                    <option key={f.id} value={f.id} disabled={!isUnlocked}>
-                                        {f.name} {!isUnlocked && '[LOCKED]'}
-                                    </option>
-                                );
-                            })}
+                            {AVAILABLE_FRAMES.filter(f => unlockedFrames.includes(f.id)).map((f) => (
+                                <option key={f.id} value={f.id}>
+                                    {f.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
                 </div>

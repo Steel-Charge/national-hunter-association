@@ -305,7 +305,14 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         phone: profileData.phone,
                         trackedQuests: profileData.tracked_quests || [],
                         activeFrame: profileData.active_frame || (isExclusive ? 'Mythic' : 'Common'),
-                        unlockedFrames: profileData.unlocked_frames || ['Common']
+                        unlockedFrames: (() => {
+                            const base = profileData.unlocked_frames || ['Common'];
+                            const ranks: Rank[] = ['E', 'D', 'C', 'B', 'A', 'S'];
+                            const currentRank = calculateOverallRank(profileData.test_scores || {}, profileData.profile_type || 'male_20_25');
+                            const currentRankIdx = ranks.indexOf(currentRank as Rank);
+                            const rankFrames = currentRankIdx !== -1 ? ranks.slice(0, currentRankIdx + 1) : [];
+                            return Array.from(new Set([...base, ...rankFrames]));
+                        })()
                     }
                 });
             }

@@ -10,6 +10,7 @@ import { calculateOverallRank, RANK_COLORS, Rank } from '@/lib/game-logic';
 import { X, Book } from 'lucide-react';
 import LoadingScreen from '@/components/LoadingScreen';
 import styles from '@/app/home/page.module.css';
+import ProfileFrame from '@/components/ProfileFrame';
 
 export default function HunterProfilePage() {
     const params = useParams();
@@ -100,7 +101,9 @@ export default function HunterProfilePage() {
                 role: profileData.role || 'Hunter',
                 bio: profileData.bio,
                 managerComment: profileData.manager_comment,
-                trackedQuests: profileData.tracked_quests || []
+                trackedQuests: profileData.tracked_quests || [],
+                activeFrame: profileData.active_frame || 'Common',
+                unlockedFrames: profileData.unlocked_frames || ['Common']
             };
 
             setProfile(userProfile);
@@ -195,6 +198,9 @@ export default function HunterProfilePage() {
 
     return (
         <div className={styles.container}>
+            {/* Decorative Profile Frame Border */}
+            <ProfileFrame frameId={profile.activeFrame || profile.activeTitle?.rarity || 'Common'} />
+
             {/* Close Button */}
             <button
                 onClick={() => router.push('/batch3')}

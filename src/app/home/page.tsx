@@ -11,6 +11,7 @@ import styles from './page.module.css';
 import { Book, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ProfileSettings from '@/components/ProfileSettings';
+import ProfileFrame from '@/components/ProfileFrame';
 
 export default function HomePage() {
     const { profile, loading, getOverallRank, getTheme, setProfile } = useHunterStore();
@@ -130,6 +131,10 @@ export default function HomePage() {
             >
                 <Settings size={36} />
             </button>
+
+            {/* Decorative Profile Frame Border */}
+            <ProfileFrame frameId={profile.activeFrame || profile.activeTitle?.rarity || 'Common'} />
+
             {/* Background Image */}
             {/* Background handled globally by BackgroundWrapper */}
 
