@@ -12,6 +12,9 @@ import { calculateOverallPercentage, getRankFromPercentage, Rank } from '@/lib/g
 import AgencySettings from '@/components/AgencySettings';
 
 export default function AgencyPage() {
+    const router = useRouter();
+    const { getTheme, profile, joinAgency, createAgency, promoteToCaptain, kickMember, connections, pendingRequests, sentRequestIds, fetchConnections, addConnection, acceptRequest, declineRequest, searchHunters } = useHunterStore();
+
     const [members, setMembers] = useState<UserProfile[]>([]);
     const [agency, setAgency] = useState<Agency | null>(null);
     const [agencyRank, setAgencyRank] = useState<Rank>('E');
@@ -22,12 +25,10 @@ export default function AgencyPage() {
     const [agencyName, setAgencyName] = useState('');
     const [loading, setLoading] = useState(true);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'agency' | 'network'>(profile?.role === 'Solo' ? 'network' : 'agency');
+    const [activeTab, setActiveTab] = useState<'agency' | 'network'>('agency');
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-    const router = useRouter();
-    const { getTheme, profile, joinAgency, createAgency, promoteToCaptain, kickMember, connections, pendingRequests, sentRequestIds, fetchConnections, addConnection, acceptRequest, declineRequest, searchHunters } = useHunterStore();
 
     const themeRank = getTheme();
     const specialTheme = profile?.settings?.specialTheme || null;
@@ -36,6 +37,12 @@ export default function AgencyPage() {
     const isSolo = profile?.role === 'Solo';
     const isCaptain = profile?.role === 'Captain';
     const isNamelessInBatch3 = isSolo && agency?.name === 'Batch 3';
+
+    useEffect(() => {
+        if (profile?.role === 'Solo') {
+            setActiveTab('network');
+        }
+    }, [profile?.role]);
 
     useEffect(() => {
         const fetchData = async () => {
