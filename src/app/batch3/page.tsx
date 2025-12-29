@@ -22,7 +22,7 @@ export default function AgencyPage() {
     const [agencyName, setAgencyName] = useState('');
     const [loading, setLoading] = useState(true);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'agency' | 'network'>('agency');
+    const [activeTab, setActiveTab] = useState<'agency' | 'network'>(profile?.role === 'Solo' ? 'network' : 'agency');
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -186,18 +186,22 @@ export default function AgencyPage() {
             <div className={styles.agencySection}>
                 <div className={styles.agencyInfo}>
                     <h2 className={styles.agencyName} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
-                        {agency?.name?.toUpperCase() || 'LOADING...'}
+                        {isSolo ? 'NAMELESS' : (agency?.name?.toUpperCase() || 'LOADING...')}
                     </h2>
 
-                    <div className={styles.agencyStats}>
-                        <p>MEMBERS: [{members.length}/10]</p>
-                        <p>RANK: <span style={{ color: `var(--rank-${agencyRank.toLowerCase()})` }}>{agencyRank}</span></p>
-                    </div>
+                    {!isSolo && (
+                        <>
+                            <div className={styles.agencyStats}>
+                                <p>MEMBERS: [{members.length}/10]</p>
+                                <p>RANK: <span style={{ color: `var(--rank-${agencyRank.toLowerCase()})` }}>{agencyRank}</span></p>
+                            </div>
 
-                    <div className={styles.agencyTitles}>
-                        <p className={styles.label}>TITLES:</p>
-                        <div className={styles.commonTitle}>UPSTART</div>
-                    </div>
+                            <div className={styles.agencyTitles}>
+                                <p className={styles.label}>TITLES:</p>
+                                <div className={styles.commonTitle}>UPSTART</div>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <div className={styles.agencyLogoContainer}>
@@ -216,26 +220,36 @@ export default function AgencyPage() {
                 </button>
             </div>
 
-            <h2 className={styles.sectionTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
-                {agency?.name?.toUpperCase() || 'AGENCY'} MEMBERS
-            </h2>
+            {!isSolo && (
+                <h2 className={styles.sectionTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
+                    {agency?.name?.toUpperCase() || 'AGENCY'} MEMBERS
+                </h2>
+            )}
 
-            <div className={styles.tabContainer}>
-                <button
-                    className={`${styles.tabButton} ${activeTab === 'agency' ? styles.activeTab : ''}`}
-                    onClick={() => setActiveTab('agency')}
-                    style={activeTab === 'agency' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
-                >
-                    AGENCY
-                </button>
-                <button
-                    className={`${styles.tabButton} ${activeTab === 'network' ? styles.activeTab : ''}`}
-                    onClick={() => setActiveTab('network')}
-                    style={activeTab === 'network' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
-                >
-                    NETWORK
-                </button>
-            </div>
+            {!isSolo && (
+                <div className={styles.tabContainer}>
+                    <button
+                        className={`${styles.tabButton} ${activeTab === 'agency' ? styles.activeTab : ''}`}
+                        onClick={() => setActiveTab('agency')}
+                        style={activeTab === 'agency' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
+                    >
+                        AGENCY
+                    </button>
+                    <button
+                        className={`${styles.tabButton} ${activeTab === 'network' ? styles.activeTab : ''}`}
+                        onClick={() => setActiveTab('network')}
+                        style={activeTab === 'network' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
+                    >
+                        NETWORK
+                    </button>
+                </div>
+            )}
+
+            {isSolo && (
+                <div className={styles.associationMessage}>
+                    "While no manager has been assigned to you, rest assured the Association is monitoring your development. Like all our agents, strive for growth. Your progress matters."
+                </div>
+            )}
 
             {activeTab === 'agency' ? (
                 <div className={styles.membersGrid}>
