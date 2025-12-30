@@ -210,7 +210,7 @@ interface HunterState {
     kickMember: (memberId: string) => Promise<void>;
     promoteToCaptain: (memberId: string) => Promise<void>;
     disbandAgency: () => Promise<void>;
-    updateAgency: (data: Partial<Agency>) => Promise<void>;
+    updateAgency: (data: Partial<Agency>) => Promise<{ success: boolean; error?: string }>;
     getAgencyMembers: (agencyId: string) => Promise<UserProfile[]>;
     toggleTrackQuest: (questId: string) => Promise<void>;
     // Friend System Actions
@@ -1432,7 +1432,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         const profile = get().profile;
         if (!profile || profile.role !== 'Captain' || !profile.agencyId) {
             console.error('updateAgency failed: missing profile or not captain', { profile });
-            return;
+            return { success: false, error: 'You must be a Captain to update agency settings.' };
         }
 
         console.log('Attempting to update agency ID:', profile.agencyId, 'with data:', data);
@@ -1444,16 +1444,18 @@ export const useHunterStore = create<HunterState>((set, get) => ({
 
         if (error) {
             console.error('Error updating agency:', error);
+            return { success: false, error: error.message };
         } else {
             console.log('Agency update query completed. Updated rows:', updatedData);
             if (!updatedData || updatedData.length === 0) {
                 console.warn('SUCCESS returned but 0 rows were updated. Check if agency ID exists or RLS policy allows updates.');
+                return { success: false, error: 'Update failed. You may not have permission or the agency does not exist.' };
             } else {
                 console.log('Agency updated successfully:', updatedData[0]);
+                await get().fetchProfile(profile.name);
+                return { success: true };
             }
         }
-
-        await get().fetchProfile(profile.name);
     },
 
     getAgencyMembers: async (agencyId: string) => {

@@ -54,26 +54,36 @@ export default function AgencySettings({ agency, onClose }: Props) {
 
     const handleSaveLogo = async () => {
         setIsSavingLogo(true);
-        await updateAgency({ logo_url: logoPreview });
+        const result = await updateAgency({ logo_url: logoPreview });
         setIsSavingLogo(false);
-        alert('Agency Logo Updated Successfully!');
-        // Set a timestamp to force cache bypass
-        sessionStorage.setItem('agency_updated', Date.now().toString());
-        // Close modal and force reload with cache bypass
-        onClose();
-        window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
+
+        if (result.success) {
+            alert('Agency Logo Updated Successfully!');
+            // Set a timestamp to force cache bypass
+            sessionStorage.setItem('agency_updated', Date.now().toString());
+            // Close modal and force reload with cache bypass
+            onClose();
+            window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
+        } else {
+            alert(`Error updating logo: ${result.error}`);
+        }
     };
 
     const handleSaveName = async () => {
         setIsSavingName(true);
         console.log('Attempting to save name:', newName);
-        await updateAgency({ name: newName });
+        const result = await updateAgency({ name: newName });
         setIsSavingName(false);
-        alert('Agency Name Updated Successfully!');
-        // Force reload with cache bypass
-        sessionStorage.setItem('agency_updated', Date.now().toString());
-        onClose();
-        window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
+
+        if (result.success) {
+            alert('Agency Name Updated Successfully!');
+            // Force reload with cache bypass
+            sessionStorage.setItem('agency_updated', Date.now().toString());
+            onClose();
+            window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
+        } else {
+            alert(`Error updating name: ${result.error}`);
+        }
     };
 
     const handleCopyCode = () => {
