@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styles from '@/app/home/page.module.css';
-import { UserProfile, useHunterStore } from '@/lib/store';
+import { UserProfile, useHunterStore, getDisplayTitle, isDefaultTitle } from '@/lib/store';
 import { Pencil, X } from 'lucide-react';
 import TitleSelectionModal from './TitleSelectionModal';
 
@@ -38,12 +38,23 @@ export default function ProfileView({ profile, overallRank, themeRank, specialTh
                         {profile.name}
                     </h1>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
-                        <p
-                            className={`${styles.title} ${profile.activeTitle?.rarity?.toLowerCase() === 'mythic' ? 'mythic-text' : ''}`}
-                            style={profile.activeTitle?.rarity?.toLowerCase() === 'mythic' ? { margin: 0 } : { color: `var(--rarity-${profile.activeTitle?.rarity?.toLowerCase() || 'common'})`, margin: 0 }}
-                        >
-                            {profile.activeTitle?.name || 'Hunter'}
-                        </p>
+                        {(() => {
+                            const titleName = profile.activeTitle?.name || 'Hunter';
+                            const rarity = profile.activeTitle?.rarity || 'Common';
+                            const displayTitle = getDisplayTitle(titleName, profile.role);
+                            const isDefault = isDefaultTitle(titleName);
+                            // If default, use rank color (colorVar). Else use rarity color.
+                            const titleColor = isDefault ? colorVar : `var(--rarity-${rarity.toLowerCase()})`;
+
+                            return (
+                                <p
+                                    className={`${styles.title} ${rarity.toLowerCase() === 'mythic' ? 'mythic-text' : ''}`}
+                                    style={rarity.toLowerCase() === 'mythic' ? { margin: 0 } : { color: titleColor, margin: 0 }}
+                                >
+                                    {displayTitle}
+                                </p>
+                            );
+                        })()}
                         {isOwnProfile && (
                             <button
                                 onClick={() => setIsModalOpen(true)}
@@ -58,6 +69,10 @@ export default function ProfileView({ profile, overallRank, themeRank, specialTh
                     <div className={styles.badges}>
                         {displayedTitles.map((title, i) => {
                             const isMythicTitle = title.rarity?.toLowerCase() === 'mythic';
+                            const displayTitle = getDisplayTitle(title.name, profile.role);
+                            const isDefault = isDefaultTitle(title.name);
+                            const titleColor = isDefault ? colorVar : `var(--rarity-${title.rarity?.toLowerCase() || 'common'})`;
+
                             return (
                                 <div
                                     key={i}
@@ -70,15 +85,15 @@ export default function ProfileView({ profile, overallRank, themeRank, specialTh
                                         borderColor: 'var(--rarity-mythic)',
                                         borderWidth: '2px'
                                     } : {
-                                        borderColor: `var(--rarity-${title.rarity?.toLowerCase() || 'common'})`,
-                                        color: `var(--rarity-${title.rarity?.toLowerCase() || 'common'})`,
+                                        borderColor: titleColor,
+                                        color: titleColor,
                                         background: 'transparent',
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '6px'
                                     }}
                                 >
-                                    {title.name}
+                                    {displayTitle}
                                     {canRemoveTitles && title.name !== 'Hunter' && (
                                         <button
                                             onClick={(e) => {
@@ -109,6 +124,7 @@ export default function ProfileView({ profile, overallRank, themeRank, specialTh
                 onClose={() => setIsModalOpen(false)}
                 unlockedTitles={profile.unlockedTitles}
                 rankColor={colorVar}
+                role={profile.role}
             />
         </div>
     );

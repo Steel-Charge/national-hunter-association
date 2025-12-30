@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Title, useHunterStore } from '@/lib/store';
+import { Title, useHunterStore, getDisplayTitle } from '@/lib/store';
 import { X, Filter, Save, Eye, EyeOff } from 'lucide-react';
 import styles from './TitleSelectionModal.module.css';
 
@@ -8,11 +8,12 @@ interface TitleSelectionModalProps {
     onClose: () => void;
     unlockedTitles: Title[];
     rankColor: string;
+    role: string;
 }
 
 const RARITIES = ['Mythic', 'Legendary', 'Epic', 'Rare', 'Common'];
 
-export default function TitleSelectionModal({ isOpen, onClose, unlockedTitles, rankColor }: TitleSelectionModalProps) {
+export default function TitleSelectionModal({ isOpen, onClose, unlockedTitles, rankColor, role }: TitleSelectionModalProps) {
     const { updateTitleVisibility } = useHunterStore();
     const [filter, setFilter] = useState<string | null>(null);
     const [localTitles, setLocalTitles] = useState<Title[]>(unlockedTitles);
@@ -86,7 +87,7 @@ export default function TitleSelectionModal({ isOpen, onClose, unlockedTitles, r
                                 >
                                     {title.rarity}
                                 </span>
-                                <span className={styles.titleName}>{title.name}</span>
+                                <span className={styles.titleName}>{getDisplayTitle(title.name, role)}</span>
                             </div>
                             <button
                                 onClick={() => toggleLocalVisibility(title.name)}

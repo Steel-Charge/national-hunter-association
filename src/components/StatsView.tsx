@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserProfile, useHunterStore, Title, canSelfManage } from '@/lib/store';
+import { UserProfile, useHunterStore, Title, canSelfManage, getDisplayTitle, isDefaultTitle } from '@/lib/store';
 import { getAttributes, RANK_COLORS, Rank } from '@/lib/game-logic';
 
 import RadarChart from '@/components/RadarChart';
@@ -246,9 +246,20 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                     <h1 className={styles.pageTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
                         {profile.name.toUpperCase()}
                     </h1>
-                    <p className={styles.pageSubtitle} style={{ color: `var(--rarity-${profile.activeTitle?.rarity?.toLowerCase() || 'common'})`, fontSize: '1.2rem', fontWeight: 'bold' }}>
-                        {(profile.activeTitle?.name || 'HUNTER').toUpperCase()}
-                    </p>
+                    {(() => {
+                        const titleName = profile.activeTitle?.name || 'Hunter';
+                        const rarity = profile.activeTitle?.rarity || 'Common';
+                        const displayTitle = getDisplayTitle(titleName, profile.role);
+                        const isDefault = isDefaultTitle(titleName);
+                        // If default, use rank color. Else uses rarity color.
+                        const titleColor = isDefault ? rankColor : `var(--rarity-${rarity.toLowerCase()})`;
+
+                        return (
+                            <p className={styles.pageSubtitle} style={{ color: titleColor, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                                {displayTitle.toUpperCase()}
+                            </p>
+                        );
+                    })()}
                 </div>
                 {viewerProfile && !isOwnProfile && (
                     <div style={{ marginRight: isReadOnly ? '60px' : '0', marginTop: '5px' }}>

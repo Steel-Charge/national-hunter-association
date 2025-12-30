@@ -64,6 +64,19 @@ export const canSelfManage = (profile: UserProfile | null): boolean => {
     return profile.isAdmin || profile.role === 'Solo' || profile.role === 'Captain';
 };
 
+// Title Helpers
+export const isDefaultTitle = (titleName: string): boolean => {
+    return titleName === 'Hunter';
+};
+
+export const getDisplayTitle = (titleName: string, role: string | undefined): string => {
+    if (!isDefaultTitle(titleName)) return titleName;
+
+    if (role === 'Captain') return 'Captain';
+    if (role === 'Solo') return 'Nameless';
+    return 'Hunter';
+};
+
 const DEFAULT_PROFILE: UserProfile = {
     id: '00000000-0000-0000-0000-000000000000',
     name: 'Edgelord',
