@@ -84,9 +84,14 @@
 
 .commonTitle {
     color: var(--rarity-common);
+    border: 1px solid var(--rarity-common);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 12px;
+    border-radius: 15px;
     font-size: 0.75rem;
     font-weight: 800;
     text-transform: uppercase;
+    box-shadow: 0 0 5px rgba(0, 229, 255, 0.3);
 }
 
 .agencyLogoContainer {

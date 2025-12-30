@@ -247,7 +247,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                         {profile.name.toUpperCase()}
                     </h1>
                     <p className={styles.pageSubtitle} style={{ color: `var(--rarity-${profile.activeTitle?.rarity?.toLowerCase() || 'common'})`, fontSize: '1.2rem', fontWeight: 'bold' }}>
-                        {profile.activeTitle?.name || 'HUNTER'}
+                        {(profile.activeTitle?.name || 'HUNTER').toUpperCase()}
                     </p>
                 </div>
                 {viewerProfile && !isOwnProfile && (

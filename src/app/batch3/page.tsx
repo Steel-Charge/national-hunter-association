@@ -186,7 +186,7 @@ export default function AgencyPage() {
                     {profile.name.toUpperCase()}
                 </h1>
                 <p className={styles.pageSubtitle} style={{ color: `var(--rarity-${profile.activeTitle?.rarity?.toLowerCase() || 'common'})`, fontWeight: 'bold', fontSize: '1.2rem' }}>
-                    {profile.activeTitle?.name || 'HUNTER'}
+                    {(profile.activeTitle?.name || 'HUNTER').toUpperCase()}
                 </p>
             </div>
 
