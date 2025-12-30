@@ -169,6 +169,15 @@ export default function HunterProfilePage() {
     const canUploadForThisProfile = viewer?.isAdmin ||
         (viewer?.role === 'Captain' && viewer?.agencyId && profile?.agencyId === viewer?.agencyId);
 
+    console.log('[DEBUG] Permission Check:', {
+        viewerId: viewer?.id,
+        viewerRole: viewer?.role,
+        viewerAgency: viewer?.agencyId,
+        profileName: profile.name,
+        profileAgency: profile.agencyId,
+        canUpload: canUploadForThisProfile
+    });
+
     const handleVideoFile = async (file: File | null) => {
         if (!file) return;
         const reader = new FileReader();

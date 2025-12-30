@@ -272,66 +272,69 @@ h3 {
 
 /* White Holographic "Mythic" Style */
 .mythic-text {
-  background: linear-gradient(
-    120deg,
-    #ffffff 20%,
-    #e8f4f8 40%,
-    #d1f0ff 45%,
-    #ffd1f0 50%,
-    #fff0d1 55%,
-    #e8f4f8 60%,
-    #ffffff 80%
-  ) !important;
-  background-size: 200% auto !important;
+  background: linear-gradient(135deg,
+      #ffffff 25%,
+      #d4f1f9 40%,
+      #ffcce6 50%,
+      #e8dff5 60%,
+      #ffffff 75%) !important;
+  background-size: 300% 300% !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
   color: transparent !important;
-  animation: shimmer-text 3s linear infinite !important;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 0 0 2px rgba(255, 255, 255, 0.8) !important;
+  animation: shimmer-text 4s ease infinite !important;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.6), 0 0 5px rgba(255, 255, 255, 0.8) !important;
   font-weight: 900 !important;
   display: inline-block !important;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
 }
 
 @keyframes shimmer-text {
-  to {
-    background-position: 200% center;
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
   }
 }
 
 .mythic-bg {
   position: relative;
-  background: #fff; /* Fallback */
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.4);
   overflow: hidden;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
 .mythic-bg::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    125deg,
-    rgba(255,255,255,0.05) 0%,
-    rgba(255,255,255,0.1) 40%,
-    rgba(200, 230, 255, 0.2) 45%,
-    rgba(255, 200, 230, 0.2) 50%,
-    rgba(255, 255, 200, 0.2) 55%,
-    rgba(255,255,255,0.1) 60%,
-    rgba(255,255,255,0.05) 100%
-  );
-  background-size: 200% 200%;
-  animation: holographic-shine 6s ease-in-out infinite;
-  z-index: 1;
+  inset: -50%;
+  background: conic-gradient(from 0deg,
+      transparent 0deg,
+      rgba(255, 255, 255, 0.1) 60deg,
+      rgba(200, 240, 255, 0.2) 120deg,
+      rgba(255, 200, 240, 0.2) 180deg,
+      rgba(200, 240, 255, 0.2) 240deg,
+      rgba(255, 255, 255, 0.1) 300deg,
+      transparent 360deg);
+  animation: holographic-rotate 10s linear infinite;
+  z-index: 0;
+  opacity: 0.5;
 }
 
-/* Subtle white/rainbow glow for borders */
-.mythic-border {
-  border-color: rgba(255, 255, 255, 0.6);
-  box-shadow: 
-    0 0 10px rgba(255, 255, 255, 0.3),
-    inset 0 0 10px rgba(255, 255, 255, 0.1);
+@keyframes holographic-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
