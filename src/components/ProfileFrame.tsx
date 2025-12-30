@@ -70,32 +70,31 @@ export default function ProfileFrame({ children, frameId, className = '' }: Prof
                     opacity: 0.5;
                 }
 
-                /* PRISMATIC MYTHIC STYLE - Holographic Effect */
+                /* PRISMATIC MYTHIC STYLE - Holographic White Effect */
                 .prismatic-mythic {
                     border-width: 3px;
                     border-style: solid;
-                    animation: prismatic-border 4s linear infinite;
-                    box-shadow: 
-                        inset 0 0 20px rgba(255, 255, 255, 0.3),
-                        0 0 15px rgba(255, 255, 255, 0.2);
+                    border-color: rgba(255, 255, 255, 0.8);
+                    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2);
                     background: linear-gradient(
                         135deg,
-                        rgba(255, 255, 255, 0.05) 0%,
-                        rgba(255, 255, 255, 0.1) 25%,
-                        rgba(255, 0, 0, 0.05) 40%,
-                        rgba(0, 255, 0, 0.05) 50%,
-                        rgba(0, 0, 255, 0.05) 60%,
-                        rgba(255, 255, 255, 0.1) 75%,
-                        rgba(255, 255, 255, 0.05) 100%
+                        rgba(255, 255, 255, 0.1) 0%,
+                        rgba(200, 240, 255, 0.1) 30%,
+                        rgba(255, 200, 240, 0.1) 60%,
+                        rgba(255, 255, 255, 0.1) 100%
                     );
-                    background-size: 200% 200%;
-                    animation: prismatic-border 4s linear infinite, holographic 8s ease infinite;
+                    animation: shimmerFrame 6s infinite linear;
+                }
+
+                @keyframes shimmerFrame {
+                    0% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); border-color: rgba(255, 255, 255, 0.8); }
+                    50% { box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 5px rgba(200, 240, 255, 0.5); border-color: #fff; }
+                    100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); border-color: rgba(255, 255, 255, 0.8); }
                 }
 
                 .prismatic-mythic .corner-accent {
                     background: #fff;
-                    animation: holographic 2s linear infinite;
-                    box-shadow: 0 0 15px #fff, 0 0 30px #fff;
+                    box-shadow: 0 0 15px #fff;
                 }
 
                 /* Standard Rarity Styles */
@@ -145,28 +144,7 @@ export default function ProfileFrame({ children, frameId, className = '' }: Prof
                     50% { border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; }
                 }
 
-                /* Shimmer overlay for all prismatic frames */
-                .prismatic-mythic:before {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                    background: linear-gradient(
-                        105deg,
-                        transparent 40%,
-                        rgba(255, 255, 255, 0.4) 45%,
-                        rgba(255, 255, 255, 0.6) 50%,
-                        rgba(255, 255, 255, 0.4) 55%,
-                        transparent 60%
-                    );
-                    background-size: 200% 200%;
-                    animation: shimmer 4s infinite linear;
-                    z-index: 52;
-                }
-
-                @keyframes shimmer {
-                    0% { background-position: 200% 0; }
-                    100% { background-position: -200% 0; }
-                }
+                /* Shimmer removed for cleaner holographic look */
             `}</style>
         </div>
     );

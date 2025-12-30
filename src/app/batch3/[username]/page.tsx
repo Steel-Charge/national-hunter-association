@@ -166,7 +166,8 @@ export default function HunterProfilePage() {
     const themeRank = profile.settings.theme || overallRank;
     const specialTheme = profile.settings.specialTheme || null;
 
-    const canUploadForThisProfile = viewer?.isAdmin || false;
+    const canUploadForThisProfile = viewer?.isAdmin ||
+        (viewer?.role === 'Captain' && viewer?.agencyId && profile?.agencyId === viewer?.agencyId);
 
     const handleVideoFile = async (file: File | null) => {
         if (!file) return;
