@@ -99,6 +99,7 @@ export default function HunterProfilePage() {
                 isAdmin: profileData.is_admin || false,
                 profileType: profileData.profile_type || 'male_20_25',
                 role: profileData.role || 'Hunter',
+                agencyId: profileData.agency_id, // Added mapping for permissions
                 bio: profileData.bio,
                 managerComment: profileData.manager_comment,
                 trackedQuests: profileData.tracked_quests || [],
