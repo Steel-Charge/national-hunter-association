@@ -5,7 +5,7 @@ import { MISSION_PATHS } from './missions';
 
 export interface Title {
     name: string;
-    rarity: 'Legendary' | 'Epic' | 'Rare' | 'Common' | 'Mythic' | 'Event';
+    rarity: 'Legendary' | 'Epic' | 'Rare' | 'Common' | 'Mythic' | 'Event' | 'Challenge';
     is_hidden?: boolean;
 }
 
