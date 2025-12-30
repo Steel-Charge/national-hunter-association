@@ -175,7 +175,7 @@ export default function MissionsPage() {
                     </div>
 
                     {/* Filter Controls */}
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
                         {(['all', 'active', 'event', 'challenges', 'completed'] as FilterType[]).map((f) => (
                             <button
                                 key={f}
@@ -298,7 +298,7 @@ export default function MissionsPage() {
                                         style={{ borderColor: selectedChallengeQuest?.id === quest.id ? 'var(--rarity-challenge)' : 'rgba(255, 255, 255, 0.1)' }}
                                     >
                                         <span className={styles.eventCardTitle}>{quest.name}</span>
-                                        <span className={styles.eventCardProgress}>{isQuestCompleted(quest.id) ? '1/1' : '0/1'}</span>
+                                        <span className={styles.eventCardProgress} style={{ color: 'var(--rarity-challenge)' }}>{isQuestCompleted(quest.id) ? '1/1' : '0/1'}</span>
                                     </div>
                                 ))}
                             </div>
