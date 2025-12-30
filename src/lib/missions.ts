@@ -1,4 +1,4 @@
-export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Mythic' | 'Event';
+export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Mythic' | 'Event' | 'Challenge';
 
 export interface Quest {
     id: string;

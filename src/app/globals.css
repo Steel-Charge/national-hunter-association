@@ -36,6 +36,8 @@
   /* Pink */
   --rarity-epic: #c0c0c0;
   /* Silver - making it distinct from white */
+  --rarity-challenge: #ff6300;
+  /* Challenge Orange */
   --rarity-rare: #cd7f32;
   /* Bronze */
   --rarity-common: #00e5ff;

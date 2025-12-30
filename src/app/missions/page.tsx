@@ -20,6 +20,22 @@ export default function MissionsPage() {
         reward: { name: 'Rising star', rarity: 'Event' }
     });
 
+    // START: Challenge Data
+    const CHALLENGE_QUESTS: Quest[] = [
+        {
+            id: 'challenge_immovable',
+            name: 'Immovable',
+            description: 'Hold a Plank for 15 minutes or more',
+            reward: { name: 'Immovable', rarity: 'Challenge' }
+        }
+    ];
+    const [selectedChallengeQuest, setSelectedChallengeQuest] = useState<Quest | null>(CHALLENGE_QUESTS[0]);
+
+    // Filter State
+    type FilterType = 'all' | 'active' | 'event' | 'challenges' | 'completed';
+    const [filter, setFilter] = useState<FilterType>('all');
+    // END: Challenge Data
+
     useEffect(() => {
         const fetchPendingRequests = async () => {
             const requests = await getPendingRequests();
@@ -141,6 +157,10 @@ export default function MissionsPage() {
             if (q) return q;
         }
         if (id === 'event_debut') return { id: 'event_debut', name: 'Debut', reward: { name: 'Rising star', rarity: 'Event' } } as Quest;
+        // Check challenges
+        const challenge = CHALLENGE_QUESTS.find(q => q.id === id);
+        if (challenge) return challenge;
+
         return null;
     }).filter((q): q is Quest => q !== null);
 
@@ -149,32 +169,65 @@ export default function MissionsPage() {
             <div className={styles.content}>
                 {/* Header */}
                 <div className={styles.header}>
-                    <h1 className={styles.pageTitle}>MISSIONS</h1>
-                    <p className={styles.subtitle}>Complete quests to unlock Titles</p>
+                    <div>
+                        <h1 className={styles.pageTitle}>MISSIONS</h1>
+                        <p className={styles.subtitle}>Complete quests to unlock Titles</p>
+                    </div>
+
+                    {/* Filter Controls */}
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        {(['all', 'active', 'event', 'challenges', 'completed'] as FilterType[]).map((f) => (
+                            <button
+                                key={f}
+                                onClick={() => {
+                                    setFilter(f);
+                                    if (f !== 'all') setIsSelecting(false); // Close selection if filtering
+                                }}
+                                style={{
+                                    background: filter === f ? rankColorVar : 'rgba(255, 255, 255, 0.1)',
+                                    color: filter === f ? '#000' : '#fff',
+                                    border: `1px solid ${filter === f ? rankColorVar : 'rgba(255, 255, 255, 0.2)'}`,
+                                    padding: '5px 15px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 'bold',
+                                    textTransform: 'uppercase',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {f}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* ACTIVE Section */}
-                <h2 className={styles.sectionHeader}>ACTIVE</h2>
-                <div className={styles.activeSlots}>
-                    {[0, 1, 2].map(i => {
-                        const tracked = getTrackedQuest(i);
-                        return (
-                            <div key={i} className={styles.slot} onClick={() => handleSlotClick(i)}>
-                                {tracked ? (
-                                    <div className={styles.slotContent} style={{ textAlign: 'center' }}>
-                                        <div className={styles.slotName} style={{ fontSize: '0.8rem', fontWeight: '900', color: '#fff', textTransform: 'uppercase' }}>{tracked.name}</div>
-                                        <div className={styles.slotPath} style={{ fontSize: '0.6rem', color: 'var(--rank-color)', fontWeight: '800' }}>{tracked.pathName}</div>
+                {(filter === 'all' || filter === 'active') && (
+                    <>
+                        <h2 className={styles.sectionHeader}>ACTIVE</h2>
+                        <div className={styles.activeSlots}>
+                            {[0, 1, 2].map(i => {
+                                const tracked = getTrackedQuest(i);
+                                return (
+                                    <div key={i} className={styles.slot} onClick={() => handleSlotClick(i)}>
+                                        {tracked ? (
+                                            <div className={styles.slotContent} style={{ textAlign: 'center' }}>
+                                                <div className={styles.slotName} style={{ fontSize: '0.8rem', fontWeight: '900', color: '#fff', textTransform: 'uppercase' }}>{tracked.name}</div>
+                                                <div className={styles.slotPath} style={{ fontSize: '0.6rem', color: 'var(--rank-color)', fontWeight: '800' }}>{tracked.pathName}</div>
+                                            </div>
+                                        ) : (
+                                            <span className={styles.slotPlus}>+</span>
+                                        )}
                                     </div>
-                                ) : (
-                                    <span className={styles.slotPlus}>+</span>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
+                                );
+                            })}
+                        </div>
+                    </>
+                )}
 
                 {/* EVENT Section */}
-                {!isSelecting && (
+                {!isSelecting && (filter === 'all' || filter === 'event') && (
                     <div style={{ marginTop: '40px' }}>
                         <h2 className={styles.sectionHeader}>EVENT</h2>
                         <div className={styles.eventSection}>
@@ -228,25 +281,84 @@ export default function MissionsPage() {
                                 </div>
                             )}
                         </div>
+                    </div>
+                )}
 
-                        {/* COMPLETED Section */}
-                        <div className={styles.completedMissionsSection}>
-                            <h2 className={styles.sectionHeader}>COMPLETED</h2>
-                            {completedQuests.length > 0 ? (
-                                <div className={styles.completedGrid}>
-                                    {completedQuests.map(quest => (
-                                        <div key={quest.id} className={styles.completedItem}>
-                                            <span className={styles.completedName}>{quest.name}</span>
-                                            <span className={styles.completedReward} style={{ color: getRarityColor(quest.reward.rarity) }}>
-                                                {quest.reward.name}
-                                            </span>
+                {/* CHALLENGES Section */}
+                {!isSelecting && (filter === 'all' || filter === 'challenges') && (
+                    <div style={{ marginTop: '40px' }}>
+                        <h2 className={styles.sectionHeader}>CHALLENGES</h2>
+                        <div className={styles.eventSection} style={{ borderColor: 'var(--rarity-challenge)' }}>
+                            <div className={styles.eventGrid}>
+                                {CHALLENGE_QUESTS.map((quest) => (
+                                    <div
+                                        key={quest.id}
+                                        className={`${styles.eventCard} ${selectedChallengeQuest?.id === quest.id ? styles.active : ''}`}
+                                        onClick={() => setSelectedChallengeQuest(quest)}
+                                        style={{ borderColor: selectedChallengeQuest?.id === quest.id ? 'var(--rarity-challenge)' : 'rgba(255, 255, 255, 0.1)' }}
+                                    >
+                                        <span className={styles.eventCardTitle}>{quest.name}</span>
+                                        <span className={styles.eventCardProgress}>{isQuestCompleted(quest.id) ? '1/1' : '0/1'}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {selectedChallengeQuest && (
+                                <div className={styles.eventDetailCard} style={{ borderColor: 'var(--rarity-challenge)' }}>
+                                    <div className={styles.questHeader}>
+                                        <div className={styles.questTitle}>
+                                            Mission: {selectedChallengeQuest.name}
                                         </div>
-                                    ))}
+                                        <div className={styles.questRarity} style={{ color: 'var(--rarity-challenge)' }}>
+                                            CHALLENGE
+                                        </div>
+                                    </div>
+
+                                    <p className={styles.questDescription}>{selectedChallengeQuest.description}</p>
+
+                                    <div className={styles.questReward}>
+                                        <span className={styles.rewardLabel}>Rewards:</span>
+                                        <span className={styles.rewardTitle} style={{ color: 'var(--rarity-challenge)' }}>
+                                            Title: {selectedChallengeQuest.reward.name}
+                                        </span>
+                                    </div>
+
+                                    {!isQuestCompleted(selectedChallengeQuest.id) ? (
+                                        <button
+                                            className={styles.claimButton}
+                                            onClick={() => handleClaimQuest(selectedChallengeQuest)}
+                                            disabled={pendingRequests.includes(selectedChallengeQuest.id)}
+                                            style={{ backgroundColor: 'var(--rarity-challenge)', color: '#fff', marginTop: '20px' }}
+                                        >
+                                            {pendingRequests.includes(selectedChallengeQuest.id) ? 'PENDING' : (canSelfManage(profile) ? 'CLAIM' : 'REQUEST')}
+                                        </button>
+                                    ) : (
+                                        <div style={{ color: 'var(--rarity-challenge)', textAlign: 'center', fontWeight: 'bold', marginTop: '20px', fontSize: '0.8rem' }}>✓ CLAIMED</div>
+                                    )}
                                 </div>
-                            ) : (
-                                <p className={styles.emptyMessage}>Completed missions will be displayed here</p>
                             )}
                         </div>
+                    </div>
+                )}
+
+                {/* COMPLETED Section */}
+                {!isSelecting && (filter === 'all' || filter === 'completed') && (
+                    <div className={styles.completedMissionsSection}>
+                        <h2 className={styles.sectionHeader}>COMPLETED</h2>
+                        {completedQuests.length > 0 ? (
+                            <div className={styles.completedGrid}>
+                                {completedQuests.map(quest => (
+                                    <div key={quest.id} className={styles.completedItem}>
+                                        <span className={styles.completedName}>{quest.name}</span>
+                                        <span className={styles.completedReward} style={{ color: getRarityColor(quest.reward.rarity) }}>
+                                            {quest.reward.name}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className={styles.emptyMessage}>Completed missions will be displayed here</p>
+                        )}
                     </div>
                 )}
 
@@ -375,6 +487,6 @@ export default function MissionsPage() {
                 )}
             </div>
             <Navbar />
-        </div>
+        </div >
     );
 }
