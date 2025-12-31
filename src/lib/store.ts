@@ -54,6 +54,8 @@ export interface Agency {
     created_at: string;
     unlocked_titles?: Title[]; // JSONB in DB
     title_visibility?: Record<string, boolean>; // JSONB (titleName -> isHidden)
+    description?: string;
+    assigned_manager?: string;
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
@@ -1763,6 +1765,32 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             console.log('Agency title visibility updated:', titleName, isHidden);
         } catch (error) {
             console.error('Error updating agency title visibility:', error);
+        }
+    },
+
+    updateAgency: async (agencyId: string, data: Partial<Agency>) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        // Only Captain (or Admin) should be able to do this
+        if (profile.role !== 'Captain' && !profile.isAdmin) return;
+
+        try {
+            const updates: any = {};
+            if (data.name !== undefined) updates.name = data.name;
+            if (data.logo_url !== undefined) updates.logo_url = data.logo_url;
+            if (data.description !== undefined) updates.description = data.description;
+            if (data.assigned_manager !== undefined) updates.assigned_manager = data.assigned_manager;
+
+            const { error } = await supabase
+                .from('agencies')
+                .update(updates)
+                .eq('id', agencyId);
+
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error updating agency:', error);
+            throw error;
         }
     },
 

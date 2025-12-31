@@ -266,6 +266,8 @@
 .logDisplay {
     display: flex;
     flex-direction: column;
+    gap: 8px;
+    /* Added gap between lines */
 }
 
 .logLabel {
@@ -276,8 +278,10 @@
 }
 
 .logPara {
-    margin: 5px 0 0 0;
-    line-height: 1.5;
+    margin: 5px 0 10px 0;
+    /* Added bottom margin */
+    line-height: 1.6;
+    /* Increased line height */
     white-space: pre-wrap;
 }
 

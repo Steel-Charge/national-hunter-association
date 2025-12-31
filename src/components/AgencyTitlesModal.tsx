@@ -58,14 +58,13 @@ export default function AgencyTitlesModal({ titles, visibility, onClose, onUpdat
                 <h2 style={{ color: rankColor, marginBottom: '1.5rem', textAlign: 'center' }}>MANAGE SHOWN TITLES</h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {/* Always show Upstart (default) but make it immutable? User said "Upstart" is common title. 
-                         Actually user said "Agency title that will display beside Upstart". 
-                         So Upstart is likely the default title, similar to 'Hunter' for users.
-                         We should list other unlocked titles. */}
-                    {titles.length === 0 ? (
-                        <p style={{ color: '#888', textAlign: 'center' }}>No additional titles unlocked.</p>
-                    ) : (
-                        titles.map((title) => {
+                    {(() => {
+                        const allTitles = [
+                            { name: 'UPSTART', rarity: 'Common' } as Title,
+                            ...titles
+                        ];
+
+                        return allTitles.map((title) => {
                             const isHidden = visibility[title.name] || false;
                             return (
                                 <div key={title.name} style={{
@@ -103,8 +102,8 @@ export default function AgencyTitlesModal({ titles, visibility, onClose, onUpdat
                                     </button>
                                 </div>
                             );
-                        })
-                    )}
+                        });
+                    })()}
                 </div>
             </div>
         </div>

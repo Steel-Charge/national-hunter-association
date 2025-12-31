@@ -14,7 +14,7 @@ import { useHunterStore, UserProfile, Agency, Title, getDisplayTitle, isDefaultT
 
 export default function AgencyPage() {
     const router = useRouter();
-    const { getTheme, profile, joinAgency, createAgency, promoteToCaptain, kickMember, connections, pendingRequests, sentRequestIds, fetchConnections, addConnection, acceptRequest, declineRequest, searchHunters } = useHunterStore();
+    const { getTheme, profile, updateAgency, joinAgency, createAgency, promoteToCaptain, kickMember, connections, pendingRequests, sentRequestIds, fetchConnections, addConnection, acceptRequest, declineRequest, searchHunters } = useHunterStore();
 
     const [members, setMembers] = useState<UserProfile[]>([]);
     const [agency, setAgency] = useState<Agency | null>(null);
@@ -30,6 +30,8 @@ export default function AgencyPage() {
     const [activeTab, setActiveTab] = useState<'agency' | 'network'>('agency');
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+    const [description, setDescription] = useState('');
+    const [isEditingDescription, setIsEditingDescription] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
 
     const themeRank = getTheme();
@@ -68,6 +70,7 @@ export default function AgencyPage() {
             } else {
                 console.log('Fetched agency data:', agencyData);
                 setAgency(agencyData);
+                setDescription(agencyData.description || 'This is a New agency...');
             }
 
             // 2. Fetch Members
@@ -146,6 +149,17 @@ export default function AgencyPage() {
         router.push(`/batch3/${name}`);
     };
 
+    const handleSaveDescription = async () => {
+        if (!agency) return;
+        try {
+            await updateAgency(agency.id, { description });
+            setIsEditingDescription(false);
+            setAgency({ ...agency, description });
+        } catch (error) {
+            alert('Failed to update description');
+        }
+    };
+
     const handlePromoteToCaptain = async (memberId: string, memberName: string) => {
         if (confirm(`Promote ${memberName} to Captain? You will become a Hunter.`)) {
             await promoteToCaptain(memberId);
@@ -217,7 +231,26 @@ export default function AgencyPage() {
                         <>
                             <div className={styles.agencyStats}>
                                 <p>MEMBERS: [{members.length}/10]</p>
-                                <p>RANK: <span style={{ color: `var(--rank-${agencyRank.toLowerCase()})` }}>{agencyRank}</span></p>
+                                <p className={styles.agencyRankLabel}>AGENCY RANK: <span className={styles.rankValue} style={{ color: `var(--rank-${agencyRank.toLowerCase()})` }}>{agencyRank}</span></p>
+                            </div>
+
+                            <div className={styles.descriptionContainer}>
+                                <div className={styles.descriptionLabel}>DESCRIPTION :</div>
+                                {isCaptain ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <textarea
+                                            className={styles.agencyDescription}
+                                            value={description}
+                                            onChange={(e) => setDescription(e.target.value)}
+                                            onBlur={handleSaveDescription}
+                                            placeholder="Enter agency description..."
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className={styles.descriptionReadonly}>
+                                        {agency?.description || "This is a New agency..."}
+                                    </div>
+                                )}
                             </div>
 
                             <div className={styles.agencyTitles}>
@@ -241,7 +274,11 @@ export default function AgencyPage() {
                                     )}
                                 </div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                                    <div className={styles.commonTitle}>UPSTART</div>
+                                    {(() => {
+                                        const isUpstartHidden = (agency?.title_visibility as Record<string, boolean> || {})['UPSTART'];
+                                        if (isUpstartHidden) return null;
+                                        return <div className={styles.commonTitle}>UPSTART</div>;
+                                    })()}
                                     {(agency?.unlocked_titles as Title[] || []).map((title: Title) => {
                                         const isHidden = (agency?.title_visibility as Record<string, boolean> || {})[title.name];
                                         if (isHidden) return null; // Hide from main view if hidden
@@ -271,14 +308,22 @@ export default function AgencyPage() {
                         alt="Agency Logo"
                         className={styles.agencyLogo}
                     />
+                    {!isSolo && (
+                        <div className={styles.managerInfo}>
+                            <span className={styles.assignedManagerLabel}>ASSIGNED MANAGER:</span>
+                            <span className={styles.managerName}>HUNTER BONES</span>
+                        </div>
+                    )}
                 </div>
 
-                <button
-                    className={styles.settingsTrigger}
-                    onClick={() => setShowSettings(true)}
-                >
-                    <Cog size={24} />
-                </button>
+                {!isSolo && (
+                    <button
+                        className={styles.settingsTrigger}
+                        onClick={() => setShowSettings(true)}
+                    >
+                        <Cog size={24} />
+                    </button>
+                )}
             </div>
 
             <div className={styles.tabContainer}>
