@@ -1,0 +1,324 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal {
+    width: 90%;
+    max-width: 500px;
+    height: 80vh;
+    background: #050505;
+    border: 2px solid var(--rank-color, #00ffff);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+    position: relative;
+}
+
+.header {
+    padding: 20px;
+    background: rgba(0, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+}
+
+.headerTitle {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--rank-color, #00ffff);
+    text-shadow: 0 0 10px var(--rank-color);
+}
+
+.headerRole {
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.tabs {
+    display: flex;
+    padding: 10px;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    overflow-x: auto;
+}
+
+.tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.tab {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: white;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.activeTab {
+    background: var(--rank-color, #00ffff);
+    border-color: var(--rank-color, #00ffff);
+    color: black;
+    font-weight: bold;
+    box-shadow: 0 0 10px var(--rank-color);
+}
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* File Tab */
+.sectionTitle {
+    font-size: 0.9rem;
+    color: #00ffff;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.textarea {
+    width: 100%;
+    min-height: 100px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: white;
+    padding: 12px;
+    font-family: inherit;
+    resize: none;
+}
+
+.bioReadonly {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tagContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.tag {
+    padding: 4px 12px;
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid #00ffff;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    color: #00ffff;
+    text-transform: uppercase;
+}
+
+.tagEditable {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.videoPlaceholder {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.videoFrame {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 15px;
+}
+
+/* Logs Tab */
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 7.5px;
+    top: 5px;
+    bottom: 5px;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.logNode {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.nodeIndicator {
+    position: absolute;
+    left: -30px;
+    top: 5px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #333;
+    border: 2px solid #555;
+}
+
+.nodeIndicatorActive {
+    background: var(--rank-color, #00ffff);
+    border-color: white;
+    box-shadow: 0 0 10px var(--rank-color);
+}
+
+.logHeader {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--rank-color, #00ffff);
+    margin-bottom: 8px;
+}
+
+.logContent {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+.redacted {
+    color: transparent;
+    background: rgba(255, 255, 255, 0.2);
+    user-select: none;
+    cursor: default;
+}
+
+/* Rat King Tab */
+.chatContainer {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.chatMessages {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.msg {
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 0.9rem;
+    max-width: 85%;
+    line-height: 1.4;
+}
+
+.ratKingMsg {
+    align-self: flex-start;
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid #00ffff;
+    color: white;
+    border-bottom-left-radius: 4px;
+}
+
+.userMsg {
+    align-self: flex-end;
+    background: #333;
+    color: rgba(255, 255, 255, 0.5);
+    border-bottom-right-radius: 4px;
+}
+
+.msgError {
+    font-size: 0.7rem;
+    color: #ff4444;
+    margin-top: 4px;
+    text-align: right;
+}
+
+.chatInputArea {
+    margin-top: 20px;
+    position: relative;
+}
+
+.chatInput {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 10px 45px 10px 15px;
+    color: white;
+}
+
+.sendBtn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #00ffff;
+    cursor: pointer;
+}
+
+/* Footer & Buttons */
+.footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.saveBtn {
+    background: var(--rank-color, #00ffff);
+    color: black;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.closeX {
+    position: absolute;
+    top: 25px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.select {
+    background: #111;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}

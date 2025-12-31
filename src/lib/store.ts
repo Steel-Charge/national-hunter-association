@@ -40,6 +40,9 @@ export interface UserProfile {
     role: 'Hunter' | 'Captain' | 'Admin' | 'Solo';
     agencyId?: string;
     agencyName?: string;
+    affinities?: string[];
+    classTags?: string[];
+    missionLogs?: any[];
 }
 
 export interface Agency {
@@ -241,6 +244,7 @@ interface HunterState {
     // Agency Title Actions
     claimAgencyTitle: (title: Title) => Promise<void>;
     updateAgencyTitleVisibility: (titleName: string, isHidden: boolean) => Promise<void>;
+    updateLore: (profileId: string, data: { bio?: string, managerComment?: string, videoUrl?: string, affinities?: string[], classTags?: string[], missionLogs?: any[] }) => Promise<void>;
 }
 
 export const useHunterStore = create<HunterState>((set, get) => ({
@@ -319,6 +323,9 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         agencyId: profileData.agency_id,
                         bio: profileData.bio,
                         managerComment: profileData.manager_comment,
+                        affinities: profileData.affinities || [],
+                        classTags: profileData.class_tags || [],
+                        missionLogs: profileData.mission_logs || [],
                         email: profileData.email,
                         phone: profileData.phone,
                         trackedQuests: profileData.tracked_quests || [],
@@ -1756,6 +1763,41 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             console.log('Agency title visibility updated:', titleName, isHidden);
         } catch (error) {
             console.error('Error updating agency title visibility:', error);
+        }
+    },
+
+    updateLore: async (profileId: string, data: any) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        try {
+            const updates: any = {};
+            if (data.bio !== undefined) updates.bio = data.bio;
+            if (data.managerComment !== undefined) updates.manager_comment = data.managerComment;
+            if (data.videoUrl !== undefined) updates.video_url = data.videoUrl;
+            if (data.affinities !== undefined) updates.affinities = data.affinities;
+            if (data.classTags !== undefined) updates.class_tags = data.classTags;
+            if (data.missionLogs !== undefined) updates.mission_logs = data.missionLogs;
+
+            const { error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', profileId);
+
+            if (error) throw error;
+
+            // If we updated our own profile, update local state
+            if (profile.id === profileId) {
+                set({
+                    profile: {
+                        ...profile,
+                        ...data
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error updating lore:', error);
+            throw error;
         }
     }
 }));
