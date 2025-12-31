@@ -101,7 +101,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
     const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
     // Viewer Theme Logic for Comparison
-    const viewerOverallRank = viewerStats ? getProfileOverallRank(viewerStats) : 'E';
+    const viewerOverallRank = viewerProfile ? getProfileOverallRank(viewerProfile) : 'E';
     const viewerThemeRank = viewerProfile?.settings.theme || viewerOverallRank;
     // Use the hex color for the viewer (logged-in hunter) so canvas paints correctly
     let viewerRankColor = RANK_COLORS[viewerThemeRank as Rank] || '#ffffff';
