@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
-import { useHunterStore, canSelfManage } from '@/lib/store';
+import { useHunterStore, canSelfManage, getDisplayTitle, isDefaultTitle } from '@/lib/store';
 import { MISSION_PATHS, MissionPath, Quest } from '@/lib/missions';
 import LoadingScreen from '@/components/LoadingScreen';
 import styles from './page.module.css';
@@ -259,57 +259,42 @@ export default function MissionsPage() {
             <div className={styles.content}>
                 {/* Header */}
                 <div className={styles.header}>
-                    <h1 className={styles.pageTitle}>MISSIONS</h1>
-                    <p className={styles.subtitle}>Complete quests to unlock Titles</p>
+                    <h1 className={styles.pageTitle} style={{ color: rankColorVar, textShadow: `0 0 10px ${rankColorVar}` }}>
+                        {profile.name.toUpperCase()}
+                    </h1>
+                    {(() => {
+                        const titleName = profile.activeTitle?.name || 'Hunter';
+                        const rarity = profile.activeTitle?.rarity || 'Common';
+                        const displayTitle = getDisplayTitle(titleName, profile.role);
+                        const isDefault = isDefaultTitle(titleName);
+                        // If default, use rank color. Else uses rarity color.
+                        const titleColor = isDefault ? rankColorVar : `var(--rarity-${rarity.toLowerCase()})`;
+
+                        return (
+                            <p className={styles.subtitle} style={{ color: titleColor, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                                {displayTitle.toUpperCase()}
+                            </p>
+                        );
+                    })()}
 
                     <div className={styles.filterBar}>
-                        {(['all', 'active', 'event', 'challenges', 'agency', 'completed'] as FilterType[]).map((f) => (
-                            <button
-                                key={f}
-                                onClick={() => setFilter(f)}
-                                className={`${styles.filterBtn} ${filter === f ? styles.active : ''}`}
-                            >
-                                {f}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* TRACKED Header SECTION */}
-                <div style={{ marginBottom: '40px' }}>
-                    <div className={styles.trackedSlots}>
-                        {[0, 1, 2].map(i => {
-                            const tracked = getTrackedQuest(i);
-                            const rarity = tracked ? getQuestRarity(tracked.id) : 'Common';
+                        {(['all', 'active', 'event', 'challenges', 'agency', 'completed'] as FilterType[]).map((f) => {
+                            const labels: Record<string, string> = {
+                                all: 'ALL',
+                                active: 'ACTIVE',
+                                event: 'EVENT',
+                                challenges: 'CHALLENGES',
+                                agency: 'AGENCY',
+                                completed: 'COMPLETED'
+                            };
                             return (
-                                <div
-                                    key={i}
-                                    className={`${styles.slot} ${tracked ? styles.selected : ''}`}
-                                    style={{ '--rarity-color': tracked ? getRarityColor(rarity) : 'rgba(255,255,255,0.1)' } as React.CSSProperties}
-                                    onClick={() => {
-                                        if (tracked) {
-                                            const path = MISSION_PATHS.find(p => p.id === (tracked as any).pathId);
-                                            if (path) {
-                                                setSelectedPath(path);
-                                                setActivePathQuest(tracked);
-                                                scrollToSection('active-section');
-                                            }
-                                        } else {
-                                            setIsSelecting(true);
-                                            setFilter('active');
-                                            scrollToSection('active-section');
-                                        }
-                                    }}
+                                <button
+                                    key={f}
+                                    onClick={() => setFilter(f)}
+                                    className={`${styles.filterBtn} ${filter === f ? styles.active : ''}`}
                                 >
-                                    {tracked ? (
-                                        <>
-                                            <div className={styles.slotName}>{tracked.name}</div>
-                                            <div className={styles.slotProgress} style={{ color: getRarityColor(rarity) }}>{tracked.pathName}</div>
-                                        </>
-                                    ) : (
-                                        <div className={styles.slotPlus}>+</div>
-                                    )}
-                                </div>
+                                    {labels[f]}
+                                </button>
                             );
                         })}
                     </div>
@@ -318,7 +303,7 @@ export default function MissionsPage() {
                 {/* ACTIVE SECTION */}
                 {(filter === 'all' || filter === 'active') && (
                     <div id="active-section">
-                        <h2 className={styles.sectionHeader}>ACTIVE</h2>
+                        <h2 className={styles.sectionHeader}>ACTIVE MISSIONS</h2>
 
                         {/* Only show Path Selection if we are actively selecting (+) */}
                         {isSelecting ? (
@@ -343,13 +328,28 @@ export default function MissionsPage() {
                         ) : (
                             /* Only display current tracked missions in the ACTIVE area by default */
                             <div className={styles.missionRow}>
-                                {profile.trackedQuests?.map((id, idx) => {
-                                    const quest = getTrackedQuest(idx);
-                                    if (!quest) return null;
+                                {[0, 1, 2].map((i) => {
+                                    const quest = getTrackedQuest(i);
+                                    if (!quest) {
+                                        return (
+                                            <div
+                                                key={`empty-${i}`}
+                                                className={styles.slot}
+                                                style={{ '--rarity-color': 'rgba(255,255,255,0.1)' } as React.CSSProperties}
+                                                onClick={() => {
+                                                    setIsSelecting(true);
+                                                    setFilter('active');
+                                                    scrollToSection('active-section');
+                                                }}
+                                            >
+                                                <div className={styles.slotPlus}>+</div>
+                                            </div>
+                                        );
+                                    }
                                     const rarity = getQuestRarity(quest.id);
                                     return (
                                         <div
-                                            key={id}
+                                            key={quest.id}
                                             className={`${styles.slot} ${activePathQuest?.id === quest.id ? styles.selected : ''}`}
                                             style={{ '--rarity-color': getRarityColor(rarity) } as React.CSSProperties}
                                             onClick={() => setActivePathQuest(quest)}
@@ -359,9 +359,6 @@ export default function MissionsPage() {
                                         </div>
                                     );
                                 })}
-                                {(!profile.trackedQuests || profile.trackedQuests.length === 0) && (
-                                    <p className={styles.emptyMessage} style={{ width: '100%' }}>No missions tracked. Click + to select one.</p>
-                                )}
                             </div>
                         )}
 
@@ -410,7 +407,7 @@ export default function MissionsPage() {
                 {/* EVENT SECTION */}
                 {(filter === 'all' || filter === 'event') && (
                     <div>
-                        <h2 className={styles.sectionHeader}>EVENT</h2>
+                        <h2 className={styles.sectionHeader}>EVENT MISSIONS</h2>
                         <div className={styles.missionRow}>
                             <div
                                 className={`${styles.slot} ${activeEventQuest?.id === 'event_debut' ? styles.selected : ''}`}
@@ -470,7 +467,7 @@ export default function MissionsPage() {
                 {/* AGENCY SECTION */}
                 {profile.agencyId && (filter === 'all' || filter === 'agency') && (
                     <div>
-                        <h2 className={styles.sectionHeader}>AGENCY</h2>
+                        <h2 className={styles.sectionHeader}>AGENCY MISSIONS</h2>
                         <div className={styles.missionRow}>
                             {AGENCY_QUESTS.map(quest => {
                                 const isClaimed = agencyTitles.some(t => t.name === quest.reward.name);
@@ -536,7 +533,7 @@ export default function MissionsPage() {
                 {/* COMPLETED SECTION */}
                 {(filter === 'all' || filter === 'completed') && (
                     <div>
-                        <h2 className={styles.sectionHeader}>COMPLETED</h2>
+                        <h2 className={styles.sectionHeader}>COMPLETED MISSIONS</h2>
                         {completedQuests.length > 0 ? (
                             <div className={styles.completedGrid}>
                                 {completedQuests.map(quest => (
