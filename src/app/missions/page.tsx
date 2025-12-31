@@ -10,6 +10,30 @@ import styles from './page.module.css';
 import { supabase } from '@/lib/supabase';
 import { calculateOverallRank } from '@/lib/game-logic';
 
+const CHALLENGE_QUESTS: Quest[] = [
+    {
+        id: 'challenge_immovable',
+        name: 'Immovable',
+        description: 'Hold a Plank for 15 minutes or more',
+        reward: { name: 'Immovable', rarity: 'Challenge' }
+    }
+];
+
+const AGENCY_QUESTS: Quest[] = [
+    {
+        id: 'agency_established',
+        name: 'Established',
+        description: 'Have 3 or more Agency Members D-rank or higher',
+        reward: { name: 'Established', rarity: 'Rare' }
+    },
+    {
+        id: 'agency_professional',
+        name: 'Professional',
+        description: 'Have 3 or more Agency Members C-rank or higher',
+        reward: { name: 'Professional', rarity: 'Epic' }
+    }
+];
+
 export default function MissionsPage() {
     const { profile, claimQuest, requestTitle, getPendingRequests, getTheme, toggleTrackQuest, getAgencyMembers, claimAgencyTitle } = useHunterStore();
     const [selectedPath, setSelectedPath] = useState<MissionPath>(MISSION_PATHS[0]);
@@ -65,29 +89,6 @@ export default function MissionsPage() {
         }
     }, [profile, getAgencyMembers]);
 
-    const CHALLENGE_QUESTS: Quest[] = [
-        {
-            id: 'challenge_immovable',
-            name: 'Immovable',
-            description: 'Hold a Plank for 15 minutes or more',
-            reward: { name: 'Immovable', rarity: 'Challenge' }
-        }
-    ];
-
-    const AGENCY_QUESTS: Quest[] = [
-        {
-            id: 'agency_established',
-            name: 'Established',
-            description: 'Have 3 or more Agency Members D-rank or higher',
-            reward: { name: 'Established', rarity: 'Rare' }
-        },
-        {
-            id: 'agency_professional',
-            name: 'Professional',
-            description: 'Have 3 or more Agency Members C-rank or higher',
-            reward: { name: 'Professional', rarity: 'Epic' }
-        }
-    ];
 
     // Filter State
     type FilterType = 'all' | 'active' | 'event' | 'challenges' | 'agency' | 'completed';
