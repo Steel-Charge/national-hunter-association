@@ -54,7 +54,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
 
     const handleSaveLogo = async () => {
         setIsSavingLogo(true);
-        const result = await updateAgency({ logo_url: logoPreview });
+        const result = await updateAgency(agency.id, { logo_url: logoPreview });
         setIsSavingLogo(false);
 
         if (result.success) {
@@ -72,7 +72,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
     const handleSaveName = async () => {
         setIsSavingName(true);
         console.log('Attempting to save name:', newName);
-        const result = await updateAgency({ name: newName });
+        const result = await updateAgency(agency.id, { name: newName });
         setIsSavingName(false);
 
         if (result.success) {
