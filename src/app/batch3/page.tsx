@@ -373,9 +373,14 @@ export default function AgencyPage() {
                                         <div className={styles.resultSub}>
                                             <div>
                                                 <span className={styles.resultLabel}>RANK: </span>
-                                                <span className={styles.resultValue} style={{ color: `var(--rank-${calculateOverallPercentage(hunter.testScores, hunter.profileType) < 20 ? 'e' : calculateOverallPercentage(hunter.testScores, hunter.profileType) < 40 ? 'd' : calculateOverallPercentage(hunter.testScores, hunter.profileType) < 60 ? 'c' : calculateOverallPercentage(hunter.testScores, hunter.profileType) < 80 ? 'b' : calculateOverallPercentage(hunter.testScores, hunter.profileType) < 90 ? 'a' : 's'})` }}>
-                                                    {getRankFromPercentage(calculateOverallPercentage(hunter.testScores, hunter.profileType))}
-                                                </span>
+                                                {(() => {
+                                                    const rank = getRankFromPercentage(calculateOverallPercentage(hunter.testScores, hunter.profileType));
+                                                    return (
+                                                        <span className={styles.resultValue} style={{ color: `var(--rank-${rank.toLowerCase()})` }}>
+                                                            {rank}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </div>
                                             <div>
                                                 <span className={styles.resultLabel}>AGENCY: </span>

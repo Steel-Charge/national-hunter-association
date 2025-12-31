@@ -15,7 +15,7 @@ export async function getLeaderboard(attribute?: string, agencyId?: string): Pro
 
         let query = supabase
             .from('profiles')
-            .select('name, test_scores');
+            .select('name, test_scores, profile_type');
 
         if (agencyId) {
             query = query.eq('agency_id', agencyId);
@@ -28,10 +28,11 @@ export async function getLeaderboard(attribute?: string, agencyId?: string): Pro
 
         const entries = profiles.map(profile => {
             const testScores = profile.test_scores || {};
+            const profileType = profile.profile_type || 'male_20_25';
 
             if (attribute && ATTRIBUTES[attribute]) {
                 // Attribute specific ranking
-                const { percentage, rank } = calculateAttributeRank(attribute, testScores);
+                const { percentage, rank } = calculateAttributeRank(attribute, testScores, profileType);
                 // Score = Percentage * 100
                 // Example: 50% -> 5000
                 const score = Math.round(percentage * 100);
@@ -48,7 +49,7 @@ export async function getLeaderboard(attribute?: string, agencyId?: string): Pro
                 let count = 0;
 
                 Object.keys(ATTRIBUTES).forEach(attr => {
-                    const { percentage } = calculateAttributeRank(attr, testScores);
+                    const { percentage } = calculateAttributeRank(attr, testScores, profileType);
                     totalPercentage += percentage;
                     count++;
                 });

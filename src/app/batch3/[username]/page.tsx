@@ -162,7 +162,7 @@ export default function HunterProfilePage() {
         );
     }
 
-    const overallRank = calculateOverallRank(profile.testScores);
+    const overallRank = calculateOverallRank(profile.testScores, profile.profileType);
     // Use the viewed profile's theme
     const themeRank = profile.settings.theme || overallRank;
     const specialTheme = profile.settings.specialTheme || null;
