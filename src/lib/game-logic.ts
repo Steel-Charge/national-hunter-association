@@ -307,7 +307,7 @@ export function calculateAttributeRank(
 
   if (count === 0) return { percentage: 0, rank: 'E' };
 
-  const averagePercentage = totalPercentage / count;
+  const averagePercentage = totalPercentage / attribute.tests.length;
   return {
     percentage: averagePercentage,
     rank: getRankFromPercentage(averagePercentage),

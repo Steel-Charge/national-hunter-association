@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { ATTRIBUTES, calculateAttributeRank, getRankFromPercentage, Rank } from './game-logic';
+import { getAttributes, ATTRIBUTES, calculateAttributeRank, getRankFromPercentage, Rank, calculateOverallRank, calculateOverallPercentage } from './game-logic';
 
 export interface LeaderboardEntry {
     name: string;
@@ -43,21 +43,8 @@ export async function getLeaderboard(attribute?: string, agencyId?: string): Pro
                     score
                 };
             } else {
-                // Overall ranking
-                // Calculate percentage for each attribute
-                let totalPercentage = 0;
-                let count = 0;
+                const averagePercentage = calculateOverallPercentage(testScores, profileType);
 
-                Object.keys(ATTRIBUTES).forEach(attr => {
-                    const { percentage } = calculateAttributeRank(attr, testScores, profileType);
-                    totalPercentage += percentage;
-                    count++;
-                });
-
-                const averagePercentage = count > 0 ? totalPercentage / count : 0;
-
-                // Score = Average Percentage * 100
-                // Example: 29% -> 2900
                 // If this is the special binary profile, force S (100%) locally
                 if (profile.name === SPECIAL_NAME) {
                     const forcedPercentage = 100;
@@ -70,9 +57,7 @@ export async function getLeaderboard(attribute?: string, agencyId?: string): Pro
                 }
 
                 const score = Math.round(averagePercentage * 100);
-
-                // Rank based on the average percentage
-                const overallRank = getRankFromPercentage(averagePercentage);
+                const overallRank = calculateOverallRank(testScores, profileType);
 
                 return {
                     name: profile.name,

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserProfile, useHunterStore, Title, canSelfManage, getDisplayTitle, isDefaultTitle } from '@/lib/store';
-import { getAttributes, RANK_COLORS, Rank } from '@/lib/game-logic';
+import { getAttributes, RANK_COLORS, Rank, calculateAttributeRank, calculateOverallRank, calculateOverallPercentage } from '@/lib/game-logic';
 
 import RadarChart from '@/components/RadarChart';
 import ProfileFrame from '@/components/ProfileFrame';
@@ -30,54 +30,38 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
 
     // Helper to get stats for any profile
     const getProfileStats = (p: UserProfile) => {
-        // We need to use the store's getStats logic but applied to a specific profile
-        // Since getStats in store uses get().profile, we can't use it directly for 'p' if p != store.profile
-        // So we replicate the logic here or assume p has correct structure.
-        // Actually, getStats in store derives stats from p.testScores.
-        // Let's replicate the logic briefly or export a helper from store/game-logic.
-        // For now, let's just use the store's getStats if p is the current profile, 
-        // OR replicate the calculation.
-        // Replicating is safer for "viewing other profiles".
-
         const attributes = getAttributes(p.profileType);
+
         // If this is the special profile, force S rank + 100% for every attribute
         if (p.name === SPECIAL_NAME) {
             return Object.values(attributes).map(attr => ({
                 name: attr.name,
                 percentage: 100,
-                rank: 'S',
+                rank: 'S' as Rank,
                 tests: attr.tests.map(test => ({ ...test, score: p.testScores[test.name] || 0, percentage: 100 }))
             }));
         }
 
-        const stats = Object.values(attributes).map(attr => {
-            const attrScores = attr.tests.map(test => {
+        const stats = Object.keys(attributes).map(attrName => {
+            const attr = attributes[attrName];
+            const { percentage, rank } = calculateAttributeRank(attrName, p.testScores, p.profileType);
+
+            const tests = attr.tests.map(test => {
                 const score = p.testScores[test.name] || 0;
-                let percentage = 0;
+                let testPercentage = 0;
                 if (score > 0) {
-                    percentage = test.inverse
+                    testPercentage = test.inverse
                         ? Math.min(100, (test.maxScore / score) * 100)
                         : Math.min(100, (score / test.maxScore) * 100);
                 }
-                return { ...test, score, percentage };
+                return { ...test, score, percentage: testPercentage };
             });
 
-            const totalPercentage = attrScores.reduce((acc, curr) => acc + curr.percentage, 0);
-            const averagePercentage = totalPercentage / attr.tests.length;
-
-            // Calculate Rank
-            let rank = 'E';
-            if (averagePercentage >= 90) rank = 'S';
-            else if (averagePercentage >= 80) rank = 'A';
-            else if (averagePercentage >= 60) rank = 'B';
-            else if (averagePercentage >= 40) rank = 'C';
-            else if (averagePercentage >= 20) rank = 'D';
-
             return {
-                name: attr.name,
-                percentage: averagePercentage,
+                name: attrName,
+                percentage,
                 rank,
-                tests: attrScores
+                tests
             };
         });
         return stats;
@@ -103,18 +87,11 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
     // But store.getTheme() uses the logged-in user. 
     // We should probably compute theme for the viewed profile.
     // Let's assume we want to show the theme of the person we are looking at.
-    const getProfileOverallRank = (s: any[]) => {
-        const total = s.reduce((acc, curr) => acc + curr.percentage, 0);
-        const avg = total / s.length;
-        if (avg >= 90) return 'S';
-        if (avg >= 80) return 'A';
-        if (avg >= 60) return 'B';
-        if (avg >= 40) return 'C';
-        if (avg >= 20) return 'D';
-        return 'E';
+    const getProfileOverallRank = (p: UserProfile) => {
+        return calculateOverallRank(p.testScores, p.profileType);
     };
 
-    const overallRank = getProfileOverallRank(stats);
+    const overallRank = getProfileOverallRank(profile);
     // Theme logic: Use settings theme if available, otherwise calculated rank
     // For the special binary profile, force the theme/rank to 'S'
     const themeRank = isSpecialProfile ? 'S' : (profile.settings.theme || overallRank);
