@@ -198,14 +198,6 @@ export default function AgencyPage() {
     return (
         <div className={styles.container} style={{ '--rank-color': rankColor } as React.CSSProperties}>
             <div className={styles.header}>
-                {!isSolo && (
-                    <button
-                        className={styles.settingsTrigger}
-                        onClick={() => setShowSettings(true)}
-                    >
-                        <Cog size={24} />
-                    </button>
-                )}
                 <div className={styles.headerTitles}>
                     <h1 className={styles.pageTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
                         {profile.name.toUpperCase()}
@@ -224,8 +216,15 @@ export default function AgencyPage() {
                         );
                     })()}
                 </div>
+                {!isSolo && (
+                    <button
+                        className={styles.settingsTrigger}
+                        onClick={() => setShowSettings(true)}
+                    >
+                        <Cog size={24} />
+                    </button>
+                )}
             </div>
-
             <div className={styles.agencySection}>
                 <div className={styles.agencyHeaderRow}>
                     <div className={styles.agencyInfo}>
@@ -233,14 +232,12 @@ export default function AgencyPage() {
                             {isSolo ? 'NAMELESS' : (agency?.name?.toUpperCase() || 'LOADING...')}
                         </h2>
 
-                        {isSolo ? (
-                            <div className={styles.associationMessageInternal}>
-                                <strong>Message:</strong> "While no manager has been assigned to you, rest assured the Association is monitoring your development. Like all our agents, strive for growth. Your progress matters."
-                            </div>
-                        ) : (
+                        {!isSolo && (
                             <div className={styles.agencyStats}>
-                                <p>MEMBERS: [{members.length}/10]</p>
-                                <p className={styles.agencyRankLabel}>AGENCY RANK: <span className={styles.rankValue} style={{ color: `var(--rank-${agencyRank.toLowerCase()})` }}>{agencyRank}</span></p>
+                                <div className={styles.statRow}><span className={styles.statLabel}>MEMBERS:</span> [{members.length}/10]</div>
+                                <div className={styles.statRow}>
+                                    <span className={styles.statLabel}>AGENCY RANK:</span> <span className={styles.rankValue} style={{ color: `var(--rank-${agencyRank.toLowerCase()})` }}>{agencyRank}</span>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -260,22 +257,30 @@ export default function AgencyPage() {
                     </div>
                 </div>
 
-                {!isSolo && (
+                {isSolo ? (
+                    <div className={styles.descriptionContainer}>
+                        <div className={styles.descriptionLabel}>ASSOCIATION MESSAGE :</div>
+                        <div className={styles.descriptionReadonly} style={{ fontStyle: 'italic', color: 'rgba(255,255,255,0.6)' }}>
+                            "While no manager has been assigned to you, rest assured the Association is monitoring your development. Like all our agents, strive for growth. Your progress matters."
+                        </div>
+                    </div>
+                ) : (
                     <>
                         <div className={styles.agencyTitles}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <p className={styles.label} style={{ marginBottom: 0 }}>TITLES:</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <p className={styles.descriptionLabel} style={{ margin: 0 }}>TITLES :</p>
                                 {isCaptain && (
                                     <button
                                         onClick={() => setShowTitlesModal(true)}
                                         style={{
                                             background: 'none',
                                             border: 'none',
-                                            color: '#666',
+                                            color: rankColor,
                                             cursor: 'pointer',
                                             padding: 0,
                                             display: 'flex',
-                                            alignItems: 'center'
+                                            alignItems: 'center',
+                                            opacity: 0.6
                                         }}
                                     >
                                         <PenTool size={14} />
@@ -348,182 +353,183 @@ export default function AgencyPage() {
                 </button>
             </div>
 
-            {activeTab === 'agency' ? (
-                <div className={styles.membersGrid}>
-                    {members.filter(m => m.name !== profile.name).map((member) => (
-                        <div
-                            key={member.id}
-                            className={styles.memberCard}
-                            style={{ borderColor: rankColor, position: 'relative' }}
-                        >
-                            {isCaptain && (
-                                <>
-                                    <button
-                                        className={styles.menuButton}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setOpenMenuId(openMenuId === member.id ? null : member.id);
-                                        }}
-                                    >
-                                        <MoreVertical size={20} />
-                                    </button>
-
-                                    {openMenuId === member.id && (
-                                        <div className={styles.dropdown}>
-                                            <button onClick={(e) => {
-                                                e.stopPropagation();
-                                                handlePromoteToCaptain(member.id, member.name);
-                                            }}>
-                                                <Crown size={16} /> Promote to Captain
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleKickMember(member.id, member.name);
-                                                }}
-                                                className={styles.dangerOption}
-                                            >
-                                                <UserX size={16} /> Kick Member
-                                            </button>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-
+            {
+                activeTab === 'agency' ? (
+                    <div className={styles.membersGrid}>
+                        {members.filter(m => m.name !== profile.name).map((member) => (
                             <div
-                                onClick={() => handleHunterClick(member.name)}
-                                className={styles.memberContentWrapper}
+                                key={member.id}
+                                className={styles.memberCard}
+                                style={{ borderColor: rankColor, position: 'relative' }}
                             >
-                                <img
-                                    src={member.avatarUrl || '/placeholder.png'}
-                                    alt={member.name}
-                                    className={styles.memberAvatar}
-                                />
-                                <div className={styles.memberOverlay}>
-                                    <h3 className={styles.memberName}>{member.name}</h3>
+                                {isCaptain && (
+                                    <>
+                                        <button
+                                            className={styles.menuButton}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenMenuId(openMenuId === member.id ? null : member.id);
+                                            }}
+                                        >
+                                            <MoreVertical size={20} />
+                                        </button>
+
+                                        {openMenuId === member.id && (
+                                            <div className={styles.dropdown}>
+                                                <button onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handlePromoteToCaptain(member.id, member.name);
+                                                }}>
+                                                    <Crown size={16} /> Promote to Captain
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleKickMember(member.id, member.name);
+                                                    }}
+                                                    className={styles.dangerOption}
+                                                >
+                                                    <UserX size={16} /> Kick Member
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+
+                                <div
+                                    onClick={() => handleHunterClick(member.name)}
+                                    className={styles.memberContentWrapper}
+                                >
+                                    <img
+                                        src={member.avatarUrl || '/placeholder.png'}
+                                        alt={member.name}
+                                        className={styles.memberAvatar}
+                                    />
+                                    <div className={styles.memberOverlay}>
+                                        <h3 className={styles.memberName}>{member.name}</h3>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className={styles.networkView}>
-                    <form onSubmit={handleSearch} className={styles.searchBarContainer}>
-                        <div className={styles.searchInputWrapper} style={{ borderColor: rankColor }}>
-                            <Search className={styles.searchIcon} size={20} style={{ color: rankColor }} />
-                            <input
-                                type="text"
-                                placeholder="SEARCH HUNTER'S USERNAME..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className={styles.searchInput}
-                            />
-                        </div>
-                    </form>
+                        ))}
+                    </div>
+                ) : (
+                    <div className={styles.networkView}>
+                        <form onSubmit={handleSearch} className={styles.searchBarContainer}>
+                            <div className={styles.searchInputWrapper} style={{ borderColor: rankColor }}>
+                                <Search className={styles.searchIcon} size={20} style={{ color: rankColor }} />
+                                <input
+                                    type="text"
+                                    placeholder="SEARCH HUNTER'S USERNAME..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className={styles.searchInput}
+                                />
+                            </div>
+                        </form>
 
-                    {searchResults.length > 0 && (
-                        <div className={styles.searchResults}>
-                            {searchResults.map((hunter) => (
-                                <div key={hunter.id} className={styles.searchResultItem} style={{ borderBottomColor: `${rankColor}33` }}>
-                                    <div className={styles.resultInfo}>
-                                        <div className={styles.resultMain}>
-                                            <span className={styles.resultLabel}>USERNAME: </span>
-                                            <span className={styles.resultValue}>{hunter.name}</span>
-                                        </div>
-                                        <div className={styles.resultSub}>
-                                            <div>
-                                                <span className={styles.resultLabel}>RANK: </span>
-                                                {(() => {
-                                                    const rank = getRankFromPercentage(calculateOverallPercentage(hunter.testScores, hunter.profileType));
-                                                    return (
-                                                        <span className={styles.resultValue} style={{ color: `var(--rank-${rank.toLowerCase()})` }}>
-                                                            {rank}
-                                                        </span>
-                                                    );
-                                                })()}
+                        {searchResults.length > 0 && (
+                            <div className={styles.searchResults}>
+                                {searchResults.map((hunter) => (
+                                    <div key={hunter.id} className={styles.searchResultItem} style={{ borderBottomColor: `${rankColor}33` }}>
+                                        <div className={styles.resultInfo}>
+                                            <div className={styles.resultMain}>
+                                                <span className={styles.resultLabel}>USERNAME: </span>
+                                                <span className={styles.resultValue}>{hunter.name}</span>
                                             </div>
-                                            <div>
-                                                <span className={styles.resultLabel}>AGENCY: </span>
-                                                <span className={styles.resultValue}>{hunter.role === 'Solo' ? 'NAMELESS' : (hunter.agencyName || 'NAMELESS')}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {hunter.id !== profile.id && (
-                                        <>
-                                            {connections.some(c => c.id === hunter.id) ? (
-                                                <span className={styles.statusBadge} style={{ color: rankColor }}>FRIENDS</span>
-                                            ) : sentRequestIds.includes(hunter.id) ? (
-                                                <button className={styles.requestedBtn} disabled>REQUESTED</button>
-                                            ) : pendingRequests.some(r => r.id === hunter.id) ? (
-                                                <div className={styles.actionGroup}>
-                                                    <button onClick={() => acceptRequest(hunter.id)} className={styles.acceptBtn}>ACCEPT</button>
+                                            <div className={styles.resultSub}>
+                                                <div>
+                                                    <span className={styles.resultLabel}>RANK: </span>
+                                                    {(() => {
+                                                        const rank = getRankFromPercentage(calculateOverallPercentage(hunter.testScores, hunter.profileType));
+                                                        return (
+                                                            <span className={styles.resultValue} style={{ color: `var(--rank-${rank.toLowerCase()})` }}>
+                                                                {rank}
+                                                            </span>
+                                                        );
+                                                    })()}
                                                 </div>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleAddFriend(hunter.id)}
-                                                    className={styles.addFriendBtn}
-                                                    style={{ backgroundColor: rankColor }}
-                                                >
-                                                    ADD
-                                                </button>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {pendingRequests.length > 0 && (
-                        <div className={styles.pendingSection}>
-                            <h3 className={styles.pendingTitle} style={{ color: rankColor }}>PENDING REQUESTS</h3>
-                            <div className={styles.pendingList}>
-                                {pendingRequests.map((req) => (
-                                    <div key={req.id} className={styles.pendingItem} style={{ borderColor: `${rankColor}44` }}>
-                                        <div className={styles.pendingInfo}>
-                                            <img src={req.avatarUrl || '/placeholder.png'} alt={req.name} className={styles.miniAvatar} />
-                                            <span>{req.name}</span>
+                                                <div>
+                                                    <span className={styles.resultLabel}>AGENCY: </span>
+                                                    <span className={styles.resultValue}>{hunter.role === 'Solo' ? 'NAMELESS' : (hunter.agencyName || 'NAMELESS')}</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className={styles.pendingActions}>
-                                            <button onClick={() => acceptRequest(req.id)} className={styles.acceptBtn} style={{ backgroundColor: rankColor }}>ACCEPT</button>
-                                            <button onClick={() => declineRequest(req.id)} className={styles.declineBtn}>DECLINE</button>
+                                        {hunter.id !== profile.id && (
+                                            <>
+                                                {connections.some(c => c.id === hunter.id) ? (
+                                                    <span className={styles.statusBadge} style={{ color: rankColor }}>FRIENDS</span>
+                                                ) : sentRequestIds.includes(hunter.id) ? (
+                                                    <button className={styles.requestedBtn} disabled>REQUESTED</button>
+                                                ) : pendingRequests.some(r => r.id === hunter.id) ? (
+                                                    <div className={styles.actionGroup}>
+                                                        <button onClick={() => acceptRequest(hunter.id)} className={styles.acceptBtn}>ACCEPT</button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleAddFriend(hunter.id)}
+                                                        className={styles.addFriendBtn}
+                                                        style={{ backgroundColor: rankColor }}
+                                                    >
+                                                        ADD
+                                                    </button>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {pendingRequests.length > 0 && (
+                            <div className={styles.pendingSection}>
+                                <h3 className={styles.pendingTitle} style={{ color: rankColor }}>PENDING REQUESTS</h3>
+                                <div className={styles.pendingList}>
+                                    {pendingRequests.map((req) => (
+                                        <div key={req.id} className={styles.pendingItem} style={{ borderColor: `${rankColor}44` }}>
+                                            <div className={styles.pendingInfo}>
+                                                <img src={req.avatarUrl || '/placeholder.png'} alt={req.name} className={styles.miniAvatar} />
+                                                <span>{req.name}</span>
+                                            </div>
+                                            <div className={styles.pendingActions}>
+                                                <button onClick={() => acceptRequest(req.id)} className={styles.acceptBtn} style={{ backgroundColor: rankColor }}>ACCEPT</button>
+                                                <button onClick={() => declineRequest(req.id)} className={styles.declineBtn}>DECLINE</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className={styles.connectionsSection}>
+                            <p className={styles.connectionHint}>
+                                {connections.length > 0 ? "YOUR NETWORK" : "CONNECTIONS'S ADDED WILL BE DISPLAYED HERE."}
+                            </p>
+                            <div className={styles.connectionsGrid}>
+                                {connections.map((conn) => (
+                                    <div
+                                        key={conn.id}
+                                        className={styles.connectionCard}
+                                        style={{ borderColor: rankColor }}
+                                    >
+                                        <div
+                                            className={styles.memberContentWrapper}
+                                            onClick={() => handleHunterClick(conn.name)}
+                                        >
+                                            <img
+                                                src={conn.avatarUrl || '/placeholder.png'}
+                                                alt={conn.name}
+                                                className={`${styles.memberAvatar} ${conn.avatarUrl ? '' : styles.grayscale}`}
+                                            />
+                                            <div className={styles.memberOverlay}>
+                                                <h3 className={styles.memberName}>{conn.name}</h3>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
-                    )}
-
-                    <div className={styles.connectionsSection}>
-                        <p className={styles.connectionHint}>
-                            {connections.length > 0 ? "YOUR NETWORK" : "CONNECTIONS'S ADDED WILL BE DISPLAYED HERE."}
-                        </p>
-                        <div className={styles.connectionsGrid}>
-                            {connections.map((conn) => (
-                                <div
-                                    key={conn.id}
-                                    className={styles.connectionCard}
-                                    style={{ borderColor: rankColor }}
-                                >
-                                    <div
-                                        className={styles.memberContentWrapper}
-                                        onClick={() => handleHunterClick(conn.name)}
-                                    >
-                                        <img
-                                            src={conn.avatarUrl || '/placeholder.png'}
-                                            alt={conn.name}
-                                            className={`${styles.memberAvatar} ${conn.avatarUrl ? '' : styles.grayscale}`}
-                                        />
-                                        <div className={styles.memberOverlay}>
-                                            <h3 className={styles.memberName}>{conn.name}</h3>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
                     </div>
-                </div>
-            )
+                )
             }
 
             {
@@ -665,29 +671,31 @@ export default function AgencyPage() {
                 )
             }
 
-            {showTitlesModal && agency && (
-                <AgencyTitlesModal
-                    titles={agency.unlocked_titles as Title[] || []}
-                    visibility={agency.title_visibility as Record<string, boolean> || {}}
-                    onClose={() => setShowTitlesModal(false)}
-                    onUpdate={async () => {
-                        // Force refresh logic similar to settings? OR assume store handles state.
-                        // Store handles optimistic update, but to be sure we could re-fetch agency data if needed.
-                        // For now relies on store state.
+            {
+                showTitlesModal && agency && (
+                    <AgencyTitlesModal
+                        titles={agency.unlocked_titles as Title[] || []}
+                        visibility={agency.title_visibility as Record<string, boolean> || {}}
+                        onClose={() => setShowTitlesModal(false)}
+                        onUpdate={async () => {
+                            // Force refresh logic similar to settings? OR assume store handles state.
+                            // Store handles optimistic update, but to be sure we could re-fetch agency data if needed.
+                            // For now relies on store state.
 
-                        // BUT: we need to update the local 'agency' state in this component if it's not subscribed to store directly.
-                        // This component calls 'fetchData' on mount, but doesn't subscribe to agency changes in real-time unless we polling.
-                        // However, the modal uses the store action, which doesn't update specific component state.
-                        // Let's force a refresh.
-                        const { data: agencyData } = await supabase
-                            .from('agencies')
-                            .select('*')
-                            .eq('id', profile?.agencyId)
-                            .single();
-                        if (agencyData) setAgency(agencyData);
-                    }}
-                />
-            )}
+                            // BUT: we need to update the local 'agency' state in this component if it's not subscribed to store directly.
+                            // This component calls 'fetchData' on mount, but doesn't subscribe to agency changes in real-time unless we polling.
+                            // However, the modal uses the store action, which doesn't update specific component state.
+                            // Let's force a refresh.
+                            const { data: agencyData } = await supabase
+                                .from('agencies')
+                                .select('*')
+                                .eq('id', profile?.agencyId)
+                                .single();
+                            if (agencyData) setAgency(agencyData);
+                        }}
+                    />
+                )
+            }
 
             <Navbar />
         </div >
