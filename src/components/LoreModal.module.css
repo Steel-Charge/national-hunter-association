@@ -88,10 +88,11 @@
 /* File Tab */
 .sectionTitle {
     font-size: 0.9rem;
-    color: #00ffff;
+    color: var(--rank-color, #00ffff);
     margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    text-shadow: 0 0 5px var(--rank-color);
 }
 
 .textarea {
@@ -124,12 +125,23 @@
 
 .tag {
     padding: 4px 12px;
-    background: rgba(0, 255, 255, 0.1);
-    border: 1px solid #00ffff;
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid var(--rank-color, #00ffff);
     border-radius: 15px;
     font-size: 0.75rem;
-    color: #00ffff;
+    color: var(--rank-color, #00ffff);
     text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.tagActive {
+    background: var(--rank-color, #00ffff);
+    color: black;
+    box-shadow: 0 0 10px var(--rank-color);
+}
+
+.tagInactive {
+    opacity: 0.4;
 }
 
 .tagEditable {
@@ -206,6 +218,20 @@
     padding: 15px;
     border-radius: 12px;
     font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.logTextarea {
+    width: 100%;
+    min-height: 80px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--rank-color, #00ffff);
+    border-radius: 8px;
+    color: white;
+    padding: 10px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    resize: none;
 }
 
 .redacted {

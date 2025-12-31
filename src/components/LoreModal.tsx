@@ -93,10 +93,23 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    const isSelf = currentUser?.id === targetProfile.id;
     const isCaptainOfTarget = (currentUser?.role === 'Captain' && currentUser.agencyId === targetProfile.agencyId) || currentUser?.isAdmin;
     const canEditBio = isCaptainOfTarget;
     const canEditManagerComment = isCaptainOfTarget;
     const canEditLoreTags = isCaptainOfTarget;
+    const canEditLogs = isCaptainOfTarget;
+
+    // Mission Logs state
+    const [localLogs, setLocalLogs] = useState<Record<string, string>>({});
+
+    const DEFAULT_LOGS: Record<string, string> = {
+        'D': "Mission successful. Hunter demonstrated foundational combat capabilities. Routine patrol completed without incident.",
+        'C': "Hunter exhibited improved tactical awareness during an urban suppression mission. Successfully neutralized multiple low-level threats.",
+        'B': "High-intensity combat recorded. Hunter was pivotal in securing a breached sector. Recommended for specialist training.",
+        'A': "Exceptional performance in a classified operation. Hunter managed to stabilize a critical situation under extreme pressure.",
+        'S': "Data Restricted. Mission outcome: Absolute Success. Hunter is a core asset to the NHA's strategic defense."
+    };
 
     useEffect(() => {
         if (isOpen) {
@@ -105,6 +118,13 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             setAffinities(targetProfile.affinities || []);
             setClassTags(targetProfile.classTags || []);
             setVideoUrl(targetProfile.videoUrl || '');
+
+            // Logs
+            const initialLogs = { ...DEFAULT_LOGS };
+            if (targetProfile.missionLogs) {
+                Object.assign(initialLogs, targetProfile.missionLogs);
+            }
+            setLocalLogs(initialLogs);
 
             // Generate Rat King chat history
             const targetRank = calculateOverallRank(targetProfile.testScores, targetProfile.profileType);
@@ -148,6 +168,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                 updates.videoUrl = videoUrl;
             } else if (tab === 'LOGS') {
                 updates.managerComment = managerComment;
+                updates.missionLogs = localLogs;
             }
 
             await updateLore(targetProfile.id, updates);
@@ -173,6 +194,18 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         );
     };
 
+    const toggleClass = (c: string) => {
+        if (!canEditLoreTags) return;
+        setClassTags(prev =>
+            prev.includes(c) ? prev.filter(item => item !== c) : [...prev, c]
+        );
+    };
+
+    const updateLog = (rank: string, text: string) => {
+        if (!canEditLogs) return;
+        setLocalLogs(prev => ({ ...prev, [rank]: text }));
+    };
+
     const currentTargetRank = calculateOverallRank(targetProfile.testScores, targetProfile.profileType);
     const currentTargetRankIdx = RANKS_ORDER.indexOf(currentTargetRank as Rank);
 
@@ -187,15 +220,18 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                 </div>
 
                 <div className={styles.tabs}>
-                    {['FILE', 'LOGS', 'TIMELINE', 'RAT KING'].map((t) => (
-                        <button
-                            key={t}
-                            className={`${styles.tab} ${activeTab === t ? styles.activeTab : ''}`}
-                            onClick={() => setActiveTab(t as any)}
-                        >
-                            {t}
-                        </button>
-                    ))}
+                    {['FILE', 'LOGS', 'TIMELINE', 'RAT KING']
+                        .filter(t => t !== 'RAT KING' || isSelf)
+                        .map((t) => (
+                            <button
+                                key={t}
+                                className={`${styles.tab} ${activeTab === t ? styles.activeTab : ''}`}
+                                onClick={() => setActiveTab(t as any)}
+                            >
+                                {t}
+                            </button>
+                        ))
+                    }
                 </div>
 
                 <div className={styles.content} ref={scrollRef}>
@@ -236,22 +272,24 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                             </div>
 
                             <h3 className={styles.sectionTitle}>Class:</h3>
-                            {canEditLoreTags ? (
-                                <select
-                                    className={styles.select}
-                                    value={classTags[0] || ''}
-                                    onChange={(e) => setClassTags([e.target.value])}
-                                >
-                                    <option value="">Select Class</option>
-                                    {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
-                            ) : (
-                                <div className={styles.tagContainer}>
-                                    {classTags.length > 0 ? classTags.map(c => (
+                            <div className={styles.tagContainer}>
+                                {canEditLoreTags ? (
+                                    CLASSES.map(c => (
+                                        <button
+                                            key={c}
+                                            className={`${styles.tag} ${classTags.includes(c) ? styles.tagActive : styles.tagInactive}`}
+                                            onClick={() => toggleClass(c)}
+                                            style={{ opacity: classTags.includes(c) ? 1 : 0.4 }}
+                                        >
+                                            {c}
+                                        </button>
+                                    ))
+                                ) : (
+                                    classTags.length > 0 ? classTags.map(c => (
                                         <span key={c} className={styles.tag}>{c}</span>
-                                    )) : <span style={{ color: '#555', fontSize: '0.8rem' }}>Unclassified</span>}
-                                </div>
-                            )}
+                                    )) : <span style={{ color: '#555', fontSize: '0.8rem' }}>Unclassified</span>
+                                )}
+                            </div>
 
                             <h3 className={styles.sectionTitle}>{targetProfile.name.toUpperCase()} - INTERVIEW</h3>
                             <div className={styles.videoArea}>
@@ -295,13 +333,21 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         <div key={rank} className={styles.logNode}>
                                             <div className={`${styles.nodeIndicator} ${isUnlocked ? styles.nodeIndicatorActive : ''}`} />
                                             <div className={styles.logHeader}>
-                                                SISYPHUS {rank}-RANK MISSION LOG #{(idx + 1) * 123}:
+                                                {targetProfile.name.toUpperCase()} {rank}-RANK MISSION LOG #{(idx + 1) * 123}:
                                             </div>
                                             <div className={`${styles.logContent} ${!isUnlocked ? styles.redacted : ''}`}>
                                                 {!isUnlocked ? (
                                                     "[RESTRICTED DATA] [RANK " + rank + " REQUIRED]"
                                                 ) : (
-                                                    "Mission successful. Hunter demonstrated exceptional combat capabilities and strategic thinking. Further monitoring recommended."
+                                                    canEditLogs ? (
+                                                        <textarea
+                                                            className={styles.logTextarea}
+                                                            value={localLogs[rank] || ''}
+                                                            onChange={(e) => updateLog(rank, e.target.value)}
+                                                        />
+                                                    ) : (
+                                                        localLogs[rank] || DEFAULT_LOGS[rank]
+                                                    )
                                                 )}
                                             </div>
                                         </div>
