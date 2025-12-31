@@ -230,7 +230,7 @@ interface HunterState {
     kickMember: (memberId: string) => Promise<void>;
     promoteToCaptain: (memberId: string) => Promise<void>;
     disbandAgency: () => Promise<void>;
-    updateAgency: (data: Partial<Agency>) => Promise<{ success: boolean; error?: string }>;
+    updateAgency: (agencyId: string, data: Partial<Agency>) => Promise<{ success: boolean; error?: string }>;
     getAgencyMembers: (agencyId: string) => Promise<UserProfile[]>;
     toggleTrackQuest: (questId: string) => Promise<void>;
     // Friend System Actions
@@ -1770,10 +1770,10 @@ export const useHunterStore = create<HunterState>((set, get) => ({
 
     updateAgency: async (agencyId: string, data: Partial<Agency>) => {
         const profile = get().profile;
-        if (!profile) return;
+        if (!profile) return { success: false, error: 'Not authenticated' };
 
         // Only Captain (or Admin) should be able to do this
-        if (profile.role !== 'Captain' && !profile.isAdmin) return;
+        if (profile.role !== 'Captain' && !profile.isAdmin) return { success: false, error: 'Permission denied' };
 
         try {
             const updates: any = {};
@@ -1788,9 +1788,10 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                 .eq('id', agencyId);
 
             if (error) throw error;
+            return { success: true };
         } catch (error) {
             console.error('Error updating agency:', error);
-            throw error;
+            return { success: false, error: (error as any).message };
         }
     },
 
