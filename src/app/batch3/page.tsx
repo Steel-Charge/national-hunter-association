@@ -58,52 +58,59 @@ export default function AgencyPage() {
                 return;
             }
 
-            // 1. Fetch Agency Data (with cache busting)
-            const { data: agencyData, error: agencyError } = await supabase
-                .from('agencies')
-                .select('*')
-                .eq('id', profile.agencyId)
-                .single();
+            try {
+                // Parallelize agency and members fetching
+                const [agencyResult, membersResult] = await Promise.all([
+                    supabase
+                        .from('agencies')
+                        .select('*')
+                        .eq('id', profile.agencyId)
+                        .single(),
+                    supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('agency_id', profile.agencyId)
+                ]);
 
-            if (agencyError) {
-                console.error('Error fetching agency:', agencyError);
-            } else {
-                console.log('Fetched agency data:', agencyData);
-                setAgency(agencyData);
-                setDescription(agencyData.description || 'This is a New agency...');
-            }
-
-            // 2. Fetch Members
-            const { data: membersData, error: membersError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('agency_id', profile.agencyId);
-
-            if (membersError) {
-                console.error('Error fetching members:', membersError);
-            } else {
-                const mappedMembers = (membersData || []).map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    avatarUrl: p.avatar_url,
-                    activeTitle: p.active_title,
-                    testScores: p.test_scores || {},
-                    profileType: p.profile_type || 'male_20_25',
-                    role: p.role,
-                    settings: p.settings
-                })) as any[];
-
-                setMembers(mappedMembers);
-
-                // 3. Calculate Agency Rank
-                if (mappedMembers.length > 0) {
-                    const totalAvg = mappedMembers.reduce((acc, m) => acc + calculateOverallPercentage(m.testScores, m.profileType), 0);
-                    const agencyAvg = totalAvg / mappedMembers.length;
-                    setAgencyRank(getRankFromPercentage(agencyAvg));
+                // Process agency data
+                if (agencyResult.error) {
+                    console.error('Error fetching agency:', agencyResult.error);
+                } else {
+                    setAgency(agencyResult.data);
+                    setDescription(agencyResult.data.description || 'This is a New agency...');
                 }
+
+                // Process members data
+                if (membersResult.error) {
+                    console.error('Error fetching members:', membersResult.error);
+                } else {
+                    const mappedMembers = (membersResult.data || []).map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        avatarUrl: p.avatar_url,
+                        activeTitle: p.active_title,
+                        testScores: p.test_scores || {},
+                        profileType: p.profile_type || 'male_20_25',
+                        role: p.role,
+                        settings: p.settings
+                    })) as any[];
+
+                    setMembers(mappedMembers);
+
+                    // Calculate Agency Rank
+                    if (mappedMembers.length > 0) {
+                        const totalAvg = mappedMembers.reduce((acc, m) => acc + calculateOverallPercentage(m.testScores, m.profileType), 0);
+                        const agencyAvg = totalAvg / mappedMembers.length;
+                        setAgencyRank(getRankFromPercentage(agencyAvg));
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching Hub data:', error);
+            } finally {
+                setLoading(false);
             }
 
-            setLoading(false);
+            // Fetch connections in background (non-blocking)
             fetchConnections();
         };
 
