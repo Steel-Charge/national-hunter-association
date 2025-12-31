@@ -321,4 +321,84 @@
     padding: 8px;
     border-radius: 8px;
     margin-bottom: 20px;
+    width: 100%;
+}
+
+.videoArea {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.uploadContainer {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+}
+
+.uploadLabel {
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid var(--rank-color, #00ffff);
+    color: var(--rank-color, #00ffff);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.uploadLabel:hover {
+    background: var(--rank-color, #00ffff);
+    color: black;
+    box-shadow: 0 0 15px var(--rank-color);
+}
+
+/* Timeline Tab (Historical) */
+.timelineEvent {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 30px;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.eventDot {
+    position: absolute;
+    left: -6px;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--rank-color, #00ffff);
+    box-shadow: 0 0 10px var(--rank-color);
+}
+
+.eventHeader {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.eventTitle {
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--rank-color, #00ffff);
+}
+
+.eventDate {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.eventDescription {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+}
+
+.eventDescription p {
+    margin-bottom: 8px;
 }

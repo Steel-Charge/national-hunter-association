@@ -15,9 +15,47 @@ interface LoreModalProps {
 
 const ELEMENTS = ['physical', 'fire', 'water', 'light', 'earth', 'air', 'shadow', 'mind'];
 const CLASSES = [
-    'Ranger', 'cleric', 'knight', 'necromancer', 'warlock',
-    'sorcerer', 'wizard', 'monk', 'shifter', 'elementalist',
-    'psionic', 'barbarian', 'bard', 'paladin', 'assassin', 'gunslinger'
+    'RANGER', 'CLERIC', 'KNIGHT', 'NECROMANCER', 'WARLOCK',
+    'SORCERER', 'WIZARD', 'MONK', 'SHIFTER', 'ELEMENTALIST',
+    'PSIONIC', 'BARBARIAN', 'BARD', 'PALADIN', 'ASSASSIN', 'GUNSLINGER'
+];
+
+const TIMELINE_EVENTS = [
+    {
+        title: "First Warning",
+        date: "December 2021",
+        description: "On December 29, 2021 at 00:00:01 (UTC+2), all government organizations worldwide received an identical message from an unknown sender:\n\n“PREPARE FOR REGRET”\n\nAnalysis revealed the transmission originated from a device with:\n- A timestamp 50 years in the future\n- A serial number linked to hardware not yet manufactured\n\nThe incident was officially classified as an elaborate hoax, and Global Command agreed to take no action."
+    },
+    {
+        title: "Regret’s Appearance",
+        date: "January 2024",
+        description: "On January 15, 2024 at 04:44:44 (UTC+2), the AGREGRETA Satellite detected a spatial rift forming on the Moon’s surface.\n\nThe transmitted report contained:\n- Severe syntax corruption\n- Sensor data that could not be decoded\n- A corrupted designation reading: “#REGRET”*\n\nFollowing public disclosure, the anomaly became known simply as REGRET."
+    },
+    {
+        title: "Icor Leakage",
+        date: "February 2024",
+        description: "On February 18, 2024 at 04:44:44 (UTC+2), REGRET expanded to a size visible from Earth without telescopic aid.\n\nThe rift began emitting an unknown form of energy, later designated Icor.\nApproximately four hours later, this radiation entered Earth’s atmosphere."
+    },
+    {
+        title: "The First Awakening",
+        date: "April 2024",
+        description: "On April 4, 2024 at 04:44:44 (UTC+2) in Cape Town, South Africa, a teenage boy was attacked by a mutated German Shepherd.\n\nDuring the encounter, the individual manifested pyrokinetic abilities and neutralized the mutant.\n\nThis event was officially recorded as “The First Awakening.”"
+    },
+    {
+        title: "NHA’s Founding",
+        date: "June 2024",
+        description: "On June 2, 2024 at 17:12 (UTC+2), the South African government declared the Awakenings a national disaster.\n\nTo manage Awakened individuals, a new organization was formed.\n\nIn line with the nation’s stance on equality, Awakened individuals were designated “Hunters.”\nOnce identified, Hunters were legally required to register and serve the state, primarily to combat the growing mutant threat."
+    },
+    {
+        title: "Last Warning",
+        date: "September 2024",
+        description: "On September 7, 2024, the National Hunter Association (NHA) was officially established.\n\nWhile drafting his inaugural announcement to registered Hunters, the NHA Director received another message—originating from the same unidentified future device as in 2021.\n\nThe message read:\n\n“ONLY THE CREATION OF A MONARCH CAN SAVE US…”"
+    },
+    {
+        title: "The Monarch Project",
+        date: "2025",
+        description: "On February 20, 2025, the NHA initiated the Monarch Project.\n\nWith no confirmed understanding of what a Monarch is, the project’s goal is to:\n- Force or induce Hunters to evolve beyond known rank limitations\n- Create temporary protectors capable of defending the nation until a true Monarch emerges\n\nThe Top 50 strongest Hunters were each assigned a command group known as Batches, tasked with training, controlling, and testing large numbers of Hunters under extreme conditions."
+    }
 ];
 
 const RAT_KING_INITIAL = [
@@ -55,9 +93,8 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    const isCaptainOfTarget = currentUser?.role === 'Captain' && currentUser.agencyId === targetProfile.agencyId;
-    const isSelf = currentUser?.id === targetProfile.id;
-    const canEditBio = isCaptainOfTarget || isSelf;
+    const isCaptainOfTarget = (currentUser?.role === 'Captain' && currentUser.agencyId === targetProfile.agencyId) || currentUser?.isAdmin;
+    const canEditBio = isCaptainOfTarget;
     const canEditManagerComment = isCaptainOfTarget;
     const canEditLoreTags = isCaptainOfTarget;
 
@@ -89,6 +126,16 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     }, [chatHistory, activeTab]);
 
     if (!isOpen) return null;
+
+    const handleVideoFile = async (file: File | null) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async () => {
+            const result = reader.result as string;
+            setVideoUrl(result);
+        };
+        reader.readAsDataURL(file);
+    };
 
     const handleSave = async (tab: string) => {
         setSaving(true);
@@ -207,28 +254,33 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                             )}
 
                             <h3 className={styles.sectionTitle}>{targetProfile.name.toUpperCase()} - INTERVIEW</h3>
-                            {videoUrl ? (
-                                <iframe
-                                    src={videoUrl.replace('watch?v=', 'embed/')}
-                                    className={styles.videoFrame}
-                                    frameBorder="0"
-                                    allowFullScreen
-                                />
-                            ) : (
-                                <div className={styles.videoPlaceholder}>
-                                    No interview available
-                                </div>
-                            )}
-                            {canEditBio && (
-                                <input
-                                    type="text"
-                                    className={styles.chatInput}
-                                    style={{ marginTop: '10px' }}
-                                    placeholder="Enter Video URL (Youtube/Vimeo)"
-                                    value={videoUrl}
-                                    onChange={(e) => setVideoUrl(e.target.value)}
-                                />
-                            )}
+                            <div className={styles.videoArea}>
+                                {videoUrl ? (
+                                    <video
+                                        src={videoUrl}
+                                        className={styles.videoFrame}
+                                        controls
+                                    />
+                                ) : (
+                                    <div className={styles.videoPlaceholder}>
+                                        No interview available
+                                    </div>
+                                )}
+
+                                {isCaptainOfTarget && (
+                                    <div className={styles.uploadContainer}>
+                                        <label className={styles.uploadLabel}>
+                                            {videoUrl ? 'CHANGE INTERVIEW' : 'UPLOAD INTERVIEW'}
+                                            <input
+                                                type="file"
+                                                accept="video/*"
+                                                onChange={(e) => handleVideoFile(e.target.files ? e.target.files[0] : null)}
+                                                style={{ display: 'none' }}
+                                            />
+                                        </label>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -274,8 +326,23 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                     )}
 
                     {activeTab === 'TIMELINE' && (
-                        <div className={styles.videoPlaceholder}>
-                            Timeline data pending...
+                        <div className={styles.tabContent}>
+                            <div className={styles.timeline}>
+                                {TIMELINE_EVENTS.map((event, idx) => (
+                                    <div key={idx} className={styles.timelineEvent}>
+                                        <div className={styles.eventDot} />
+                                        <div className={styles.eventHeader}>
+                                            <span className={styles.eventTitle}>“{event.title}”</span>
+                                            <span className={styles.eventDate}>— {event.date}</span>
+                                        </div>
+                                        <div className={styles.eventDescription}>
+                                            {event.description.split('\n').map((line, i) => (
+                                                <p key={i}>{line}</p>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
 

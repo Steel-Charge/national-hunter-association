@@ -5,12 +5,13 @@ import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import ProfileView from '@/components/ProfileView';
 import Navbar from '@/components/Navbar';
-import { UserProfile, Title, UserSettings, useHunterStore } from '@/lib/store';
+import { UserProfile, Title, UserSettings, useHunterStore, getDisplayTitle, isDefaultTitle } from '@/lib/store';
 import { calculateOverallRank, RANK_COLORS, Rank } from '@/lib/game-logic';
 import { X, Book } from 'lucide-react';
 import LoadingScreen from '@/components/LoadingScreen';
 import styles from '@/app/home/page.module.css';
 import ProfileFrame from '@/components/ProfileFrame';
+import LoreModal from '@/components/LoreModal';
 
 export default function HunterProfilePage() {
     const params = useParams();
@@ -25,10 +26,6 @@ export default function HunterProfilePage() {
     // Viewer (logged-in) profile from global store
     const viewer = useHunterStore(state => state.profile);
     const [bookOpen, setBookOpen] = useState(false);
-    const [editBio, setEditBio] = useState('');
-    const [editComment, setEditComment] = useState('');
-    const [newVideo, setNewVideo] = useState<string | null>(null);
-    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -99,9 +96,12 @@ export default function HunterProfilePage() {
                 isAdmin: profileData.is_admin || false,
                 profileType: profileData.profile_type || 'male_20_25',
                 role: profileData.role || 'Hunter',
-                agencyId: profileData.agency_id, // Added mapping for permissions
+                agencyId: profileData.agency_id,
                 bio: profileData.bio,
                 managerComment: profileData.manager_comment,
+                affinities: profileData.affinities || [],
+                classTags: profileData.class_tags || [],
+                missionLogs: profileData.mission_logs || [],
                 trackedQuests: profileData.tracked_quests || [],
                 activeFrame: profileData.active_frame || 'Common',
                 unlockedFrames: (() => {
@@ -132,15 +132,6 @@ export default function HunterProfilePage() {
         fetchProfile();
     }, [username]);
 
-    // Update edit state when profile loads
-    useEffect(() => {
-        if (profile) {
-            setEditBio(profile.bio || '');
-            setEditComment(profile.managerComment || '');
-            setNewVideo(null); // Reset new video on profile load
-        }
-    }, [profile]);
-
     if (loading) return <LoadingScreen loading={loading} rank={profile?.settings?.theme || 'E'} />;
 
     if (fetchError) {
@@ -166,64 +157,7 @@ export default function HunterProfilePage() {
     // Use the viewed profile's theme
     const themeRank = profile.settings.theme || overallRank;
     const specialTheme = profile.settings.specialTheme || null;
-
-    const canUploadForThisProfile = viewer?.isAdmin ||
-        (viewer?.role === 'Captain' && viewer?.agencyId && profile?.agencyId === viewer?.agencyId);
-
-    console.log('[DEBUG] Permission Check:', {
-        viewerId: viewer?.id,
-        viewerRole: viewer?.role,
-        viewerAgency: viewer?.agencyId,
-        profileName: profile.name,
-        profileAgency: profile.agencyId,
-        canUpload: canUploadForThisProfile
-    });
-
-    const handleVideoFile = async (file: File | null) => {
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async () => {
-            const result = reader.result as string;
-            setNewVideo(result);
-        };
-        reader.readAsDataURL(file);
-    };
-
-    const handleSave = async () => {
-        if (!profile) return;
-        setSaving(true);
-        try {
-            const updates: any = {
-                bio: editBio,
-                manager_comment: editComment
-            };
-            if (newVideo) {
-                updates.video_url = newVideo;
-            }
-
-            const { error } = await supabase
-                .from('profiles')
-                .update(updates)
-                .eq('id', profile.id);
-
-            if (error) throw error;
-
-            // Update local state
-            setProfile({
-                ...profile,
-                bio: editBio,
-                managerComment: editComment,
-                videoUrl: newVideo || profile.videoUrl
-            });
-            setNewVideo(null);
-            alert('Saved successfully!');
-        } catch (error) {
-            console.error('Error saving:', error);
-            alert('Error saving changes');
-        } finally {
-            setSaving(false);
-        }
-    };
+    const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
 
     return (
         <div className={styles.container}>
@@ -247,10 +181,10 @@ export default function HunterProfilePage() {
                 <X size={40} />
             </button>
 
-            {/* Book icon to open profile interview modal - MOVED TO TOP LEFT */}
+            {/* Book icon to open profile Lore modal */}
             <button
-                onClick={() => setBookOpen(!bookOpen)}
-                aria-label={bookOpen ? 'Close profile book' : 'Open profile book'}
+                onClick={() => setBookOpen(true)}
+                aria-label="Open profile lore"
                 style={{
                     position: 'absolute',
                     top: '20px',
@@ -317,85 +251,12 @@ export default function HunterProfilePage() {
                 isOwnProfile={viewer?.id === profile.id}
             />
 
-            {/* Profile Book Modal */}
-            {/* Profile Book Modal */}
-            {bookOpen && (
-                <div className={styles.interviewOverlay}>
-                    <div
-                        onClick={() => setBookOpen(false)}
-                        style={{ position: 'absolute', inset: 0 }}
-                    />
-                    <div className={styles.interviewModal} style={{
-                        '--custom-theme-color': RANK_COLORS[(viewer?.settings?.theme || calculateOverallRank(viewer?.testScores || {}, viewer?.profileType || 'male_20_25')) as Rank] || '#00e5ff',
-                        '--custom-theme-glow': RANK_COLORS[(viewer?.settings?.theme || calculateOverallRank(viewer?.testScores || {}, viewer?.profileType || 'male_20_25')) as Rank] || '#00e5ff'
-                    } as React.CSSProperties}>
-                        <h2 className={styles.interviewHeader}>
-                            {profile.name} — Interview
-                        </h2>
-                        <div className={styles.interviewBody}>
-                            <div className={styles.videoSection}>
-                                {profile.videoUrl ? (
-                                    <div className={styles.videoWrapper}>
-                                        <video controls style={{ width: '100%', display: 'block' }} src={newVideo || profile.videoUrl} />
-                                    </div>
-                                ) : (
-                                    <div style={{ width: '100%', height: 280, borderRadius: 12, background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        {newVideo ? <video controls style={{ width: '100%', borderRadius: 12 }} src={newVideo} /> : 'No interview available'}
-                                    </div>
-                                )}
-
-                                {canUploadForThisProfile && (
-                                    <div style={{ marginTop: 20 }}>
-                                        <label className={styles.uploadLabel} style={{ marginRight: 15 }}>
-                                            {newVideo ? 'Change Video' : 'Upload Video'}
-                                            <input type="file" accept="video/*" onChange={(e) => handleVideoFile(e.target.files ? e.target.files[0] : null)} style={{ display: 'none' }} />
-                                        </label>
-                                    </div>
-                                )}
-                            </div>
-                            <div className={styles.textSection}>
-                                <div>
-                                    <span className={styles.sectionTitle}>BIO</span>
-                                    {canUploadForThisProfile ? (
-                                        <textarea
-                                            value={editBio}
-                                            onChange={(e) => setEditBio(e.target.value)}
-                                            className={styles.editTxArea}
-                                        />
-                                    ) : (
-                                        <p className={styles.sectionContent}>{profile.bio || '[Pending...]'}</p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <span className={styles.sectionTitle}>MANAGER'S COMMENT</span>
-                                    {canUploadForThisProfile ? (
-                                        <textarea
-                                            value={editComment}
-                                            onChange={(e) => setEditComment(e.target.value)}
-                                            className={styles.editTxArea}
-                                        />
-                                    ) : (
-                                        <p className={styles.sectionContent}>{profile.managerComment || '[Pending...]'}</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        <div className={styles.buttonGroup}>
-                            {canUploadForThisProfile && (
-                                <button
-                                    onClick={handleSave}
-                                    disabled={saving}
-                                    className={styles.saveButton}
-                                >
-                                    {saving ? 'Saving...' : 'Save Changes'}
-                                </button>
-                            )}
-                            <button onClick={() => setBookOpen(false)} className={styles.closeButton}>Close</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <LoreModal
+                isOpen={bookOpen}
+                onClose={() => setBookOpen(false)}
+                targetProfile={profile}
+                rankColor={rankColor}
+            />
 
             <Navbar />
         </div>
