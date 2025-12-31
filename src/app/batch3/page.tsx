@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import styles from './page.module.css';
-import { useHunterStore, UserProfile, Agency } from '@/lib/store';
 import LoadingScreen from '@/components/LoadingScreen';
-import { Settings as Cog, Lock, X, MoreVertical, Crown, UserX, Search, UserPlus } from 'lucide-react';
+import { Settings as Cog, Lock, X, MoreVertical, Crown, UserX, Search, UserPlus, PenTool } from 'lucide-react';
 import { calculateOverallPercentage, getRankFromPercentage, Rank } from '@/lib/game-logic';
 import AgencySettings from '@/components/AgencySettings';
+import AgencyTitlesModal from '@/components/AgencyTitlesModal';
+import { useHunterStore, UserProfile, Agency, Title } from '@/lib/store';
 
 export default function AgencyPage() {
     const router = useRouter();
@@ -208,8 +209,45 @@ export default function AgencyPage() {
                             </div>
 
                             <div className={styles.agencyTitles}>
-                                <p className={styles.label}>TITLES:</p>
-                                <div className={styles.commonTitle}>UPSTART</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <p className={styles.label} style={{ marginBottom: 0 }}>TITLES:</p>
+                                    {isCaptain && (
+                                        <button
+                                            onClick={() => setShowTitlesModal(true)}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                color: '#666',
+                                                cursor: 'pointer',
+                                                padding: 0,
+                                                display: 'flex',
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            <PenTool size={14} />
+                                        </button>
+                                    )}
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                    <div className={styles.commonTitle}>UPSTART</div>
+                                    {(agency?.unlocked_titles as Title[] || []).map((title: Title) => {
+                                        const isHidden = (agency?.title_visibility as Record<string, boolean> || {})[title.name];
+                                        if (isHidden) return null; // Hide from main view if hidden
+                                        return (
+                                            <div
+                                                key={title.name}
+                                                className={styles.commonTitle}
+                                                style={{
+                                                    color: `var(--rarity-${title.rarity.toLowerCase()})`,
+                                                    borderColor: `var(--rarity-${title.rarity.toLowerCase()})`,
+                                                    textShadow: `0 0 5px var(--rarity-${title.rarity.toLowerCase()})`
+                                                }}
+                                            >
+                                                {title.name.toUpperCase()}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </>
                     )}
@@ -560,6 +598,30 @@ export default function AgencyPage() {
                     </div>
                 )
             }
+
+            {showTitlesModal && agency && (
+                <AgencyTitlesModal
+                    titles={agency.unlocked_titles as Title[] || []}
+                    visibility={agency.title_visibility as Record<string, boolean> || {}}
+                    onClose={() => setShowTitlesModal(false)}
+                    onUpdate={async () => {
+                        // Force refresh logic similar to settings? OR assume store handles state.
+                        // Store handles optimistic update, but to be sure we could re-fetch agency data if needed.
+                        // For now relies on store state.
+
+                        // BUT: we need to update the local 'agency' state in this component if it's not subscribed to store directly.
+                        // This component calls 'fetchData' on mount, but doesn't subscribe to agency changes in real-time unless we polling.
+                        // However, the modal uses the store action, which doesn't update specific component state.
+                        // Let's force a refresh.
+                        const { data: agencyData } = await supabase
+                            .from('agencies')
+                            .select('*')
+                            .eq('id', profile?.agencyId)
+                            .single();
+                        if (agencyData) setAgency(agencyData);
+                    }}
+                />
+            )}
 
             <Navbar />
         </div >

@@ -49,6 +49,8 @@ export interface Agency {
     invite_code: string;
     captain_id: string;
     created_at: string;
+    unlocked_titles?: Title[]; // JSONB in DB
+    title_visibility?: Record<string, boolean>; // JSONB (titleName -> isHidden)
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
@@ -236,6 +238,9 @@ interface HunterState {
     acceptRequest: (friendId: string) => Promise<void>;
     declineRequest: (friendId: string) => Promise<void>;
     searchHunters: (query: string) => Promise<UserProfile[]>;
+    // Agency Title Actions
+    claimAgencyTitle: (title: Title) => Promise<void>;
+    updateAgencyTitleVisibility: (titleName: string, isHidden: boolean) => Promise<void>;
 }
 
 export const useHunterStore = create<HunterState>((set, get) => ({
@@ -1681,6 +1686,73 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         } catch (error) {
             console.error('Error searching hunters:', error);
             return [];
+        }
+    },
+
+
+    claimAgencyTitle: async (title: Title) => {
+        const profile = get().profile;
+        if (!profile || !profile.agencyId) return;
+
+        try {
+            // Fetch current agency data first to ensure we have latest titles
+            const { data: currentAgency, error: fetchError } = await supabase
+                .from('agencies')
+                .select('unlocked_titles')
+                .eq('id', profile.agencyId)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            const currentTitles = (currentAgency.unlocked_titles || []) as Title[];
+
+            // Check if already unlocked
+            if (currentTitles.some(t => t.name === title.name)) return;
+
+            const newTitles = [...currentTitles, title];
+
+            const { error } = await supabase
+                .from('agencies')
+                .update({ unlocked_titles: newTitles })
+                .eq('id', profile.agencyId);
+
+            if (error) throw error;
+
+            console.log('Agency title claimed:', title);
+        } catch (error) {
+            console.error('Error claiming agency title:', error);
+        }
+    },
+
+    updateAgencyTitleVisibility: async (titleName: string, isHidden: boolean) => {
+        const profile = get().profile;
+        if (!profile || !profile.agencyId) return;
+
+        // Only Captain (or Admin) should be able to do this - UI should strictly enforce, but store can also check
+        if (profile.role !== 'Captain' && !profile.isAdmin) return;
+
+        try {
+            // Fetch current
+            const { data: currentAgency, error: fetchError } = await supabase
+                .from('agencies')
+                .select('title_visibility')
+                .eq('id', profile.agencyId)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            const currentVisibility = (currentAgency.title_visibility || {}) as Record<string, boolean>;
+            const newVisibility = { ...currentVisibility, [titleName]: isHidden };
+
+            const { error } = await supabase
+                .from('agencies')
+                .update({ title_visibility: newVisibility })
+                .eq('id', profile.agencyId);
+
+            if (error) throw error;
+            console.log('Agency title visibility updated:', titleName, isHidden);
+        } catch (error) {
+            console.error('Error updating agency title visibility:', error);
         }
     }
 }));

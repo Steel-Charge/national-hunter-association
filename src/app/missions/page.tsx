@@ -7,20 +7,61 @@ import { MISSION_PATHS, MissionPath, Quest } from '@/lib/missions';
 import LoadingScreen from '@/components/LoadingScreen';
 import styles from './page.module.css';
 
+import { supabase } from '@/lib/supabase';
+import { calculateOverallRank } from '@/lib/game-logic';
+
 export default function MissionsPage() {
-    const { profile, claimQuest, requestTitle, getPendingRequests, getTheme, toggleTrackQuest } = useHunterStore();
+    const { profile, claimQuest, requestTitle, getPendingRequests, getTheme, toggleTrackQuest, getAgencyMembers, claimAgencyTitle } = useHunterStore();
     const [selectedPath, setSelectedPath] = useState<MissionPath>(MISSION_PATHS[0]);
     const [pendingRequests, setPendingRequests] = useState<string[]>([]);
     const [isSelecting, setIsSelecting] = useState(false);
     const [isFilterMode, setIsFilterMode] = useState(false);
+
+    // START: Event Data
     const [selectedEventQuest, setSelectedEventQuest] = useState<Quest | null>({
         id: 'event_debut',
         name: 'Debut',
         description: 'Update your Profile Image dressed up as your Hunter',
         reward: { name: 'Rising star', rarity: 'Event' }
     });
+    // END: Event Data
 
-    // START: Challenge Data
+    const [agencyMembers, setAgencyMembers] = useState<any[]>([]);
+    const [agencyTitles, setAgencyTitles] = useState<any[]>([]); // To track claimed titles
+
+    // ... (rest of state)
+
+    useEffect(() => {
+        const fetchPendingRequests = async () => {
+            const requests = await getPendingRequests();
+            setPendingRequests(requests);
+        };
+        const fetchAgencyData = async () => {
+            if (profile?.agencyId) {
+                const members = await getAgencyMembers(profile.agencyId);
+                setAgencyMembers(members);
+
+                // Also need to know which titles the agency has unlocked
+                // We can get this from the agency object in store if we had it, but store only has user profile.
+                // We can fetch it directly or assume `claimAgencyTitle` handles validation, but for UI "claimed" state 
+                // we need to know. Let's fetch the agency.
+                const { data: agencyData } = await supabase
+                    .from('agencies')
+                    .select('unlocked_titles')
+                    .eq('id', profile.agencyId)
+                    .single();
+
+                if (agencyData) {
+                    setAgencyTitles(agencyData.unlocked_titles || []);
+                }
+            }
+        };
+
+        if (profile) {
+            fetchPendingRequests();
+            fetchAgencyData();
+        }
+    }, [profile, getPendingRequests, getAgencyMembers]);
     const CHALLENGE_QUESTS: Quest[] = [
         {
             id: 'challenge_immovable',
@@ -31,8 +72,26 @@ export default function MissionsPage() {
     ];
     const [selectedChallengeQuest, setSelectedChallengeQuest] = useState<Quest | null>(CHALLENGE_QUESTS[0]);
 
+    // Agency Missions Data
+    const AGENCY_QUESTS: Quest[] = [
+        {
+            id: 'agency_established',
+            name: 'Established',
+            description: 'Have 3 or more Agency Members D-rank or higher',
+            reward: { name: 'Established', rarity: 'Rare' }
+        },
+        {
+            id: 'agency_professional',
+            name: 'Professional',
+            description: 'Have 3 or more Agency Members C-rank or higher',
+            reward: { name: 'Professional', rarity: 'Epic' }
+        }
+    ];
+    const [selectedAgencyQuest, setSelectedAgencyQuest] = useState<Quest | null>(AGENCY_QUESTS[0]);
+
+
     // Filter State
-    type FilterType = 'all' | 'active' | 'event' | 'challenges' | 'completed';
+    type FilterType = 'all' | 'active' | 'event' | 'challenges' | 'agency' | 'completed';
     const [filter, setFilter] = useState<FilterType>('all');
     // END: Challenge Data
 
@@ -176,7 +235,7 @@ export default function MissionsPage() {
 
                     {/* Filter Controls */}
                     <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                        {(['all', 'active', 'event', 'challenges', 'completed'] as FilterType[]).map((f) => (
+                        {(['all', 'active', 'event', 'challenges', 'agency', 'completed'] as FilterType[]).map((f) => (
                             <button
                                 key={f}
                                 onClick={() => {
@@ -335,6 +394,131 @@ export default function MissionsPage() {
                                     ) : (
                                         <div style={{ color: 'var(--rarity-challenge)', textAlign: 'center', fontWeight: 'bold', marginTop: '20px', fontSize: '0.8rem' }}>✓ CLAIMED</div>
                                     )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* AGENCY Section */}
+                {!isSelecting && profile.agencyId && (filter === 'all' || filter === 'agency') && (
+                    <div style={{ marginTop: '40px' }}>
+                        <h2 className={styles.sectionHeader}>AGENCY</h2>
+                        <div className={styles.eventSection} style={{ borderColor: '#ffd700' }}>
+                            <div className={styles.eventGrid}>
+                                {AGENCY_QUESTS.map((quest) => {
+                                    const isClaimed = agencyTitles.some(t => t.name === quest.reward.name);
+
+                                    // Progress Calculation
+                                    let progress = 0;
+                                    let required = 3;
+                                    let progressText = '0/3';
+
+                                    // Ranks
+                                    const ranks = ['E', 'D', 'C', 'B', 'A', 'S'];
+
+                                    if (quest.id === 'agency_established') {
+                                        // 3 or more D-rank or higher
+                                        const count = agencyMembers.filter(m => {
+                                            const r = calculateOverallRank(m.testScores || {}, m.profileType || 'male_20_25');
+                                            return ranks.indexOf(r) >= 1; // D is index 1
+                                        }).length;
+                                        progress = count;
+                                        progressText = `${count}/3`;
+                                    } else if (quest.id === 'agency_professional') {
+                                        // 3 or more C-rank or higher
+                                        const count = agencyMembers.filter(m => {
+                                            const r = calculateOverallRank(m.testScores || {}, m.profileType || 'male_20_25');
+                                            return ranks.indexOf(r) >= 2; // C is index 2
+                                        }).length;
+                                        progress = count;
+                                        progressText = `${count}/3`;
+                                    }
+
+                                    return (
+                                        <div
+                                            key={quest.id}
+                                            className={`${styles.eventCard} ${selectedAgencyQuest?.id === quest.id ? styles.active : ''}`}
+                                            onClick={() => setSelectedAgencyQuest(quest)}
+                                            style={{ borderColor: selectedAgencyQuest?.id === quest.id ? getRarityColor(quest.reward.rarity) : 'rgba(255, 255, 255, 0.1)' }}
+                                        >
+                                            <span className={styles.eventCardTitle}>{quest.name}</span>
+                                            <span className={styles.eventCardProgress} style={{ color: getRarityColor(quest.reward.rarity) }}>
+                                                {isClaimed ? 'CLAIMED' : progressText}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {selectedAgencyQuest && (
+                                <div className={styles.eventDetailCard} style={{ borderColor: getRarityColor(selectedAgencyQuest.reward.rarity) }}>
+                                    <div className={styles.questHeader}>
+                                        <div className={styles.questTitle}>
+                                            Agency Mission: {selectedAgencyQuest.name}
+                                        </div>
+                                        <div className={styles.questRarity} style={{ color: getRarityColor(selectedAgencyQuest.reward.rarity) }}>
+                                            AGENCY
+                                        </div>
+                                    </div>
+
+                                    <p className={styles.questDescription}>{selectedAgencyQuest.description}</p>
+
+                                    <div className={styles.questReward}>
+                                        <span className={styles.rewardLabel}>Rewards:</span>
+                                        <span className={styles.rewardTitle} style={{ color: getRarityColor(selectedAgencyQuest.reward.rarity) }}>
+                                            Agency Title: {selectedAgencyQuest.reward.name}
+                                        </span>
+                                    </div>
+
+                                    {(() => {
+                                        const isClaimed = agencyTitles.some(t => t.name === selectedAgencyQuest.reward.name);
+                                        // Recalculate can claim
+                                        const ranks = ['E', 'D', 'C', 'B', 'A', 'S'];
+                                        let canClaim = false;
+                                        if (selectedAgencyQuest.id === 'agency_established') {
+                                            const count = agencyMembers.filter(m => {
+                                                const r = calculateOverallRank(m.testScores || {}, m.profileType || 'male_20_25');
+                                                return ranks.indexOf(r) >= 1;
+                                            }).length;
+                                            canClaim = count >= 3;
+                                        } else if (selectedAgencyQuest.id === 'agency_professional') {
+                                            const count = agencyMembers.filter(m => {
+                                                const r = calculateOverallRank(m.testScores || {}, m.profileType || 'male_20_25');
+                                                return ranks.indexOf(r) >= 2;
+                                            }).length;
+                                            canClaim = count >= 3;
+                                        }
+
+                                        if (isClaimed) {
+                                            return <div style={{ color: getRarityColor(selectedAgencyQuest.reward.rarity), textAlign: 'center', fontWeight: 'bold', marginTop: '20px', fontSize: '0.8rem' }}>✓ CLAIMED</div>;
+                                        }
+
+                                        return (
+                                            <button
+                                                className={styles.claimButton}
+                                                onClick={async () => {
+                                                    if (!canClaim) return;
+                                                    if (profile.role !== 'Captain' && !profile.isAdmin) {
+                                                        alert('Only the Captain can claim Agency Missions.');
+                                                        return;
+                                                    }
+                                                    await claimAgencyTitle(selectedAgencyQuest.reward);
+                                                    // Refresh logic handled by state but might want to optimistic update here too
+                                                    setAgencyTitles(prev => [...prev, selectedAgencyQuest.reward]);
+                                                }}
+                                                disabled={!canClaim}
+                                                style={{
+                                                    backgroundColor: canClaim ? getRarityColor(selectedAgencyQuest.reward.rarity) : '#333',
+                                                    color: canClaim ? '#fff' : '#666',
+                                                    marginTop: '20px',
+                                                    cursor: canClaim ? 'pointer' : 'not-allowed'
+                                                }}
+                                            >
+                                                {!canClaim ? 'LOCKED' : (profile.role === 'Captain' ? 'CLAIM FOR AGENCY' : 'CAPTAIN ONLY')}
+                                            </button>
+                                        );
+                                    })()}
                                 </div>
                             )}
                         </div>
