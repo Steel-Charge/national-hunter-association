@@ -221,17 +221,64 @@
     color: rgba(255, 255, 255, 0.8);
 }
 
-.logTextarea {
-    width: 100%;
-    min-height: 80px;
+.logForm {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.logInputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.logInputGroup label {
+    font-size: 0.75rem;
+    color: var(--rank-color, #00ffff);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.logInputGroup input,
+.logInputGroup textarea {
     background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--rank-color, #00ffff);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     color: white;
     padding: 10px;
     font-size: 0.85rem;
     font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.logInputGroup textarea {
+    min-height: 80px;
     resize: none;
+}
+
+.logInputGroup input:focus,
+.logInputGroup textarea:focus {
+    border-color: var(--rank-color, #00ffff);
+    outline: none;
+}
+
+.logDisplay {
+    display: flex;
+    flex-direction: column;
+}
+
+.logLabel {
+    font-weight: bold;
+    color: var(--rank-color, #00ffff);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.logPara {
+    margin: 5px 0 0 0;
+    line-height: 1.5;
+    white-space: pre-wrap;
 }
 
 .redacted {

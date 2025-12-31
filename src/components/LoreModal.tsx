@@ -6,6 +6,15 @@ import { calculateOverallRank, Rank } from '@/lib/game-logic';
 import { X, Save, Send, Shield, Lock, Eye } from 'lucide-react';
 import styles from './LoreModal.module.css';
 
+interface MissionLog {
+    date: string;
+    location: string;
+    threatClassification: string;
+    summary: string;
+    assessment: string;
+    recommendation: string;
+}
+
 interface LoreModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -101,14 +110,49 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     const canEditLogs = isCaptainOfTarget;
 
     // Mission Logs state
-    const [localLogs, setLocalLogs] = useState<Record<string, string>>({});
+    const [localLogs, setLocalLogs] = useState<Record<string, MissionLog>>({});
 
-    const DEFAULT_LOGS: Record<string, string> = {
-        'D': "Mission successful. Hunter demonstrated foundational combat capabilities. Routine patrol completed without incident.",
-        'C': "Hunter exhibited improved tactical awareness during an urban suppression mission. Successfully neutralized multiple low-level threats.",
-        'B': "High-intensity combat recorded. Hunter was pivotal in securing a breached sector. Recommended for specialist training.",
-        'A': "Exceptional performance in a classified operation. Hunter managed to stabilize a critical situation under extreme pressure.",
-        'S': "Data Restricted. Mission outcome: Absolute Success. Hunter is a core asset to the NHA's strategic defense."
+    const DEFAULT_LOGS: Record<string, MissionLog> = {
+        'D': {
+            date: "Pending...",
+            location: "Classified",
+            threatClassification: "Low",
+            summary: "Hunter demonstrated foundational combat capabilities. Routine patrol completed without incident.",
+            assessment: "Mission successful. Strategic thinking within expected parameters.",
+            recommendation: "Continued monitoring. Standard rotation advised."
+        },
+        'C': {
+            date: "Pending...",
+            location: "Classified",
+            threatClassification: "Moderate",
+            summary: "Hunter exhibited improved tactical awareness during urban suppression. Successfully neutralized multiple threats.",
+            assessment: "Combat proficiency increasing. Hunter shows situational alertness.",
+            recommendation: "Recommend specialized tactical drills."
+        },
+        'B': {
+            date: "Pending...",
+            location: "Classified",
+            threatClassification: "High",
+            summary: "High-intensity combat recorded. Hunter was pivotal in securing a breached sector.",
+            assessment: "Significant growth in offensive capability. Hunter remains stable under pressure.",
+            recommendation: "Eligible for lead roles in secondary squads."
+        },
+        'A': {
+            date: "Pending...",
+            location: "Classified",
+            threatClassification: "Critical",
+            summary: "Exceptional performance in a classified operation. Hunter stabilized a catastrophic failure point.",
+            assessment: "Top-tier operative performance. Demonstrates mastery over core abilities.",
+            recommendation: "Assign to high-priority national defense tasks."
+        },
+        'S': {
+            date: "RESTRICTED",
+            location: "RESTRICTED",
+            threatClassification: "GOD-LEVEL",
+            summary: "Data restricted to Monarch Project command. Mission outcome: Absolute Success.",
+            assessment: "Hunter is a core asset to the NHA's strategic existence.",
+            recommendation: "Direct oversight by Agency Captain required."
+        }
     };
 
     useEffect(() => {
@@ -122,7 +166,14 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             // Logs
             const initialLogs = { ...DEFAULT_LOGS };
             if (targetProfile.missionLogs) {
-                Object.assign(initialLogs, targetProfile.missionLogs);
+                // Normalize logs - if they were strings, wrap them in summary
+                Object.entries(targetProfile.missionLogs).forEach(([rank, val]) => {
+                    if (typeof val === 'string') {
+                        initialLogs[rank] = { ...DEFAULT_LOGS[rank], summary: val };
+                    } else {
+                        initialLogs[rank] = val as MissionLog;
+                    }
+                });
             }
             setLocalLogs(initialLogs);
 
@@ -201,9 +252,15 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         );
     };
 
-    const updateLog = (rank: string, text: string) => {
+    const updateLog = (rank: string, field: keyof MissionLog, text: string) => {
         if (!canEditLogs) return;
-        setLocalLogs(prev => ({ ...prev, [rank]: text }));
+        setLocalLogs(prev => ({
+            ...prev,
+            [rank]: {
+                ...prev[rank],
+                [field]: text
+            }
+        }));
     };
 
     const currentTargetRank = calculateOverallRank(targetProfile.testScores, targetProfile.profileType);
@@ -340,13 +397,47 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                                     "[RESTRICTED DATA] [RANK " + rank + " REQUIRED]"
                                                 ) : (
                                                     canEditLogs ? (
-                                                        <textarea
-                                                            className={styles.logTextarea}
-                                                            value={localLogs[rank] || ''}
-                                                            onChange={(e) => updateLog(rank, e.target.value)}
-                                                        />
+                                                        <div className={styles.logForm}>
+                                                            <div className={styles.logInputGroup}>
+                                                                <label>Date:</label>
+                                                                <input type="text" value={localLogs[rank]?.date || ''} onChange={(e) => updateLog(rank, 'date', e.target.value)} />
+                                                            </div>
+                                                            <div className={styles.logInputGroup}>
+                                                                <label>Location:</label>
+                                                                <input type="text" value={localLogs[rank]?.location || ''} onChange={(e) => updateLog(rank, 'location', e.target.value)} />
+                                                            </div>
+                                                            <div className={styles.logInputGroup}>
+                                                                <label>Threat Classification:</label>
+                                                                <input type="text" value={localLogs[rank]?.threatClassification || ''} onChange={(e) => updateLog(rank, 'threatClassification', e.target.value)} />
+                                                            </div>
+                                                            <div className={styles.logInputGroup}>
+                                                                <label>Summary:</label>
+                                                                <textarea value={localLogs[rank]?.summary || ''} onChange={(e) => updateLog(rank, 'summary', e.target.value)} />
+                                                            </div>
+                                                            <div className={styles.logInputGroup}>
+                                                                <label>Assessment:</label>
+                                                                <textarea value={localLogs[rank]?.assessment || ''} onChange={(e) => updateLog(rank, 'assessment', e.target.value)} />
+                                                            </div>
+                                                            <div className={styles.logInputGroup}>
+                                                                <label>Recommendation:</label>
+                                                                <textarea value={localLogs[rank]?.recommendation || ''} onChange={(e) => updateLog(rank, 'recommendation', e.target.value)} />
+                                                            </div>
+                                                        </div>
                                                     ) : (
-                                                        localLogs[rank] || DEFAULT_LOGS[rank]
+                                                        <div className={styles.logDisplay}>
+                                                            <p><span className={styles.logLabel}>Date:</span> {localLogs[rank]?.date || 'N/A'}</p>
+                                                            <p><span className={styles.logLabel}>Location:</span> {localLogs[rank]?.location || 'N/A'}</p>
+                                                            <p><span className={styles.logLabel}>Threat Classification:</span> {localLogs[rank]?.threatClassification || 'N/A'}</p>
+                                                            <br />
+                                                            <p><span className={styles.logLabel}>Summary:</span></p>
+                                                            <p className={styles.logPara}>{localLogs[rank]?.summary || 'N/A'}</p>
+                                                            <br />
+                                                            <p><span className={styles.logLabel}>Assessment:</span></p>
+                                                            <p className={styles.logPara}>{localLogs[rank]?.assessment || 'N/A'}</p>
+                                                            <br />
+                                                            <p><span className={styles.logLabel}>Recommendation:</span></p>
+                                                            <p className={styles.logPara}>{localLogs[rank]?.recommendation || 'N/A'}</p>
+                                                        </div>
                                                     )
                                                 )}
                                             </div>
