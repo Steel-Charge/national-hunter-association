@@ -198,124 +198,6 @@ export default function AgencyPage() {
     return (
         <div className={styles.container} style={{ '--rank-color': rankColor } as React.CSSProperties}>
             <div className={styles.header}>
-                <h1 className={styles.pageTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
-                    {profile.name.toUpperCase()}
-                </h1>
-                {(() => {
-                    const titleName = profile.activeTitle?.name || 'Hunter';
-                    const rarity = profile.activeTitle?.rarity || 'Common';
-                    const displayTitle = getDisplayTitle(titleName, profile.role);
-                    const isDefault = isDefaultTitle(titleName);
-                    // If default, use rank color. Else uses rarity color.
-                    const titleColor = isDefault ? rankColor : `var(--rarity-${rarity.toLowerCase()})`;
-
-                    return (
-                        <p className={styles.pageSubtitle} style={{ color: titleColor, fontWeight: 'bold', fontSize: '1.2rem' }}>
-                            {displayTitle.toUpperCase()}
-                        </p>
-                    );
-                })()}
-            </div>
-
-            <div className={styles.agencySection}>
-                <div className={styles.agencyInfo}>
-                    <h2 className={styles.agencyName} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
-                        {isSolo ? 'NAMELESS' : (agency?.name?.toUpperCase() || 'LOADING...')}
-                    </h2>
-
-                    {isSolo ? (
-                        <div className={styles.associationMessageInternal}>
-                            <strong>Message:</strong> "While no manager has been assigned to you, rest assured the Association is monitoring your development. Like all our agents, strive for growth. Your progress matters."
-                        </div>
-                    ) : (
-                        <>
-                            <div className={styles.agencyStats}>
-                                <p>MEMBERS: [{members.length}/10]</p>
-                                <p className={styles.agencyRankLabel}>AGENCY RANK: <span className={styles.rankValue} style={{ color: `var(--rank-${agencyRank.toLowerCase()})` }}>{agencyRank}</span></p>
-                            </div>
-
-                            <div className={styles.descriptionContainer}>
-                                <div className={styles.descriptionLabel}>DESCRIPTION :</div>
-                                {isCaptain ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <textarea
-                                            className={styles.agencyDescription}
-                                            value={description}
-                                            onChange={(e) => setDescription(e.target.value)}
-                                            onBlur={handleSaveDescription}
-                                            placeholder="Enter agency description..."
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className={styles.descriptionReadonly}>
-                                        {agency?.description || "This is a New agency..."}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className={styles.agencyTitles}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <p className={styles.label} style={{ marginBottom: 0 }}>TITLES:</p>
-                                    {isCaptain && (
-                                        <button
-                                            onClick={() => setShowTitlesModal(true)}
-                                            style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                color: '#666',
-                                                cursor: 'pointer',
-                                                padding: 0,
-                                                display: 'flex',
-                                                alignItems: 'center'
-                                            }}
-                                        >
-                                            <PenTool size={14} />
-                                        </button>
-                                    )}
-                                </div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                                    {(() => {
-                                        const isUpstartHidden = (agency?.title_visibility as Record<string, boolean> || {})['UPSTART'];
-                                        if (isUpstartHidden) return null;
-                                        return <div className={styles.commonTitle}>UPSTART</div>;
-                                    })()}
-                                    {(agency?.unlocked_titles as Title[] || []).map((title: Title) => {
-                                        const isHidden = (agency?.title_visibility as Record<string, boolean> || {})[title.name];
-                                        if (isHidden) return null; // Hide from main view if hidden
-                                        return (
-                                            <div
-                                                key={title.name}
-                                                className={styles.commonTitle}
-                                                style={{
-                                                    color: `var(--rarity-${title.rarity.toLowerCase()})`,
-                                                    borderColor: `var(--rarity-${title.rarity.toLowerCase()})`,
-                                                    textShadow: `0 0 5px var(--rarity-${title.rarity.toLowerCase()})`
-                                                }}
-                                            >
-                                                {title.name.toUpperCase()}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </>
-                    )}
-                </div>
-
-                <div className={styles.agencyLogoContainer}>
-                    <img
-                        src={isSolo ? '/logo_new.png' : (agency?.logo_url || '/placeholder.png')}
-                        alt="Agency Logo"
-                        className={styles.agencyLogo}
-                    />
-                    {!isSolo && (
-                        <div className={styles.managerInfo}>
-                            <span className={styles.assignedManagerLabel}>ASSIGNED MANAGER:</span>
-                            <span className={styles.managerName}>HUNTER BONES</span>
-                        </div>
-                    )}
-                </div>
-
                 {!isSolo && (
                     <button
                         className={styles.settingsTrigger}
@@ -323,6 +205,128 @@ export default function AgencyPage() {
                     >
                         <Cog size={24} />
                     </button>
+                )}
+                <div className={styles.headerTitles}>
+                    <h1 className={styles.pageTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
+                        {profile.name.toUpperCase()}
+                    </h1>
+                    {(() => {
+                        const titleName = profile.activeTitle?.name || 'Hunter';
+                        const rarity = profile.activeTitle?.rarity || 'Common';
+                        const displayTitle = getDisplayTitle(titleName, profile.role);
+                        const isDefault = isDefaultTitle(titleName);
+                        const titleColor = isDefault ? rankColor : `var(--rarity-${rarity.toLowerCase()})`;
+
+                        return (
+                            <p className={styles.pageSubtitle} style={{ color: titleColor, fontWeight: 'bold', fontSize: '1.2rem' }}>
+                                {displayTitle.toUpperCase()}
+                            </p>
+                        );
+                    })()}
+                </div>
+            </div>
+
+            <div className={styles.agencySection}>
+                <div className={styles.agencyHeaderRow}>
+                    <div className={styles.agencyInfo}>
+                        <h2 className={styles.agencyName} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
+                            {isSolo ? 'NAMELESS' : (agency?.name?.toUpperCase() || 'LOADING...')}
+                        </h2>
+
+                        {isSolo ? (
+                            <div className={styles.associationMessageInternal}>
+                                <strong>Message:</strong> "While no manager has been assigned to you, rest assured the Association is monitoring your development. Like all our agents, strive for growth. Your progress matters."
+                            </div>
+                        ) : (
+                            <div className={styles.agencyStats}>
+                                <p>MEMBERS: [{members.length}/10]</p>
+                                <p className={styles.agencyRankLabel}>AGENCY RANK: <span className={styles.rankValue} style={{ color: `var(--rank-${agencyRank.toLowerCase()})` }}>{agencyRank}</span></p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className={styles.agencyLogoContainer}>
+                        <img
+                            src={isSolo ? '/logo_new.png' : (agency?.logo_url || '/placeholder.png')}
+                            alt="Agency Logo"
+                            className={styles.agencyLogo}
+                        />
+                        {!isSolo && (
+                            <div className={styles.managerInfo}>
+                                <span className={styles.assignedManagerLabel}>ASSIGNED MANAGER:</span>
+                                <span className={styles.managerName}>HUNTER BONES</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {!isSolo && (
+                    <>
+                        <div className={styles.agencyTitles}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <p className={styles.label} style={{ marginBottom: 0 }}>TITLES:</p>
+                                {isCaptain && (
+                                    <button
+                                        onClick={() => setShowTitlesModal(true)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#666',
+                                            cursor: 'pointer',
+                                            padding: 0,
+                                            display: 'flex',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <PenTool size={14} />
+                                    </button>
+                                )}
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                {(() => {
+                                    const isUpstartHidden = (agency?.title_visibility as Record<string, boolean> || {})['UPSTART'];
+                                    if (isUpstartHidden) return null;
+                                    return <div className={styles.commonTitle}>UPSTART</div>;
+                                })()}
+                                {(agency?.unlocked_titles as Title[] || []).map((title: Title) => {
+                                    const isHidden = (agency?.title_visibility as Record<string, boolean> || {})[title.name];
+                                    if (isHidden) return null;
+                                    return (
+                                        <div
+                                            key={title.name}
+                                            className={styles.commonTitle}
+                                            style={{
+                                                color: `var(--rarity-${title.rarity.toLowerCase()})`,
+                                                borderColor: `var(--rarity-${title.rarity.toLowerCase()})`,
+                                                textShadow: `0 0 5px var(--rarity-${title.rarity.toLowerCase()})`
+                                            }}
+                                        >
+                                            {title.name.toUpperCase()}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className={styles.descriptionContainer}>
+                            <div className={styles.descriptionLabel}>DESCRIPTION :</div>
+                            {isCaptain ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <textarea
+                                        className={styles.agencyDescription}
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        onBlur={handleSaveDescription}
+                                        placeholder="Enter agency description..."
+                                    />
+                                </div>
+                            ) : (
+                                <div className={styles.descriptionReadonly}>
+                                    {agency?.description || "This is a New agency..."}
+                                </div>
+                            )}
+                        </div>
+                    </>
                 )}
             </div>
 
