@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useHunterStore } from '@/lib/store';
+import { useHunterStore, getDisplayTitle, isDefaultTitle } from '@/lib/store';
 import { getLeaderboard, LeaderboardEntry } from '@/lib/leaderboard';
 import Navbar from '@/components/Navbar';
 import LoadingScreen from '@/components/LoadingScreen';
@@ -83,9 +83,20 @@ export default function RankingsPage() {
                 <h1 className={styles.pageTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
                     {profile.name.toUpperCase()}
                 </h1>
-                <p className={styles.pageSubtitle} style={{ color: `var(--rarity-${profile.activeTitle?.rarity?.toLowerCase() || 'common'})`, fontWeight: 'bold', fontSize: '1.2rem' }}>
-                    {profile.activeTitle?.name || 'HUNTER'}
-                </p>
+                {(() => {
+                    const titleName = profile.activeTitle?.name || 'Hunter';
+                    const rarity = profile.activeTitle?.rarity || 'Common';
+                    const displayTitle = getDisplayTitle(titleName, profile.role);
+                    const isDefault = isDefaultTitle(titleName);
+                    // If default, use rank color. Else uses rarity color.
+                    const titleColor = isDefault ? rankColor : `var(--rarity-${rarity.toLowerCase()})`;
+
+                    return (
+                        <p className={styles.pageSubtitle} style={{ color: titleColor, fontWeight: 'bold', fontSize: '1.2rem' }}>
+                            {displayTitle.toUpperCase()}
+                        </p>
+                    );
+                })()}
             </div>
 
             <h2 className={styles.sectionTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>

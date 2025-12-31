@@ -1488,7 +1488,10 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             name: p.name,
             avatarUrl: p.avatar_url,
             activeTitle: p.active_title,
+            testScores: p.test_scores || {},
+            profileType: p.profile_type || 'male_20_25',
             role: p.role,
+            settings: p.settings
         })) as any[];
     },
 

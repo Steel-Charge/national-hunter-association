@@ -10,7 +10,7 @@ import { Settings as Cog, Lock, X, MoreVertical, Crown, UserX, Search, UserPlus,
 import { calculateOverallPercentage, getRankFromPercentage, Rank } from '@/lib/game-logic';
 import AgencySettings from '@/components/AgencySettings';
 import AgencyTitlesModal from '@/components/AgencyTitlesModal';
-import { useHunterStore, UserProfile, Agency, Title } from '@/lib/store';
+import { useHunterStore, UserProfile, Agency, Title, getDisplayTitle, isDefaultTitle } from '@/lib/store';
 
 export default function AgencyPage() {
     const router = useRouter();
@@ -187,9 +187,20 @@ export default function AgencyPage() {
                 <h1 className={styles.pageTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
                     {profile.name.toUpperCase()}
                 </h1>
-                <p className={styles.pageSubtitle} style={{ color: `var(--rarity-${profile.activeTitle?.rarity?.toLowerCase() || 'common'})`, fontWeight: 'bold', fontSize: '1.2rem' }}>
-                    {(profile.activeTitle?.name || 'HUNTER').toUpperCase()}
-                </p>
+                {(() => {
+                    const titleName = profile.activeTitle?.name || 'Hunter';
+                    const rarity = profile.activeTitle?.rarity || 'Common';
+                    const displayTitle = getDisplayTitle(titleName, profile.role);
+                    const isDefault = isDefaultTitle(titleName);
+                    // If default, use rank color. Else uses rarity color.
+                    const titleColor = isDefault ? rankColor : `var(--rarity-${rarity.toLowerCase()})`;
+
+                    return (
+                        <p className={styles.pageSubtitle} style={{ color: titleColor, fontWeight: 'bold', fontSize: '1.2rem' }}>
+                            {displayTitle.toUpperCase()}
+                        </p>
+                    );
+                })()}
             </div>
 
             <div className={styles.agencySection}>
