@@ -17,8 +17,27 @@ export default function MissionsPage() {
     const [isSelecting, setIsSelecting] = useState(false);
     const [isFilterMode, setIsFilterMode] = useState(false);
 
-    // START: Event Data
-    const [activeQuest, setActiveQuest] = useState<Quest | null>(null);
+    // Separate states for each section to allow default selections
+    const [activePathQuest, setActivePathQuest] = useState<Quest | null>(MISSION_PATHS[0].quests[0]);
+    const [activeEventQuest, setActiveEventQuest] = useState<Quest | null>({
+        id: 'event_debut',
+        name: 'Debut',
+        description: 'Update your Profile Image dressed up as your Hunter',
+        reward: { name: 'Rising star', rarity: 'Event' }
+    });
+    const [activeChallengeQuest, setActiveChallengeQuest] = useState<Quest | null>(CHALLENGE_QUESTS[0]);
+    const [activeAgencyQuest, setActiveAgencyQuest] = useState<Quest | null>(AGENCY_QUESTS[0]);
+
+    useEffect(() => {
+        if (profile) {
+            const firstTracked = getTrackedQuest(0);
+            if (firstTracked) {
+                const path = MISSION_PATHS.find(p => p.id === (firstTracked as any).pathId);
+                if (path) setSelectedPath(path);
+                setActivePathQuest(firstTracked);
+            }
+        }
+    }, [profile]);
 
     const [agencyMembers, setAgencyMembers] = useState<any[]>([]);
     const [agencyTitles, setAgencyTitles] = useState<any[]>([]);
@@ -151,6 +170,19 @@ export default function MissionsPage() {
 
     const getRarityColor = (rarity: string) => `var(--rarity-${rarity.toLowerCase()})`;
 
+    const getQuestRarity = (questId: string) => {
+        for (const path of MISSION_PATHS) {
+            const q = path.quests.find(quest => quest.id === questId);
+            if (q) return q.reward.rarity;
+        }
+        if (questId === 'event_debut') return 'Event';
+        const challenge = CHALLENGE_QUESTS.find(q => q.id === questId);
+        if (challenge) return challenge.reward.rarity;
+        const agency = AGENCY_QUESTS.find(q => q.id === questId);
+        if (agency) return agency.reward.rarity;
+        return 'Common';
+    };
+
     const themeRank = getTheme();
     const specialTheme = profile?.settings?.specialTheme || null;
     const rankColorVar = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
@@ -247,23 +279,31 @@ export default function MissionsPage() {
                     <div className={styles.trackedSlots}>
                         {[0, 1, 2].map(i => {
                             const tracked = getTrackedQuest(i);
+                            const rarity = tracked ? getQuestRarity(tracked.id) : 'Common';
                             return (
-                                <div key={i} className={`${styles.slot} ${tracked ? styles.selected : ''}`} onClick={() => {
-                                    if (tracked) {
-                                        const path = MISSION_PATHS.find(p => p.id === (tracked as any).pathId);
-                                        if (path) {
-                                            setSelectedPath(path);
-                                            setActiveQuest(tracked);
+                                <div
+                                    key={i}
+                                    className={`${styles.slot} ${tracked ? styles.selected : ''}`}
+                                    style={{ '--rarity-color': tracked ? getRarityColor(rarity) : 'rgba(255,255,255,0.1)' } as React.CSSProperties}
+                                    onClick={() => {
+                                        if (tracked) {
+                                            const path = MISSION_PATHS.find(p => p.id === (tracked as any).pathId);
+                                            if (path) {
+                                                setSelectedPath(path);
+                                                setActivePathQuest(tracked);
+                                                scrollToSection('active-section');
+                                            }
+                                        } else {
+                                            setIsSelecting(true);
+                                            setFilter('active');
                                             scrollToSection('active-section');
                                         }
-                                    } else {
-                                        scrollToSection('active-section');
-                                    }
-                                }}>
+                                    }}
+                                >
                                     {tracked ? (
                                         <>
                                             <div className={styles.slotName}>{tracked.name}</div>
-                                            <div className={styles.slotProgress} style={{ color: rankColorVar }}>{tracked.pathName}</div>
+                                            <div className={styles.slotProgress} style={{ color: getRarityColor(rarity) }}>{tracked.pathName}</div>
                                         </>
                                     ) : (
                                         <div className={styles.slotPlus}>+</div>
@@ -278,45 +318,89 @@ export default function MissionsPage() {
                 {(filter === 'all' || filter === 'active') && (
                     <div id="active-section">
                         <h2 className={styles.sectionHeader}>ACTIVE</h2>
-                        <div className={styles.missionRow}>
-                            {MISSION_PATHS.map(path => (
-                                <div
-                                    key={path.id}
-                                    className={`${styles.slot} ${selectedPath.id === path.id ? styles.selected : ''}`}
-                                    onClick={() => {
-                                        setSelectedPath(path);
-                                        setActiveQuest(null);
-                                    }}
-                                >
-                                    <div className={styles.slotName}>{path.name.replace('Path of the ', '')}</div>
-                                    <div className={styles.slotProgress} style={{ color: rankColorVar }}>{getPathProgress(path)}</div>
-                                </div>
-                            ))}
-                        </div>
 
-                        {/* Quests in selected path */}
-                        <div className={styles.missionRow} style={{ marginTop: '10px', gap: '8px' }}>
-                            {selectedPath.quests.map(quest => (
-                                <div
-                                    key={quest.id}
-                                    className={`${styles.slot} ${activeQuest?.id === quest.id ? styles.selected : ''} ${isQuestTracked(quest.id) ? styles.tracked : ''}`}
-                                    style={{ height: '45px', minWidth: '120px', opacity: isQuestLocked(quest.id, selectedPath) ? 0.5 : 1 }}
-                                    onClick={() => !isQuestLocked(quest.id, selectedPath) && setActiveQuest(quest)}
-                                >
-                                    <div className={styles.slotName} style={{ fontSize: '0.65rem' }}>{quest.name}</div>
-                                    {isQuestTracked(quest.id) && <div style={{ fontSize: '0.5rem', color: rankColorVar, fontWeight: '900' }}>TRACKED</div>}
+                        {/* Only show Path Selection if we are actively selecting (+) */}
+                        {isSelecting ? (
+                            <>
+                                <div className={styles.missionRow}>
+                                    {MISSION_PATHS.map(path => (
+                                        <div
+                                            key={path.id}
+                                            className={`${styles.slot} ${selectedPath.id === path.id ? styles.selected : ''}`}
+                                            onClick={() => {
+                                                setSelectedPath(path);
+                                                setActivePathQuest(path.quests[0]);
+                                            }}
+                                        >
+                                            <div className={styles.slotName}>{path.name.replace('Path of the ', '')}</div>
+                                            <div className={styles.slotProgress} style={{ color: rankColorVar }}>{getPathProgress(path)}</div>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
+                                <button className={styles.claimButton} style={{ marginBottom: '20px', background: 'rgba(255,255,255,0.1)' }} onClick={() => setIsSelecting(false)}>DONE SELECTING</button>
+                            </>
+                        ) : (
+                            /* Only display current tracked missions in the ACTIVE area by default */
+                            <div className={styles.missionRow}>
+                                {profile.trackedQuests?.map((id, idx) => {
+                                    const quest = getTrackedQuest(idx);
+                                    if (!quest) return null;
+                                    const rarity = getQuestRarity(quest.id);
+                                    return (
+                                        <div
+                                            key={id}
+                                            className={`${styles.slot} ${activePathQuest?.id === quest.id ? styles.selected : ''}`}
+                                            style={{ '--rarity-color': getRarityColor(rarity) } as React.CSSProperties}
+                                            onClick={() => setActivePathQuest(quest)}
+                                        >
+                                            <div className={styles.slotName}>{quest.name}</div>
+                                            <div className={styles.slotProgress} style={{ color: getRarityColor(rarity) }}>TRACKED</div>
+                                        </div>
+                                    );
+                                })}
+                                {(!profile.trackedQuests || profile.trackedQuests.length === 0) && (
+                                    <p className={styles.emptyMessage} style={{ width: '100%' }}>No missions tracked. Click + to select one.</p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Quests in selected path - only show when path is selected */}
+                        {isSelecting && (
+                            <div className={styles.missionRow} style={{ marginTop: '10px', gap: '8px' }}>
+                                {selectedPath.quests.map(quest => {
+                                    const rarity = getQuestRarity(quest.id);
+                                    return (
+                                        <div
+                                            key={quest.id}
+                                            className={`${styles.slot} ${activePathQuest?.id === quest.id ? styles.selected : ''} ${isQuestTracked(quest.id) ? styles.tracked : ''}`}
+                                            style={{
+                                                height: '45px',
+                                                minWidth: '120px',
+                                                opacity: isQuestLocked(quest.id, selectedPath) ? 0.3 : 1,
+                                                '--rarity-color': getRarityColor(rarity)
+                                            } as React.CSSProperties}
+                                            onClick={() => !isQuestLocked(quest.id, selectedPath) && setActivePathQuest(quest)}
+                                        >
+                                            <div className={styles.slotName} style={{ fontSize: '0.65rem' }}>{quest.name}</div>
+                                            {isQuestTracked(quest.id) && <div style={{ fontSize: '0.5rem', color: getRarityColor(rarity), fontWeight: '900' }}>TRACKED</div>}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
 
                         {/* Detail card for path quests */}
-                        {activeQuest && selectedPath.quests.some(q => q.id === activeQuest.id) && (
+                        {activePathQuest && (
                             <QuestDetail
-                                quest={activeQuest}
+                                quest={activePathQuest}
                                 onClaim={handleClaimQuest}
-                                onTrack={handleToggleTrack}
-                                isCompleted={isQuestCompleted(activeQuest.id)}
-                                isTracked={isQuestTracked(activeQuest.id)}
+                                onTrack={(id: string) => {
+                                    handleToggleTrack(id);
+                                    if (!isQuestTracked(id)) setIsSelecting(false);
+                                }}
+                                isCompleted={isQuestCompleted(activePathQuest.id)}
+                                isTracked={isQuestTracked(activePathQuest.id)}
+                                rarityColor={getRarityColor(getQuestRarity(activePathQuest.id))}
                             />
                         )}
                     </div>
@@ -328,8 +412,9 @@ export default function MissionsPage() {
                         <h2 className={styles.sectionHeader}>EVENT</h2>
                         <div className={styles.missionRow}>
                             <div
-                                className={`${styles.slot} ${activeQuest?.id === 'event_debut' ? styles.selected : ''}`}
-                                onClick={() => setActiveQuest({
+                                className={`${styles.slot} ${activeEventQuest?.id === 'event_debut' ? styles.selected : ''}`}
+                                style={{ '--rarity-color': 'var(--rarity-event)' } as React.CSSProperties}
+                                onClick={() => setActiveEventQuest({
                                     id: 'event_debut',
                                     name: 'Debut',
                                     description: 'Update your Profile Image dressed up as your Hunter',
@@ -341,11 +426,11 @@ export default function MissionsPage() {
                             </div>
                         </div>
 
-                        {activeQuest?.id === 'event_debut' && (
+                        {activeEventQuest?.id === 'event_debut' && (
                             <QuestDetail
-                                quest={activeQuest}
+                                quest={activeEventQuest}
                                 onClaim={handleClaimQuest}
-                                isCompleted={isQuestCompleted(activeQuest.id)}
+                                isCompleted={isQuestCompleted(activeEventQuest.id)}
                                 rarityColor="var(--rarity-event)"
                             />
                         )}
@@ -360,8 +445,9 @@ export default function MissionsPage() {
                             {CHALLENGE_QUESTS.map(quest => (
                                 <div
                                     key={quest.id}
-                                    className={`${styles.slot} ${activeQuest?.id === quest.id ? styles.selected : ''}`}
-                                    onClick={() => setActiveQuest(quest)}
+                                    className={`${styles.slot} ${activeChallengeQuest?.id === quest.id ? styles.selected : ''}`}
+                                    style={{ '--rarity-color': 'var(--rarity-challenge)' } as React.CSSProperties}
+                                    onClick={() => setActiveChallengeQuest(quest)}
                                 >
                                     <div className={styles.slotName}>{quest.name}</div>
                                     <div className={styles.slotProgress} style={{ color: 'var(--rarity-challenge)' }}>{isQuestCompleted(quest.id) ? '1/1' : '0/1'}</div>
@@ -369,11 +455,11 @@ export default function MissionsPage() {
                             ))}
                         </div>
 
-                        {activeQuest && CHALLENGE_QUESTS.some(q => q.id === activeQuest.id) && (
+                        {activeChallengeQuest && (
                             <QuestDetail
-                                quest={activeQuest}
+                                quest={activeChallengeQuest}
                                 onClaim={handleClaimQuest}
-                                isCompleted={isQuestCompleted(activeQuest.id)}
+                                isCompleted={isQuestCompleted(activeChallengeQuest.id)}
                                 rarityColor="var(--rarity-challenge)"
                             />
                         )}
@@ -401,8 +487,9 @@ export default function MissionsPage() {
                                 return (
                                     <div
                                         key={quest.id}
-                                        className={`${styles.slot} ${activeQuest?.id === quest.id ? styles.selected : ''}`}
-                                        onClick={() => setActiveQuest(quest)}
+                                        className={`${styles.slot} ${activeAgencyQuest?.id === quest.id ? styles.selected : ''}`}
+                                        style={{ '--rarity-color': getRarityColor(quest.reward.rarity) } as React.CSSProperties}
+                                        onClick={() => setActiveAgencyQuest(quest)}
                                     >
                                         <div className={styles.slotName}>{quest.name}</div>
                                         <div className={styles.slotProgress} style={{ color: getRarityColor(quest.reward.rarity) }}>
@@ -413,32 +500,32 @@ export default function MissionsPage() {
                             })}
                         </div>
 
-                        {activeQuest && AGENCY_QUESTS.some(q => q.id === activeQuest.id) && (() => {
-                            const isClaimed = agencyTitles.some(t => t.name === activeQuest.reward.name);
+                        {activeAgencyQuest && (() => {
+                            const isClaimed = agencyTitles.some(t => t.name === activeAgencyQuest.reward.name);
                             const ranks = ['E', 'D', 'C', 'B', 'A', 'S'];
                             let canClaim = false;
-                            if (activeQuest.id === 'agency_established') {
+                            if (activeAgencyQuest.id === 'agency_established') {
                                 canClaim = agencyMembers.filter(m => ranks.indexOf(calculateOverallRank(m.testScores || {}, m.profileType || 'male_20_25')) >= 1).length >= 3;
-                            } else if (activeQuest.id === 'agency_professional') {
+                            } else if (activeAgencyQuest.id === 'agency_professional') {
                                 canClaim = agencyMembers.filter(m => ranks.indexOf(calculateOverallRank(m.testScores || {}, m.profileType || 'male_20_25')) >= 2).length >= 3;
                             }
 
                             return (
                                 <QuestDetail
-                                    quest={activeQuest}
+                                    quest={activeAgencyQuest}
                                     onClaim={async () => {
                                         if (profile.role !== 'Captain' && !profile.isAdmin) {
                                             alert('Only Captains can claim Agency Missions.');
                                             return;
                                         }
-                                        await claimAgencyTitle(activeQuest.reward);
-                                        setAgencyTitles(prev => [...prev, activeQuest.reward]);
+                                        await claimAgencyTitle(activeAgencyQuest.reward);
+                                        setAgencyTitles(prev => [...prev, activeAgencyQuest.reward]);
                                     }
                                     }
                                     isCompleted={isClaimed}
                                     isAgency={true}
                                     agencyCanClaim={canClaim}
-                                    rarityColor={getRarityColor(activeQuest.reward.rarity)}
+                                    rarityColor={getRarityColor(activeAgencyQuest.reward.rarity)}
                                 />
                             );
                         })()}

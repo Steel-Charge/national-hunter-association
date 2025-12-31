@@ -39,12 +39,13 @@
     flex-wrap: wrap;
     gap: 15px;
     margin-bottom: 20px;
+    justify-content: flex-start;
 }
 
 .slot {
-    flex: 1;
-    min-width: 140px;
-    height: 60px;
+    flex: 0 0 calc(50% - 7.5px);
+    max-width: calc(50% - 7.5px);
+    height: 70px;
     background: rgba(10, 10, 15, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
@@ -56,6 +57,8 @@
     transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
+    padding: 10px;
+    text-align: center;
 }
 
 .slot:hover {
@@ -64,9 +67,9 @@
 }
 
 .slot.selected {
-    border-color: var(--rank-color);
+    border-color: var(--rarity-color, var(--rank-color));
     background: rgba(255, 255, 255, 0.05);
-    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 10px var(--rarity-color, var(--rank-color));
 }
 
 .slot.selected::after {
@@ -76,8 +79,8 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: var(--rank-color);
-    box-shadow: 0 0 10px var(--rank-color);
+    background: var(--rarity-color, var(--rank-color));
+    box-shadow: 0 0 10px var(--rarity-color, var(--rank-color));
 }
 
 .slotPlus {
