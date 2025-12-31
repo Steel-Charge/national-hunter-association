@@ -22,6 +22,7 @@ export default function AgencyPage() {
     const [showSettings, setShowSettings] = useState(false);
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showTitlesModal, setShowTitlesModal] = useState(false);
     const [inviteCode, setInviteCode] = useState('');
     const [agencyName, setAgencyName] = useState('');
     const [loading, setLoading] = useState(true);
