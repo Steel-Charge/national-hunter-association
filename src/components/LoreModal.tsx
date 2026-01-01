@@ -63,7 +63,7 @@ const TIMELINE_EVENTS = [
     {
         title: "The Monarch Project",
         date: "2025",
-        description: "On February 20, 2025, the NHA initiated the Monarch Project.\n\nWith no confirmed understanding of what a Monarch is, the project’s goal is to:\n- Force or induce Hunters to evolve beyond known rank limitations\n- Create temporary protectors capable of defending the nation until a true Monarch emerges\n\nThe Top 50 strongest Hunters were each assigned a command group known as Batches, tasked with training, controlling, and testing large numbers of Hunters under extreme conditions."
+        description: "On February 20, 2025, the NHA initiated the Monarch Project.\n\nWith no confirmed understanding of what a Monarch is, the project’s goal is to:\n- Force or induce Hunters to evolve beyond known rank limitations\n- Create temporary protectors capable of defending the nation until a true Monarch emerges\n\nThe Top 50 strongest Hunters were each assigned a command group known as Agencies, tasked with training, controlling, and testing large numbers of Hunters under extreme conditions."
     }
 ];
 
