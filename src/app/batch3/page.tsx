@@ -33,6 +33,7 @@ export default function AgencyPage() {
     const [description, setDescription] = useState('');
     const [isEditingDescription, setIsEditingDescription] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
+    const [showLogoPreview, setShowLogoPreview] = useState(false);
 
     const themeRank = getTheme();
     const specialTheme = profile?.settings?.specialTheme || null;
@@ -254,6 +255,8 @@ export default function AgencyPage() {
                             src={isSolo ? '/logo_new.png' : (agency?.logo_url || '/placeholder.png')}
                             alt="Agency Logo"
                             className={styles.agencyLogo}
+                            onClick={() => setShowLogoPreview(true)}
+                            style={{ cursor: 'pointer' }}
                         />
                         {!isSolo && (
                             <div className={styles.managerInfo}>
@@ -701,6 +704,67 @@ export default function AgencyPage() {
                             if (agencyData) setAgency(agencyData);
                         }}
                     />
+                )
+            }
+
+            {/* Logo Preview Modal */}
+            {
+                showLogoPreview && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.9)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        cursor: 'pointer'
+                    }}
+                        onClick={() => setShowLogoPreview(false)}
+                    >
+                        <div style={{
+                            position: 'relative',
+                            maxWidth: '90vw',
+                            maxHeight: '90vh',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '20px'
+                        }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setShowLogoPreview(false)}
+                                style={{
+                                    position: 'absolute',
+                                    top: '-50px',
+                                    right: '0',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#fff',
+                                    cursor: 'pointer',
+                                    fontSize: '2rem'
+                                }}
+                            >
+                                <X size={32} />
+                            </button>
+                            <img
+                                src={isSolo ? '/logo_new.png' : (agency?.logo_url || '/placeholder.png')}
+                                alt="Agency Logo Preview"
+                                style={{
+                                    maxWidth: '100%',
+                                    maxHeight: '90vh',
+                                    objectFit: 'contain',
+                                    border: `3px solid ${rankColor}`,
+                                    borderRadius: '8px',
+                                    boxShadow: `0 0 30px ${rankColor}`
+                                }}
+                            />
+                        </div>
+                    </div>
                 )
             }
 
