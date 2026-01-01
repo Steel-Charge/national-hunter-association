@@ -26,7 +26,7 @@ const ELEMENTS = ['physical', 'fire', 'water', 'light', 'earth', 'air', 'shadow'
 const CLASSES = [
     'RANGER', 'CLERIC', 'KNIGHT', 'NECROMANCER', 'WARLOCK',
     'SORCERER', 'WIZARD', 'MONK', 'SHIFTER', 'ELEMENTALIST',
-    'PSIONIC', 'BARBARIAN', 'BARD', 'PALADIN', 'ASSASSIN', 'GUNSLINGER','SWORDSMAN','BERSERKER'
+    'PSIONIC', 'BARBARIAN', 'BARD', 'PALADIN', 'ASSASSIN', 'GUNSLINGER', 'SWORDSMAN', 'BERSERKER'
 ];
 
 const TIMELINE_EVENTS = [
@@ -104,9 +104,9 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
     const isSelf = currentUser?.id === targetProfile.id;
     const isCaptainOfTarget = (currentUser?.role === 'Captain' && currentUser.agencyId === targetProfile.agencyId) || currentUser?.isAdmin;
-    const canEditBio = isCaptainOfTarget;
+    const canEditBio = isSelf || isCaptainOfTarget;
     const canEditManagerComment = isCaptainOfTarget;
-    const canEditLoreTags = isCaptainOfTarget;
+    const canEditLoreTags = isSelf || isCaptainOfTarget;
     const canEditLogs = isCaptainOfTarget;
 
     // Mission Logs state
