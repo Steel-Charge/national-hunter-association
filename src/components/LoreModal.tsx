@@ -26,7 +26,7 @@ const ELEMENTS = ['physical', 'fire', 'water', 'light', 'earth', 'air', 'shadow'
 const CLASSES = [
     'RANGER', 'CLERIC', 'KNIGHT', 'NECROMANCER', 'WARLOCK',
     'SORCERER', 'WIZARD', 'MONK', 'SHIFTER', 'ELEMENTALIST',
-    'PSIONIC', 'BARBARIAN', 'BARD', 'PALADIN', 'ASSASSIN', 'GUNSLINGER'
+    'PSIONIC', 'BARBARIAN', 'BARD', 'PALADIN', 'ASSASSIN', 'GUNSLINGER','SWORDSMAN','BERSERKER'
 ];
 
 const TIMELINE_EVENTS = [
@@ -38,7 +38,7 @@ const TIMELINE_EVENTS = [
     {
         title: "Regret’s Appearance",
         date: "January 2024",
-        description: "On January 15, 2024 at 04:44:44 (UTC+2), the AGREGRETA Satellite detected a spatial rift forming on the Moon’s surface.\n\nThe transmitted report contained:\n- Severe syntax corruption\n- Sensor data that could not be decoded\n- A corrupted designation reading: “#REGRET”*\n\nFollowing public disclosure, the anomaly became known simply as REGRET."
+        description: "On January 15, 2024 at 04:44:44 (UTC+2), the AREGRETA Satellite detected a spatial rift forming on the Moon’s surface.\n\nThe transmitted report contained:\n- Severe syntax corruption\n- Sensor data that could not be decoded\n- A corrupted designation reading: “#REGRET”*\n\nFollowing public disclosure, the anomaly became known simply as REGRET."
     },
     {
         title: "Icor Leakage",
@@ -70,15 +70,15 @@ const TIMELINE_EVENTS = [
 const RAT_KING_INITIAL = [
     "Heya, Could you do me a favor and tell Bones to leave me the F*CK ALONE!",
     "nvm",
-    "i took care of it, lol",
+    "I took care of it, lol",
     "even removed myself from the Rankings 😋",
-    "You’ve always been there for me, thanks for keeping this chat private, despite it being one way. Im going dark they cant make me fight, if they cant find me\n\nI’ll keep in touch🐀👑"
+    "You’ve always been there for me, thanks for keeping this chat private, despite it being one way.\n\nI'm going dark they cant make me fight if they cant find me\n\nI’ll keep in touch\n\n🐀👑"
 ];
 
 const RAT_KING_C_RANK = [
     "Heya..been a while,",
-    "I thought I was done with the NHA, but they kept looking for me, so i looked more into them",
-    "I think i found some files related to the Monarch Project, and holy sh*t are these things redacted",
+    "I thought I was done with the NHA, but they kept looking for me, so I looked more into them",
+    "I think I found some files related to the Monarch Project,\n\nand holy sh*t are these things redacted",
     "I'll work my magic as always. Don't wait up."
 ];
 
