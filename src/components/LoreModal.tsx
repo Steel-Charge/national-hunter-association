@@ -58,7 +58,7 @@ const TIMELINE_EVENTS = [
     {
         title: "Last Warning",
         date: "September 2024",
-        description: "On September 7, 2024, the National Hunter Association (NHA) was officially established.\n\nWhile drafting his inaugural announcement to registered Hunters, the NHA Director received another message—originating from the same unidentified future device as in 2021.\n\nThe message read:\n\n“ONLY THE CREATION OF A MONARCH CAN SAVE US…”"
+        description: "On September 7, 2024, the National Hunter Association (NHA) was officially established.\n\nWhile drafting his inaugural announcement to registered Hunters, the NHA Director received another message originating from the same unidentified future device as in 2021.\n\nThe message read:\n\n“ONLY THE CREATION OF A MONARCH CAN SAVE US…”"
     },
     {
         title: "The Monarch Project",
@@ -68,6 +68,10 @@ const TIMELINE_EVENTS = [
     {    title: "Agency Privacy Act",
          date: "March 2025",
          description: "In early March 2025, Hunter Klaw, ranked 32nd in South Africa and manager of the Hyena Agency, petitioned the NHA to make Agency operations private. The proposal sparked controversy due to concerns over abuse, reduced coordination between Agencies, and the concealment of Monarch Project failures. After a closed-door meeting involving the NHA Director, all 50 Agency managers, and select shareholders, the act was approved on March 5, 2025.\n It mandates full reporting of all Agency activities to the NHA Director, classifies operations from public and inter-Agency access, and centralizes Hunter placement under the NHA, removing reassignment authority from Agency managers and significantly increasing centralized control."
+    },
+    {    title: "Regret’s Call",
+         date: "April 2025",
+         description: "Since its emergence, REGRET had been under continuous observation by the AGREGRETA Satellite.\nOn April 4, 2025 at 04:44:44 (UTC+2), Captain Patrick Harbinger, the satellite’s commanding officer, initiated an unscheduled transmission to the orbital space station. The captain appeared agitated and incoherent, repeatedly stating that REGRET was communicating with him.\n\nDuring the transmission, Harbinger claimed that “something within the rift will bring perfection to us all.” The message rapidly deteriorated into uncontrollable laughter, followed by vocalizations described by station staff as non-human growling.\n\nAt 04:48 (UTC+2), all contact with the AGREGRETA Satellite was lost.\nA recovery and investigation team was immediately deployed with the objective of locating the satellite and extracting Captain Harbinger. Upon arrival at the last known coordinates, no debris, wreckage, or trace of the AGREGRETA Satellite was found.\n\nThe incident was classified at the highest level. Captain Harbinger remains listed as Missing."
     }
 ];
 
