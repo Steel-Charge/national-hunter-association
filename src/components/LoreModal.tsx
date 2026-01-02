@@ -62,8 +62,12 @@ const TIMELINE_EVENTS = [
     },
     {
         title: "The Monarch Project",
-        date: "2025",
+        date: "February 2025",
         description: "On February 20, 2025, the NHA initiated the Monarch Project.\n\nWith no confirmed understanding of what a Monarch is, the project’s goal is to:\n- Force or induce Hunters to evolve beyond known rank limitations\n- Create temporary protectors capable of defending the nation until a true Monarch emerges\n\nThe Top 50 strongest Hunters were each assigned a command group known as Agencies, tasked with training, controlling, and testing large numbers of Hunters under extreme conditions."
+    },
+    {    title: "Agency Privacy Act",
+         date: "March 2025",
+         description: "In early March 2025, Hunter Klaw, ranked 32nd in South Africa and acting manager of the Hyena Agency, formally petitioned the NHA to restrict Agency operational records from public access and from review by other Agencies.\nThe request was immediately deemed controversial. Critics argued it would:\n- Enable internal abuse of Hunters\n- Obstruct cross-Agency coordination\n- Conceal failures within Monarch Project test units\nDue to the severity of the implications, the matter was escalated to a closed-door summit involving:\n- The NHA Director\n- All 50 Agency Managers\n- Select NHA shareholders\n\nResolution — March 5, 2025\nOn March 5, 2025, the NHA ratified the Agency Privacy Act, with the following provisions:\n1.Full Disclosure to the Director\nThe NHA Director is to be informed of all Agency activities without exception.\n2.Operational Secrecy\nAll Agency activities are classified and are no longer accessible to:\n- The public\n- Other Agencies\n3.Centralized Hunter Assignment\nThe NHA retains exclusive authority over Hunter placement.\n- Agency Managers may not remove, dismiss, or reassign Hunters under their command.\nThe act significantly reduced inter-Agency transparency while consolidating power within the NHA’s central command structure."
     }
 ];
 
