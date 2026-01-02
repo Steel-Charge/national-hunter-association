@@ -297,6 +297,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Prevent container itself from scrolling */
 }
 
 .chatMessages {
@@ -304,6 +305,9 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    overflow-y: auto; /* Allow messages to scroll */
+    padding-right: 5px; /* Space for scrollbar */
+    min-height: 0; /* Critical for flex child scrolling */
 }
 
 .msg {
@@ -339,6 +343,8 @@
 .chatInputArea {
     margin-top: 20px;
     position: relative;
+    flex-shrink: 0; /* Prevent input from shrinking */
+    padding-bottom: 5px;
 }
 
 .chatInput {

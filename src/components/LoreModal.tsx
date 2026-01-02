@@ -520,7 +520,8 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         </span>
                                     </div>
 
-                                    <div className={styles.chatMessages} style={{ height: 'calc(100% - 130px)' }}>
+
+                                    <div className={styles.chatMessages}>
                                         {activeContact === 'Rat King' ? (
                                             chatHistory.map((m, i) => (
                                                 <div key={i} className={m.sender === 'Rat King' ? styles.ratKingMsg : styles.userMsg}>
