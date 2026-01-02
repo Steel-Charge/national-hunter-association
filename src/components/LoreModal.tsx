@@ -534,7 +534,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         ) : (
                                             <div className={styles.ratKingMsg}>
                                                 <div className={styles.msg}>
-                                                    To my forced reluctance you've be assigned to my Agency.so...Welcome to ICARUS, if you mess up, I legally can't boot you, but you will wish I could.
+                                                    Welcome to ICARUS, if you mess up, I legally can't boot you, but you will wish I could.
                                                 </div>
                                             </div>
                                         )}
