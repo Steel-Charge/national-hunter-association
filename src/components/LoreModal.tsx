@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useHunterStore, UserProfile } from '@/lib/store';
 import { calculateOverallRank, Rank } from '@/lib/game-logic';
-import { X, Save, Send, Shield, Lock, Eye } from 'lucide-react';
+import { X, Save, Send, Shield, Lock, Eye, ChevronLeft } from 'lucide-react';
 import styles from './LoreModal.module.css';
 
 interface MissionLog {
@@ -86,7 +86,8 @@ const RANKS_ORDER: Rank[] = ['E', 'D', 'C', 'B', 'A', 'S'];
 
 export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }: LoreModalProps) {
     const { profile: currentUser, updateLore } = useHunterStore();
-    const [activeTab, setActiveTab] = useState<'FILE' | 'LOGS' | 'TIMELINE' | 'RAT KING'>('FILE');
+    const [activeTab, setActiveTab] = useState<'FILE' | 'LOGS' | 'TIMELINE' | 'PHONE'>('FILE');
+    const [activeContact, setActiveContact] = useState<'Rat King' | 'Bones' | null>(null);
     const [saving, setSaving] = useState(false);
 
     // Editable states
@@ -107,7 +108,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     const canEditBio = isSelf || isCaptainOfTarget;
     const canEditManagerComment = isCaptainOfTarget;
     const canEditLoreTags = isSelf || isCaptainOfTarget;
-    const canEditLogs = isCaptainOfTarget;
+    const canEditLogs = isCaptainOfTarget && currentUser?.role !== 'Hunter';
 
     // Mission Logs state
     const [localLogs, setLocalLogs] = useState<Record<string, MissionLog>>({});
@@ -277,8 +278,8 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                 </div>
 
                 <div className={styles.tabs}>
-                    {['FILE', 'LOGS', 'TIMELINE', 'RAT KING']
-                        .filter(t => t !== 'RAT KING' || isSelf)
+                    {['FILE', 'LOGS', 'TIMELINE', 'PHONE']
+                        .filter(t => t !== 'PHONE' || isSelf)
                         .map((t) => (
                             <button
                                 key={t}
@@ -483,31 +484,77 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                         </div>
                     )}
 
-                    {activeTab === 'RAT KING' && (
+                    {activeTab === 'PHONE' && (
                         <div className={styles.chatContainer}>
-                            <div className={styles.chatMessages}>
-                                {chatHistory.map((m, i) => (
-                                    <div key={i} className={m.sender === 'Rat King' ? styles.ratKingMsg : styles.userMsg}>
-                                        <div className={styles.msg}>
-                                            {m.text}
-                                            {m.error && <p className={styles.msgError}>Message failed to deliver</p>}
-                                        </div>
+                            {activeContact === null ? (
+                                <div className={styles.contactList}>
+                                    <h3 className={styles.sectionTitle} style={{ padding: '20px 20px 10px' }}>CONTACTS</h3>
+                                    <div
+                                        className={styles.contactItem}
+                                        onClick={() => setActiveContact('Rat King')}
+                                        style={{ display: 'flex', alignItems: 'center', padding: '15px 20px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+                                    >
+                                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#333', marginRight: '15px' }} />
+                                        <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>Rat King 🐀👑</span>
                                     </div>
-                                ))}
-                            </div>
-                            <div className={styles.chatInputArea}>
-                                <input
-                                    type="text"
-                                    className={styles.chatInput}
-                                    placeholder="Message..."
-                                    value={chatMsg}
-                                    onChange={(e) => setChatMsg(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                                />
-                                <button className={styles.sendBtn} onClick={handleSendMessage}>
-                                    <Send size={20} />
-                                </button>
-                            </div>
+                                    <div
+                                        className={styles.contactItem}
+                                        onClick={() => setActiveContact('Bones')}
+                                        style={{ display: 'flex', alignItems: 'center', padding: '15px 20px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+                                    >
+                                        <img src="/icon.png" alt="Bones" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', marginRight: '15px' }} />
+                                        <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>Bones (Manager)</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className={styles.chatHeader} style={{ padding: '15px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <button
+                                            onClick={() => setActiveContact(null)}
+                                            style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                        >
+                                            <ChevronLeft size={24} />
+                                        </button>
+                                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
+                                            {activeContact === 'Rat King' ? 'Rat King 🐀👑' : 'Bones (Manager)'}
+                                        </span>
+                                    </div>
+
+                                    <div className={styles.chatMessages} style={{ height: 'calc(100% - 130px)' }}>
+                                        {activeContact === 'Rat King' ? (
+                                            chatHistory.map((m, i) => (
+                                                <div key={i} className={m.sender === 'Rat King' ? styles.ratKingMsg : styles.userMsg}>
+                                                    <div className={styles.msg}>
+                                                        {m.text}
+                                                        {m.error && <p className={styles.msgError}>Message failed to deliver</p>}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className={styles.ratKingMsg}>
+                                                <div className={styles.msg}>
+                                                    To my forced reluctance you've be assigned to my Agency.so...Welcome to ICARUS, if you mess up, I legally can't boot you, but you will wish I could.
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className={styles.chatInputArea}>
+                                        <input
+                                            type="text"
+                                            className={styles.chatInput}
+                                            placeholder="Message..."
+                                            value={chatMsg}
+                                            onChange={(e) => setChatMsg(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                            disabled={activeContact === 'Bones'}
+                                        />
+                                        <button className={styles.sendBtn} onClick={handleSendMessage} disabled={activeContact === 'Bones'}>
+                                            <Send size={20} />
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>
