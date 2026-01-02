@@ -33,7 +33,7 @@ const TIMELINE_EVENTS = [
     {
         title: "First Warning",
         date: "December 2021",
-        description: "On December 29, 2021 at 00:00:01 (UTC+2), all government organizations worldwide received an identical message from an unknown sender:\n\n“PREPARE FOR REGRET”\n\nAnalysis revealed the transmission originated from a device with:\n- A timestamp 50 years in the future\n- A serial number linked to hardware not yet manufactured\n\nThe incident was officially classified as an elaborate hoax, and Global Command agreed to take no action."
+        description: "On December 19, 2021 at 00:00:01 (UTC+2), all government organizations worldwide received an identical message from an unknown sender:\n\n“PREPARE FOR REGRET”\n\nAnalysis revealed the transmission originated from a device with:\n- A timestamp 50 years in the future\n- A serial number linked to hardware not yet manufactured\n\nThe incident was officially classified as an elaborate hoax, and Global Command agreed to take no action."
     },
     {
         title: "Regret’s Appearance",
@@ -67,7 +67,7 @@ const TIMELINE_EVENTS = [
     },
     {    title: "Agency Privacy Act",
          date: "March 2025",
-         description: "Hunter Klaw of the Hyena Agency proposed restricting Agency activity records from public and inter-Agency access. Despite controversy over accountability and coordination, the NHA approved the measure on March 5, 2025. The act classifies all Agency operations, grants the NHA Director full oversight, and centralizes Hunter assignments under NHA control, preventing Agency managers from reassigning or removing Hunters."
+         description: "In early March 2025, Hunter Klaw, ranked 32nd in South Africa and manager of the Hyena Agency, petitioned the NHA to make Agency operations private. The proposal sparked controversy due to concerns over abuse, reduced coordination between Agencies, and the concealment of Monarch Project failures. After a closed-door meeting involving the NHA Director, all 50 Agency managers, and select shareholders, the act was approved on March 5, 2025.\n It mandates full reporting of all Agency activities to the NHA Director, classifies operations from public and inter-Agency access, and centralizes Hunter placement under the NHA, removing reassignment authority from Agency managers and significantly increasing centralized control."
     }
 ];
 
