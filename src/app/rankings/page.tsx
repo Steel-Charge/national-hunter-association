@@ -100,7 +100,7 @@ export default function RankingsPage() {
             </div>
 
             <h2 className={styles.sectionTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
-                {activeFilter ? `${activeFilter.toUpperCase()} RANKINGS` : 'BATCH 3 RANKINGS'}
+                {activeFilter ? `${activeFilter.toUpperCase()} RANKINGS` : `${(profile.agencyName || 'BATCH 3').toUpperCase()} RANKINGS`}
             </h2>
 
             {isSolo ? (
