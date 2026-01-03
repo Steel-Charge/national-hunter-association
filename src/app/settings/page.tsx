@@ -3,9 +3,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useHunterStore, UserSettings, Title } from '@/lib/store';
+import { usePWA } from '@/context/PWAContext';
 import { Rank } from '@/lib/game-logic';
 import Navbar from '@/components/Navbar';
-import { LogOut, Image as ImageIcon, Calculator, Palette, Award, Save } from 'lucide-react';
+import { LogOut, Image as ImageIcon, Calculator, Palette, Award, Save, Download } from 'lucide-react';
 import LoadingScreen from '@/components/LoadingScreen';
 import styles from './page.module.css';
 
@@ -13,6 +14,7 @@ const RANKS: Rank[] = ['E', 'D', 'C', 'B', 'A', 'S'];
 
 export default function SettingsPage() {
     const { profile, loading, logout, updateAvatar, updateSettings, setActiveTitle, getOverallRank, getTheme } = useHunterStore();
+    const { installPWA, isInstallable } = usePWA();
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -282,6 +284,23 @@ export default function SettingsPage() {
                     >
                         Update Password
                     </button>
+
+                    {/* Install App Button */}
+                    {isInstallable && (
+                        <button
+                            className={styles.themeBtn}
+                            onClick={installPWA}
+                            style={{
+                                marginTop: '10px',
+                                backgroundColor: isInstallable ? '#00cc6622' : 'transparent',
+                                borderColor: '#00cc66',
+                                color: '#00cc66'
+                            }}
+                        >
+                            <Download size={18} style={{ marginRight: '8px' }} />
+                            INSTALL APP
+                        </button>
+                    )}
                 </div>
             </div>
 

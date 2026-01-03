@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import BackgroundWrapper from "@/components/BackgroundWrapper";
 import StoreInitializer from "@/components/StoreInitializer";
+import { PWAProvider } from "@/context/PWAContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,9 +50,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <StoreInitializer />
-        <BackgroundWrapper>
-          {children}
-        </BackgroundWrapper>
+        <PWAProvider>
+          <BackgroundWrapper>
+            {children}
+          </BackgroundWrapper>
+        </PWAProvider>
       </body>
     </html>
   );
