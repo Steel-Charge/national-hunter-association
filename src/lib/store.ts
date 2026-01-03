@@ -264,7 +264,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             // 1. Get Profile
             let { data: profileData, error: profileError } = await supabase
                 .from('profiles')
-                .select('*')
+                .select('*, agencies (name)')
                 .eq('name', name)
                 .single();
 
@@ -323,6 +323,8 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         profileType: profileData.profile_type || 'male_20_25',
                         role: profileData.role || 'Hunter',
                         agencyId: profileData.agency_id,
+                        // @ts-ignore - Supabase join keys might be singular or plural depending on setup, handling safe access
+                        agencyName: profileData.agencies?.name,
                         bio: profileData.bio,
                         managerComment: profileData.manager_comment,
                         affinities: profileData.affinities || [],
