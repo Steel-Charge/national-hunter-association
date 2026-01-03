@@ -33,7 +33,7 @@ const TIMELINE_EVENTS = [
     {
         title: "First Warning",
         date: "December 2021",
-        description: "On December 29, 2021 at 00:00:01 (UTC+2), all government organizations worldwide received an identical message from an unknown sender:\n\n“PREPARE FOR REGRET”\n\nAnalysis revealed the transmission originated from a device with:\n- A timestamp 50 years in the future\n- A serial number linked to hardware not yet manufactured\n\nThe incident was officially classified as an elaborate hoax, and Global Command agreed to take no action."
+        description: "On December 19, 2021 at 00:00:01 (UTC+2), all government organizations worldwide received an identical message from an unknown sender:\n\n“PREPARE FOR REGRET”\n\nAnalysis revealed the transmission originated from a device with:\n- A timestamp 50 years in the future\n- A serial number linked to hardware not yet manufactured\n\nThe incident was officially classified as an elaborate hoax, and Global Command agreed to take no action."
     },
     {
         title: "Regret’s Appearance",
@@ -58,12 +58,20 @@ const TIMELINE_EVENTS = [
     {
         title: "Last Warning",
         date: "September 2024",
-        description: "On September 7, 2024, the National Hunter Association (NHA) was officially established.\n\nWhile drafting his inaugural announcement to registered Hunters, the NHA Director received another message—originating from the same unidentified future device as in 2021.\n\nThe message read:\n\n“ONLY THE CREATION OF A MONARCH CAN SAVE US…”"
+        description: "On September 7, 2024, the National Hunter Association (NHA) was officially established.\n\nWhile drafting his inaugural announcement to registered Hunters, the NHA Director received another message originating from the same unidentified future device as in 2021.\n\nThe message read:\n\n“ONLY THE CREATION OF A MONARCH CAN SAVE US…”"
     },
     {
         title: "The Monarch Project",
-        date: "2025",
+        date: "February 2025",
         description: "On February 20, 2025, the NHA initiated the Monarch Project.\n\nWith no confirmed understanding of what a Monarch is, the project’s goal is to:\n- Force or induce Hunters to evolve beyond known rank limitations\n- Create temporary protectors capable of defending the nation until a true Monarch emerges\n\nThe Top 50 strongest Hunters were each assigned a command group known as Agencies, tasked with training, controlling, and testing large numbers of Hunters under extreme conditions."
+    },
+    {    title: "Agency Privacy Act",
+         date: "March 2025",
+         description: "In early March 2025, Hunter Klaw, ranked 32nd in South Africa and manager of the Hyena Agency, petitioned the NHA to make Agency operations private. The proposal sparked controversy due to concerns over abuse, reduced coordination between Agencies, and the concealment of Monarch Project failures. After a closed-door meeting involving the NHA Director, all 50 Agency managers, and select shareholders, the act was approved on March 5, 2025.\n It mandates full reporting of all Agency activities to the NHA Director, classifies operations from public and inter-Agency access, and centralizes Hunter placement under the NHA, removing reassignment authority from Agency managers and significantly increasing centralized control."
+    },
+    {    title: "Regret’s Call",
+         date: "April 2025",
+         description: "Since its emergence, REGRET had been under continuous observation by the AREGRETA Satellite.\nOn April 4, 2025 at 04:44:44 (UTC+2), Captain Patrick Harbinger, the satellite’s commanding officer, initiated an unscheduled transmission to the orbital space station. The captain appeared agitated and incoherent, repeatedly stating that REGRET was communicating with him.\n\nDuring the transmission, Harbinger claimed that\n“It says it will bring Perfection-”\n “...It knows we are watching it, It's watching too.” \nThe message rapidly deteriorated into uncontrollable laughter, followed by vocalizations described by station staff as non-human growling.\n\nAt 04:48 (UTC+2), all contact with the AREGRETA Satellite was lost.\nA recovery and investigation team was immediately deployed with the objective of locating the satellite and extracting Captain Harbinger. Upon arrival at the last known coordinates, no debris, wreckage, or trace of the AREGRETA Satellite was found.\n\nThe incident was classified at the highest level. Captain Harbinger remains listed as Missing."
     }
 ];
 
@@ -534,7 +542,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         ) : (
                                             <div className={styles.ratKingMsg}>
                                                 <div className={styles.msg}>
-                                                    To my forced reluctance you've be assigned to my Agency.so...Welcome to ICARUS, if you mess up, I legally can't boot you, but you will wish I could.
+                                                    Welcome to ICARUS, if you mess up, I legally can't boot you, but you will wish I could.
                                                 </div>
                                             </div>
                                         )}
