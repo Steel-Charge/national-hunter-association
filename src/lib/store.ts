@@ -264,7 +264,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             // 1. Get Profile
             let { data: profileData, error: profileError } = await supabase
                 .from('profiles')
-                .select('*, agencies (name)')
+                .select('*')
                 .eq('name', name)
                 .single();
 
@@ -277,6 +277,18 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             }
 
             if (profileData) {
+                // 1.5 Get Agency Name if exists
+                let agencyName: string | undefined;
+                if (profileData.agency_id) {
+                    const { data: agency } = await supabase
+                        .from('agencies')
+                        .select('name')
+                        .eq('id', profileData.agency_id)
+                        .single();
+                    if (agency) agencyName = agency.name;
+                }
+
+                // 2. Get Unlocked Titles
                 // 2. Get Unlocked Titles
                 const { data: titlesData } = await supabase
                     .from('unlocked_titles')
@@ -323,8 +335,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                         profileType: profileData.profile_type || 'male_20_25',
                         role: profileData.role || 'Hunter',
                         agencyId: profileData.agency_id,
-                        // @ts-ignore - Supabase join keys might be singular or plural depending on setup, handling safe access
-                        agencyName: profileData.agencies?.name,
+                        agencyName: agencyName, // Use separate fetch result
                         bio: profileData.bio,
                         managerComment: profileData.manager_comment,
                         affinities: profileData.affinities || [],
