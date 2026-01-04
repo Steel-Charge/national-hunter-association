@@ -6,12 +6,20 @@
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#00e5ff",
+    "scope": "/",
+    "id": "/",
     "icons": [
         {
             "src": "/icon.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
+        },
+        {
+            "src": "/icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ]
 }

@@ -14,7 +14,15 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     const [isInstallable, setIsInstallable] = useState(false);
 
     useEffect(() => {
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => console.log('SW registered: ', registration))
+                .catch(err => console.log('SW registration failed: ', err));
+        }
+
         const handler = (e: Event) => {
+            console.log('PWA: beforeinstallprompt fired');
             // Prevent the mini-infobar from appearing on mobile
             e.preventDefault();
             // Stash the event so it can be triggered later.
@@ -22,9 +30,11 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
             setIsInstallable(true);
         };
 
+        console.log('PWA: Adding event listener for beforeinstallprompt');
         window.addEventListener('beforeinstallprompt', handler);
 
         return () => {
+            console.log('PWA: Removing event listener');
             window.removeEventListener('beforeinstallprompt', handler);
         };
     }, []);
