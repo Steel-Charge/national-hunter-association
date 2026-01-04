@@ -4,6 +4,7 @@ import "./globals.css";
 import BackgroundWrapper from "@/components/BackgroundWrapper";
 import StoreInitializer from "@/components/StoreInitializer";
 import { PWAProvider } from "@/context/PWAContext";
+import NewTitleHandler from "@/components/NewTitleHandler";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,6 +53,7 @@ export default function RootLayout({
         <StoreInitializer />
         <PWAProvider>
           <BackgroundWrapper>
+            <NewTitleHandler />
             {children}
           </BackgroundWrapper>
         </PWAProvider>
