@@ -270,22 +270,35 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         let nextId = node.nextId;
         let nextNode = nextId ? chatGraph[nextId] : null;
 
-        // If next is NPC dialogue (not user options, not end), start typing again
-        if (nextNode && !nextNode.options && !nextNode.isEnd && !nextNode.reqRank && !nextNode.reqTimeWait) {
+        if (nextNode && !nextNode.reqRank && !nextNode.reqTimeWait) {
+            // ALWAYS type the next node if it exists and is not gated, even if it has options
             setPendingNodeId(nextId!);
             setTimeout(() => setIsTyping(true), 600);
+            setCurrentOptions([]); // Hide options until next node is revealed
+            
+            // Update Persistence to the node we are ABOUT to type
+            const newState: ChatState = {
+                currentNodeId: nextId!,
+                history: newHistory,
+                lastInteractionTime: Date.now(),
+                isBlocked: blocked
+            };
+            await updateChatProgress(activeContact, newState);
         } else {
+            // No next sequence, or gated node
             setPendingNodeId(nextId || pendingNodeId);
             setCurrentOptions(node.options || []);
+            
+            // Persistence stays on the revealed node (or the gated one)
+            const newState: ChatState = {
+                currentNodeId: nextId || pendingNodeId,
+                history: newHistory,
+                lastInteractionTime: Date.now(),
+                isBlocked: blocked
+            };
+            await updateChatProgress(activeContact, newState);
         }
-
-        // 3. Update Persistence
-        const newState: ChatState = {
-            currentNodeId: nextId || pendingNodeId,
-            history: newHistory,
-            lastInteractionTime: Date.now(),
-            isBlocked: blocked
-        };
+    };
         await updateChatProgress(activeContact, newState);
     };
 
