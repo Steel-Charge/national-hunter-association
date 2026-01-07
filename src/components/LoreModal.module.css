@@ -297,7 +297,8 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Prevent container itself from scrolling */
+    overflow: hidden;
+    /* Prevent container itself from scrolling */
 }
 
 .chatMessages {
@@ -305,32 +306,29 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    overflow-y: auto; /* Allow messages to scroll */
-    padding-right: 5px; /* Space for scrollbar */
-    min-height: 0; /* Critical for flex child scrolling */
+    overflow-y: auto;
+    /* Allow messages to scroll */
+    padding-right: 5px;
+    /* Space for scrollbar */
+    min-height: 0;
+    /* Critical for flex child scrolling */
 }
 
 .msg {
     padding: 12px 16px;
-    border-radius: 18px;
-    font-size: 0.9rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
     max-width: 85%;
-    line-height: 1.4;
+    line-height: 1.5;
+    position: relative;
 }
 
 .ratKingMsg {
     align-self: flex-start;
-    background: rgba(0, 255, 255, 0.1);
-    border: 1px solid #00ffff;
-    color: white;
-    border-bottom-left-radius: 4px;
 }
 
 .userMsg {
     align-self: flex-end;
-    background: #333;
-    color: rgba(255, 255, 255, 0.5);
-    border-bottom-right-radius: 4px;
 }
 
 .msgError {
@@ -343,7 +341,8 @@
 .chatInputArea {
     margin-top: 20px;
     position: relative;
-    flex-shrink: 0; /* Prevent input from shrinking */
+    flex-shrink: 0;
+    /* Prevent input from shrinking */
     padding-bottom: 5px;
 }
 

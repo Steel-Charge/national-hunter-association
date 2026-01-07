@@ -259,7 +259,7 @@ interface HunterState {
     claimAgencyTitle: (title: Title) => Promise<void>;
     updateAgencyTitleVisibility: (titleName: string, isHidden: boolean) => Promise<void>;
     updateLore: (profileId: string, data: { bio?: string, managerComment?: string, videoUrl?: string, affinities?: string[], classTags?: string[], missionLogs?: any[] }) => Promise<void>;
-    updateChatProgress: (contact: string, state: ChatState) => Promise<void>;
+    updateChatProgress: (contact: string, state: ChatState | null) => Promise<void>;
 }
 
 export const useHunterStore = create<HunterState>((set, get) => ({

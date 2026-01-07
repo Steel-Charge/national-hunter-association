@@ -99,6 +99,8 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     const [chatHistory, setChatHistory] = useState<{ sender: 'Rat King' | 'Bones' | 'User', text: string, audioUrl?: string }[]>([]);
     const [currentOptions, setCurrentOptions] = useState<ChatOption[]>([]);
     const [isBlocked, setIsBlocked] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
+    const [pendingNodeId, setPendingNodeId] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const isSelf = currentUser?.id === targetProfile.id;
@@ -218,6 +220,25 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
     }, [activeContact, currentUser, updateChatProgress]);
 
+    const handleResetChat = async () => {
+        if (!activeContact || !currentUser) return;
+        if (!confirm(`Reset conversation with ${activeContact}?`)) return;
+
+        const updatedProgress = { ...currentUser.settings.chatProgress };
+        delete updatedProgress[activeContact];
+
+        await updateLore(currentUser.id, {
+            settings: {
+                ...currentUser.settings,
+                chatProgress: updatedProgress
+            }
+        });
+
+        const current = activeContact;
+        setActiveContact(null);
+        setTimeout(() => setActiveContact(current), 10);
+    };
+
 
     const handleChatOption = async (option: ChatOption) => {
         if (!currentUser || !activeContact) return;
@@ -228,70 +249,78 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             ...chatHistory,
             { sender: 'User' as const, text: option.label }
         ];
+        setChatHistory(newHistory);
+        setCurrentOptions([]); // Hide options while "processing"
 
-        // 2. Process Next Node
-        let nextNodeId = option.nextId;
-        let nextNode = chatGraph[nextNodeId];
-        let blocked = isBlocked;
-
-        // Special Block Logic for Bones
-        if (nextNodeId === 'b_blocked') {
-            blocked = true;
-        }
-
-        // 3. Add Next Node(s) response to history
-        // Iterate until we hit options or end
-        while (nextNode) {
-            // Check constraints
-            if (nextNode.reqTimeWait) {
-                // Stop here.
-                // We need to store that we are waiting at this node.
-                break;
-            }
-
-            if (nextNode.text) {
-                newHistory.push({
-                    sender: nextNode.speaker as any,
-                    text: nextNode.text,
-                    audioUrl: nextNode.audioUrl
-                });
-            }
-
-            if (nextNode.isEnd || nextNode.options) {
-                break;
-            }
-
-            if (nextNode.nextId) {
-                nextNodeId = nextNode.nextId;
-                nextNode = chatGraph[nextNodeId];
-            } else {
-                break;
-            }
-        }
-
-        // 4. Grant Rewards
+        // 2. Grant Rewards
         if (option.rewardTitle) {
-            // Claim dummy quest to grant title
             const questId = `chat_reward_${option.rewardTitle.name.toLowerCase().replace(/ /g, '_')}`;
             await claimQuest(questId, option.rewardTitle);
-
-            // Show alert?? Or just let the popup handle it?
-            // The store's claimQuest handles notifications usually? 
-            // The layout usually handles TitleCongratulationModal by watching store.unlockedTitles.
         }
 
-        // 5. Update State
+        // 3. Start Typing next node
+        setPendingNodeId(option.nextId);
+        setIsTyping(true);
+
+        // Save progress (User msg)
         const newState: ChatState = {
-            currentNodeId: nextNodeId,
+            currentNodeId: option.nextId,
+            history: newHistory,
+            lastInteractionTime: Date.now(),
+            isBlocked: isBlocked
+        };
+        await updateChatProgress(activeContact, newState);
+    };
+
+    const handleScreenClick = async () => {
+        if (!isTyping || !pendingNodeId || !activeContact) return;
+
+        const chatGraph = activeContact === 'Rat King' ? RAT_KING_CHAT : BONES_CHAT;
+        let node = chatGraph[pendingNodeId];
+        if (!node) {
+            setIsTyping(false);
+            setPendingNodeId(null);
+            return;
+        }
+
+        // 1. Reveal current pending node
+        const newHistory = [...chatHistory];
+        if (node.text) {
+            newHistory.push({
+                sender: node.speaker as any,
+                text: node.text,
+                audioUrl: node.audioUrl
+            });
+        }
+        setChatHistory(newHistory);
+        setIsTyping(false);
+
+        let blocked = isBlocked;
+        if (pendingNodeId === 'b_blocked') {
+            blocked = true;
+            setIsBlocked(true);
+        }
+
+        // 2. Decide what's next
+        let nextId = node.nextId;
+        let nextNode = nextId ? chatGraph[nextId] : null;
+
+        // If next is NPC dialogue (not user options, not end), start typing again
+        if (nextNode && !nextNode.options && !nextNode.isEnd && !nextNode.reqRank && !nextNode.reqTimeWait) {
+            setPendingNodeId(nextId!);
+            setTimeout(() => setIsTyping(true), 600);
+        } else {
+            setPendingNodeId(nextId || pendingNodeId);
+            setCurrentOptions(node.options || []);
+        }
+
+        // 3. Update Persistence
+        const newState: ChatState = {
+            currentNodeId: nextId || pendingNodeId,
             history: newHistory,
             lastInteractionTime: Date.now(),
             isBlocked: blocked
         };
-
-        setChatHistory(newHistory);
-        setCurrentOptions(nextNode?.options || []);
-        setIsBlocked(blocked);
-
         await updateChatProgress(activeContact, newState);
     };
 
@@ -330,32 +359,9 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                     }
 
                     if (canProceed) {
-                        // Advance!
-                        nextNodeId = intendedNext.id;
-                        changed = true;
-                        // Add the new text
-                        // Process chain until options/end
-                        let tempNode = intendedNext;
-                        while (tempNode) {
-                            if (tempNode.text) {
-                                newHistory.push({
-                                    sender: tempNode.speaker as any,
-                                    text: tempNode.text,
-                                    audioUrl: tempNode.audioUrl
-                                });
-                            }
-
-                            if (tempNode.options || tempNode.isEnd) {
-                                nextNodeId = tempNode.id;
-                                break;
-                            }
-                            if (tempNode.nextId) {
-                                nextNodeId = tempNode.nextId;
-                                tempNode = chatGraph[nextNodeId];
-                            } else {
-                                break;
-                            }
-                        }
+                        // Start NPC typing the revealed node
+                        setPendingNodeId(intendedNext.id);
+                        setIsTyping(true);
                     }
                 }
             }
@@ -709,28 +715,49 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                 </div>
                             ) : (
                                 <>
-                                    <div className={styles.chatHeader} style={{ padding: '15px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div className={styles.chatHeader} style={{ padding: '15px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <button
+                                                onClick={() => setActiveContact(null)}
+                                                style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                            >
+                                                <ChevronLeft size={24} />
+                                            </button>
+                                            <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
+                                                {activeContact === 'Rat King' ? 'Rat King 🐀👑' : 'Bones (Manager)'}
+                                            </span>
+                                        </div>
                                         <button
-                                            onClick={() => setActiveContact(null)}
-                                            style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                            onClick={handleResetChat}
+                                            style={{ background: 'transparent', border: 'none', color: '#ff4444', fontSize: '0.7rem', cursor: 'pointer', opacity: 0.6 }}
                                         >
-                                            <ChevronLeft size={24} />
+                                            RESET
                                         </button>
-                                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
-                                            {activeContact === 'Rat King' ? 'Rat King 🐀👑' : 'Bones (Manager)'}
-                                        </span>
                                     </div>
 
-                                    <div className={styles.chatMessages} style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '20px', flex: 1, overflowY: 'auto' }}>
+                                    <div
+                                        className={styles.chatMessages}
+                                        onClick={handleScreenClick}
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '10px',
+                                            padding: '20px',
+                                            flex: 1,
+                                            overflowY: 'auto',
+                                            cursor: isTyping ? 'pointer' : 'default'
+                                        }}
+                                    >
                                         {chatHistory.map((m, i) => (
                                             <div key={i} className={m.sender === 'User' ? styles.userMsg : styles.ratKingMsg} style={{ alignSelf: m.sender === 'User' ? 'flex-end' : 'flex-start' }}>
                                                 <div className={styles.msg} style={{
                                                     background: m.sender === 'User' ? 'var(--rank-color)' : '#333',
-                                                    color: 'white',
+                                                    color: m.sender === 'User' ? 'black' : 'white',
                                                     padding: '10px 15px',
                                                     borderRadius: '15px',
-                                                    maxWidth: '80%',
-                                                    whiteSpace: 'pre-wrap'
+                                                    maxWidth: '85%',
+                                                    whiteSpace: 'pre-wrap',
+                                                    fontWeight: m.sender === 'User' ? 'bold' : 'normal'
                                                 }}>
                                                     {m.text.replace(/\[username\]/g, currentUser?.name || 'Hunter')}
                                                     {m.audioUrl && (
@@ -742,8 +769,18 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                                 </div>
                                             </div>
                                         ))}
+
+                                        {isTyping && (
+                                            <div className={styles.typingIndicator}>
+                                                <div className={styles.typingDot} />
+                                                <div className={styles.typingDot} />
+                                                <div className={styles.typingDot} />
+                                            </div>
+                                        )}
                                         <div ref={scrollRef} />
                                     </div>
+
+                                    {isTyping && <div className={styles.tapPrompt}>Tap to reveal message</div>}
 
                                     <div className={styles.chatInputArea} style={{ padding: '15px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                                         {isBlocked ? (
