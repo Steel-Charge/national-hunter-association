@@ -162,80 +162,61 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         const chatGraph = activeContact === 'Rat King' ? RAT_KING_CHAT : BONES_CHAT;
         const progress = currentUser.settings.chatProgress?.[activeContact];
 
-        // Initialize if empty
-        let currentNodeId = progress?.currentNodeId || 'root';
-        let history = progress?.history || [];
-        let blocked = progress?.isBlocked || false;
+        if (!progress) {
+            // First time initialization - process until we hit options or end
+            let currentPathId = 'root';
+            let initialHistory: any[] = [];
+            let currentNode = chatGraph[currentPathId];
 
-        // Auto-advance logic (recursion for multiple skip nodes)
-        const advanceNode = (nodeId: string): string => {
-            const node = chatGraph[nodeId];
-            if (!node) return nodeId;
+            while (currentNode) {
+                if (currentNode.text) {
+                    initialHistory.push({
+                        sender: currentNode.speaker,
+                        text: currentNode.text, // Store raw text with placeholder
+                        audioUrl: currentNode.audioUrl
+                    });
+                }
 
-            // Check requirements
-            if (node.reqRank) {
-                const currentRank = calculateOverallRank(currentUser.testScores, currentUser.profileType);
-                if (RANKS_ORDER.indexOf(currentRank as Rank) < RANKS_ORDER.indexOf(node.reqRank as Rank)) {
-                    return nodeId; // Wait at this node (which should probably be the predecessor or a placeholder)
+                if (currentNode.options || currentNode.isEnd) {
+                    break;
+                }
+
+                if (currentNode.nextId) {
+                    currentPathId = currentNode.nextId;
+                    currentNode = chatGraph[currentPathId];
+                } else {
+                    break;
                 }
             }
 
-            if (node.reqTimeWait) {
-                const lastTime = progress?.lastInteractionTime || 0;
-                const hoursPassed = (Date.now() - lastTime) / (1000 * 60 * 60);
-                if (hoursPassed < node.reqTimeWait) {
-                    return nodeId; // Wait here
-                }
-            }
+            const initialState: ChatState = {
+                currentNodeId: currentPathId,
+                history: initialHistory,
+                lastInteractionTime: Date.now(),
+                isBlocked: false
+            };
 
-            // Push to history if not already there (simple check)
-            // Note: History management in a graph is tricky. We'll rely on the stored history.
-            // If the node has text and is not in history, add it? 
-            // Better: Re-construct view based on traversed nodes? 
-            // For now: We rely on 'history' being the source of truth for display, 
-            // and node traversal adds to it.
+            setChatHistory(initialHistory);
+            setCurrentOptions(chatGraph[currentPathId]?.options || []);
+            setIsBlocked(false);
 
-            // If this node is "new" (not the stored current one), we add it. 
-            // But here we are just calculating the target node.
+            // Persist the start!
+            updateChatProgress(activeContact, initialState);
+            return;
+        }
 
-            if (node.nextId && !node.options && !node.isEnd) {
-                return advanceNode(node.nextId);
-            }
-            return nodeId;
-        };
-
-        // If we are just opening, we don't auto-advance purely on load unless it's a "Wait" node that finished.
-        // But for simplicity, we'll handle interactions via user input or "Continue" clicks.
-        // Actually, Rat King "C-Rank" logic needs auto-trigger.
+        // Resume existing chat
+        let currentNodeId = progress.currentNodeId;
+        let history = progress.history;
+        let blocked = progress.isBlocked || false;
 
         const currentNode = chatGraph[currentNodeId];
 
-        // Populate options
-        if (currentNode?.options) {
-            setCurrentOptions(currentNode.options);
-        } else if (currentNode?.isEnd) {
-            setCurrentOptions([]);
-            // If it's the "C-Rank Start" node, check logic
-            if (currentNode.nextId) {
-                // Check if we can auto-advance from an end node (like the wait node)
-                const nextNode = chatGraph[currentNode.nextId];
-                if (nextNode?.reqRank) {
-                    const currentRank = calculateOverallRank(currentUser.testScores, currentUser.profileType);
-                    if (RANKS_ORDER.indexOf(currentRank as Rank) >= RANKS_ORDER.indexOf(nextNode.reqRank as Rank)) {
-                        // We can advance!
-                        // But we need to trigger the update.
-                        // We'll leave it for now and handle it in a "check status" effect or generic advancer.
-                    }
-                }
-            }
-        } else {
-            setCurrentOptions([]);
-        }
-
+        setCurrentOptions(currentNode?.options || []);
         setChatHistory(history);
         setIsBlocked(blocked);
 
-    }, [activeContact, currentUser]);
+    }, [activeContact, currentUser, updateChatProgress]);
 
 
     const handleChatOption = async (option: ChatOption) => {
@@ -751,7 +732,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                                     maxWidth: '80%',
                                                     whiteSpace: 'pre-wrap'
                                                 }}>
-                                                    {m.text}
+                                                    {m.text.replace(/\[username\]/g, currentUser?.name || 'Hunter')}
                                                     {m.audioUrl && (
                                                         <div style={{ marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(0,0,0,0.2)', padding: '5px 10px', borderRadius: '10px' }}>
                                                             <Mic size={16} />
