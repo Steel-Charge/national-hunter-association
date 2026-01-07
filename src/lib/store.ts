@@ -9,12 +9,19 @@ export interface Title {
     is_hidden?: boolean;
 }
 
+export interface ChatState {
+    currentNodeId: string;
+    history: { sender: 'Rat King' | 'Bones' | 'User'; text: string; audioUrl?: string }[];
+    lastInteractionTime?: number; // timestamp in ms
+    isBlocked?: boolean;
+}
+
 export interface UserSettings {
     statsCalculator: boolean;
     theme: Rank | null;
-    // Optional special theme unlocked by title rarities
     specialTheme?: 'rare' | 'epic' | 'legendary' | 'mythic' | null;
     exclusiveGlitch?: boolean;
+    chatProgress?: Record<string, ChatState>; // key: 'Rat King' | 'Bones'
 }
 
 export interface UserProfile {
@@ -252,6 +259,7 @@ interface HunterState {
     claimAgencyTitle: (title: Title) => Promise<void>;
     updateAgencyTitleVisibility: (titleName: string, isHidden: boolean) => Promise<void>;
     updateLore: (profileId: string, data: { bio?: string, managerComment?: string, videoUrl?: string, affinities?: string[], classTags?: string[], missionLogs?: any[] }) => Promise<void>;
+    updateChatProgress: (contact: string, state: ChatState) => Promise<void>;
 }
 
 export const useHunterStore = create<HunterState>((set, get) => ({
@@ -808,6 +816,25 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             console.error('Error fetching requests for user:', error);
         }
         return [];
+    },
+
+    updateChatProgress: async (contact: string, state: ChatState) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        // Optimistic update
+        const newSettings = {
+            ...profile.settings,
+            chatProgress: {
+                ...(profile.settings.chatProgress || {}),
+                [contact]: state
+            }
+        };
+
+        set({ profile: { ...profile, settings: newSettings } });
+
+        // DB Update
+        await get().updateSettings({ chatProgress: newSettings.chatProgress });
     },
 
     approveRequest: async (requestId: string, username: string) => {
