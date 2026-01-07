@@ -316,8 +316,8 @@ export const BONES_CHAT: ChatGraph = {
         speaker: 'Bones',
         text: "Don’t have time to chat, This line should be used to discuss Missions only.\nUnderstood?",
         options: [
-            { label: "Understood😐", nextId: 'b_under' },
-            { label: "Sooo…We aren’t going to be Besties?", nextId: 'b_blocked' }
+            { label: "Understood😐", nextId: 'b_under', rewardTitle: { name: 'First Day', rarity: 'Common' } },
+            { label: "Sooo…We aren’t going to be Besties?", nextId: 'b_blocked', rewardTitle: { name: 'First Day', rarity: 'Common' } }
         ]
     },
     'b_under': {
