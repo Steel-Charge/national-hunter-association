@@ -158,65 +158,37 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     };
 
     // Load Chat State
-    useEffect(() => {
+        useEffect(() => {
         if (!activeContact || !currentUser) return;
 
         const chatGraph = activeContact === 'Rat King' ? RAT_KING_CHAT : BONES_CHAT;
         const progress = currentUser.settings.chatProgress?.[activeContact];
 
         if (!progress) {
-            // First time initialization - process until we hit options or end
-            let currentPathId = 'root';
-            let initialHistory: any[] = [];
-            let currentNode = chatGraph[currentPathId];
-
-            while (currentNode) {
-                if (currentNode.text) {
-                    initialHistory.push({
-                        sender: currentNode.speaker,
-                        text: currentNode.text, // Store raw text with placeholder
-                        audioUrl: currentNode.audioUrl
-                    });
-                }
-
-                if (currentNode.options || currentNode.isEnd) {
-                    break;
-                }
-
-                if (currentNode.nextId) {
-                    currentPathId = currentNode.nextId;
-                    currentNode = chatGraph[currentPathId];
-                } else {
-                    break;
-                }
-            }
-
-            const initialState: ChatState = {
-                currentNodeId: currentPathId,
-                history: initialHistory,
-                lastInteractionTime: Date.now(),
-                isBlocked: false
-            };
-
-            setChatHistory(initialHistory);
-            setCurrentOptions(chatGraph[currentPathId]?.options || []);
+            // First time initialization - start NPC typing
+            setChatHistory([]);
+            setCurrentOptions([]);
             setIsBlocked(false);
-
-            // Persist the start!
-            updateChatProgress(activeContact, initialState);
+            setPendingNodeId('root');
+            setIsTyping(true);
             return;
         }
 
         // Resume existing chat
-        let currentNodeId = progress.currentNodeId;
-        let history = progress.history;
-        let blocked = progress.isBlocked || false;
-
-        const currentNode = chatGraph[currentNodeId];
-
-        setCurrentOptions(currentNode?.options || []);
-        setChatHistory(history);
-        setIsBlocked(blocked);
+        const currentNode = chatGraph[progress.currentNodeId];
+        setChatHistory(progress.history);
+        setIsBlocked(progress.isBlocked || false);
+        
+        // If we were in the middle of a non-option sequence, we shouldn't be, 
+        // because we only save at options or isEnd.
+        // But if we are at isEnd and there's a nextId, we might need to trigger typing.
+        if (currentNode?.isEnd && currentNode.nextId) {
+            setPendingNodeId(currentNode.nextId);
+            // We'll let checkProgression handle it if there's a gate.
+        } else {
+            setPendingNodeId(null);
+            setCurrentOptions(currentNode?.options || []);
+        }
 
     }, [activeContact, currentUser, updateChatProgress]);
 
