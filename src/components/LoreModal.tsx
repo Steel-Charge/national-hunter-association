@@ -706,7 +706,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         onClick={() => setActiveContact('Rat King')}
                                         style={{ display: 'flex', alignItems: 'center', padding: '15px 20px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.1)' }}
                                     >
-                                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#333', marginRight: '15px' }} />
+                                        <img src="/ratking.png" alt="Rat King" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', marginRight: '15px' }} />
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                                             <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>Rat King 🐀👑</span>
                                             {currentUser?.settings.chatProgress?.['Rat King'] && (
