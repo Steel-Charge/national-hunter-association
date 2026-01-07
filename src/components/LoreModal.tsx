@@ -405,8 +405,6 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         }
     }, [isOpen, targetProfile]);
 
-    if (!isOpen) return null;
-
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
