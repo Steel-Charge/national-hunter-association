@@ -9,11 +9,12 @@ interface TitleSelectionModalProps {
     unlockedTitles: Title[];
     rankColor: string;
     role: string;
+    agencyName?: string;
 }
 
 const RARITIES = ['Mythic', 'Legendary', 'Epic', 'Rare', 'Common'];
 
-export default function TitleSelectionModal({ isOpen, onClose, unlockedTitles, rankColor, role }: TitleSelectionModalProps) {
+export default function TitleSelectionModal({ isOpen, onClose, unlockedTitles, rankColor, role, agencyName }: TitleSelectionModalProps) {
     const { updateTitleVisibility } = useHunterStore();
     const [filter, setFilter] = useState<string | null>(null);
     const [localTitles, setLocalTitles] = useState<Title[]>(unlockedTitles);
@@ -87,7 +88,7 @@ export default function TitleSelectionModal({ isOpen, onClose, unlockedTitles, r
                                 >
                                     {title.rarity}
                                 </span>
-                                <span className={styles.titleName}>{getDisplayTitle(title.name, role)}</span>
+                                <span className={styles.titleName}>{getDisplayTitle(title.name, role, agencyName)}</span>
                             </div>
                             <button
                                 onClick={() => toggleLocalVisibility(title.name)}

@@ -79,6 +79,17 @@ export default function HunterProfilePage() {
                 .select('quest_id')
                 .eq('profile_id', profileData.id);
 
+            // 4. Get Agency Name
+            let agencyName: string | undefined;
+            if (profileData.agency_id) {
+                const { data: agencyData } = await supabase
+                    .from('agencies')
+                    .select('name')
+                    .eq('id', profileData.agency_id)
+                    .single();
+                if (agencyData) agencyName = agencyData.name;
+            }
+
             const userProfile: UserProfile = {
                 id: profileData.id,
                 name: profileData.name,
@@ -97,6 +108,7 @@ export default function HunterProfilePage() {
                 profileType: profileData.profile_type || 'male_20_25',
                 role: profileData.role || 'Hunter',
                 agencyId: profileData.agency_id,
+                agencyName: agencyName,
                 bio: profileData.bio,
                 managerComment: profileData.manager_comment,
                 affinities: profileData.affinities || [],

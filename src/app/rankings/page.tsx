@@ -86,7 +86,7 @@ export default function RankingsPage() {
                 {(() => {
                     const titleName = profile.activeTitle?.name || 'Hunter';
                     const rarity = profile.activeTitle?.rarity || 'Common';
-                    const displayTitle = getDisplayTitle(titleName, profile.role);
+                    const displayTitle = getDisplayTitle(titleName, profile.role, profile.agencyName);
                     const isDefault = isDefaultTitle(titleName);
                     // If default, use rank color. Else uses rarity color.
                     const titleColor = isDefault ? rankColor : `var(--rarity-${rarity.toLowerCase()})`;

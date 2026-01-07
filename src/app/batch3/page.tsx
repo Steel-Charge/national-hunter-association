@@ -213,7 +213,7 @@ export default function AgencyPage() {
                     {(() => {
                         const titleName = profile.activeTitle?.name || 'Hunter';
                         const rarity = profile.activeTitle?.rarity || 'Common';
-                        const displayTitle = getDisplayTitle(titleName, profile.role);
+                        const displayTitle = getDisplayTitle(titleName, profile.role, profile.agencyName);
                         const isDefault = isDefaultTitle(titleName);
                         const titleColor = isDefault ? rankColor : `var(--rarity-${rarity.toLowerCase()})`;
 

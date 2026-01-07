@@ -76,12 +76,17 @@ export const isDefaultTitle = (titleName: string): boolean => {
     return titleName === 'Hunter';
 };
 
-export const getDisplayTitle = (titleName: string, role: string | undefined): string => {
+export const getDisplayTitle = (titleName: string, role: string | undefined, agencyName?: string): string => {
     if (!isDefaultTitle(titleName)) return titleName;
 
-    if (role === 'Captain') return 'Captain';
     if (role === 'Solo') return 'Nameless';
-    return 'Hunter';
+
+    const prefix = agencyName ? `${agencyName} ` : '';
+
+    if (role === 'Captain') return `${prefix}Captain`;
+
+    // Default / Hunter role / Agency Member
+    return agencyName ? `${agencyName} Agent` : 'Hunter';
 };
 
 const DEFAULT_PROFILE: UserProfile = {

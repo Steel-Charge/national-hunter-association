@@ -41,7 +41,7 @@ export default function ProfileView({ profile, overallRank, themeRank, specialTh
                         {(() => {
                             const titleName = profile.activeTitle?.name || 'Hunter';
                             const rarity = profile.activeTitle?.rarity || 'Common';
-                            const displayTitle = getDisplayTitle(titleName, profile.role);
+                            const displayTitle = getDisplayTitle(titleName, profile.role, profile.agencyName);
                             const isDefault = isDefaultTitle(titleName);
                             // If default, use rank color (colorVar). Else use rarity color.
                             const titleColor = isDefault ? colorVar : `var(--rarity-${rarity.toLowerCase()})`;
@@ -69,7 +69,7 @@ export default function ProfileView({ profile, overallRank, themeRank, specialTh
                     <div className={styles.badges}>
                         {displayedTitles.map((title, i) => {
                             const isMythicTitle = title.rarity?.toLowerCase() === 'mythic';
-                            const displayTitle = getDisplayTitle(title.name, profile.role);
+                            const displayTitle = getDisplayTitle(title.name, profile.role, profile.agencyName);
                             const isDefault = isDefaultTitle(title.name);
                             const titleColor = isDefault ? colorVar : `var(--rarity-${title.rarity?.toLowerCase() || 'common'})`;
 
@@ -125,6 +125,7 @@ export default function ProfileView({ profile, overallRank, themeRank, specialTh
                 unlockedTitles={profile.unlockedTitles}
                 rankColor={colorVar}
                 role={profile.role}
+                agencyName={profile.agencyName}
             />
         </div>
     );
