@@ -818,23 +818,27 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         return [];
     },
 
-    updateChatProgress: async (contact: string, state: ChatState) => {
+    updateChatProgress: async (contact: string, state: ChatState | null) => {
         const profile = get().profile;
         if (!profile) return;
 
         // Optimistic update
+        const updatedChatProgress = { ...(profile.settings.chatProgress || {}) };
+        if (state === null) {
+            delete updatedChatProgress[contact];
+        } else {
+            updatedChatProgress[contact] = state;
+        }
+
         const newSettings = {
             ...profile.settings,
-            chatProgress: {
-                ...(profile.settings.chatProgress || {}),
-                [contact]: state
-            }
+            chatProgress: updatedChatProgress
         };
 
         set({ profile: { ...profile, settings: newSettings } });
 
         // DB Update
-        await get().updateSettings({ chatProgress: newSettings.chatProgress });
+        await get().updateSettings({ chatProgress: updatedChatProgress });
     },
 
     approveRequest: async (requestId: string, username: string) => {

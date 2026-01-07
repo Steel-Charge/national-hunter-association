@@ -224,16 +224,9 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         if (!activeContact || !currentUser) return;
         if (!confirm(`Reset conversation with ${activeContact}?`)) return;
 
-        const updatedProgress = { ...currentUser.settings.chatProgress };
-        delete updatedProgress[activeContact];
+        await updateChatProgress(activeContact, null);
 
-        await updateLore(currentUser.id, {
-            settings: {
-                ...currentUser.settings,
-                chatProgress: updatedProgress
-            }
-        });
-
+        // Force re-init by flickering active contact
         const current = activeContact;
         setActiveContact(null);
         setTimeout(() => setActiveContact(current), 10);
