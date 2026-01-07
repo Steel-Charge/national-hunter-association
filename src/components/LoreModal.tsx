@@ -306,8 +306,6 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             await updateChatProgress(activeContact, newState);
         }
     };
-        await updateChatProgress(activeContact, newState);
-    };
 
     // Check for 24h wait or Rank unlock periodically or on mount
     useEffect(() => {
@@ -367,12 +365,18 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         checkProgression();
     }, [activeContact, currentUser, updateChatProgress]);
 
-    useEffect(() => {
+        useEffect(() => {
         if (isOpen) {
-            // ... [Rest of existing load logic]
+            setBio(targetProfile.bio || '');
+            setAffinities(targetProfile.affinities || []);
+            setClassTags(targetProfile.classTags || []);
+            setVideoUrl(targetProfile.videoUrl || '');
+            setManagerComment(targetProfile.managerComment || '');
+            
             const initialLogs = { ...DEFAULT_LOGS };
-            // Use original load logic for non-chat stuff
-            // ...
+            if (targetProfile.missionLogs) {
+                Object.assign(initialLogs, targetProfile.missionLogs);
+            }
             setLocalLogs(initialLogs);
         }
     }, [isOpen, targetProfile]);
