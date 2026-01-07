@@ -176,18 +176,25 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
         // Resume existing chat
         const currentNode = chatGraph[progress.currentNodeId];
+        const lastMsgInHistory = progress.history[progress.history.length - 1];
+        const hasTextToBeTyped = currentNode?.text && (!lastMsgInHistory || lastMsgInHistory.text !== currentNode.text);
+
         setChatHistory(progress.history);
         setIsBlocked(progress.isBlocked || false);
         
-        // If we were in the middle of a non-option sequence, we shouldn't be, 
-        // because we only save at options or isEnd.
-        // But if we are at isEnd and there's a nextId, we might need to trigger typing.
-        if (currentNode?.isEnd && currentNode.nextId) {
-            setPendingNodeId(currentNode.nextId);
-            // We'll let checkProgression handle it if there's a gate.
+        if (hasTextToBeTyped) {
+            // We need to type this node!
+            setPendingNodeId(progress.currentNodeId);
+            setIsTyping(true);
+            setCurrentOptions([]);
         } else {
-            setPendingNodeId(null);
-            setCurrentOptions(currentNode?.options || []);
+            // Check if we reached an end node that now has a satisfied gate
+            if (currentNode?.isEnd && currentNode.nextId) {
+                setPendingNodeId(currentNode.nextId);
+            } else {
+                setPendingNodeId(null);
+                setCurrentOptions(currentNode?.options || []);
+            }
         }
 
     }, [activeContact, currentUser, updateChatProgress]);
