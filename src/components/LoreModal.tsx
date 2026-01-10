@@ -183,18 +183,10 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             const rootNode = chatGraph['root'];
             const initialHistory = [{ sender: activeContact, text: rootNode.text, showSeparator: false }];
             setChatHistory(initialHistory);
-            // Deciding what's next for initialization
-            if (rootNode.nextId) {
-                setPendingNodeId(rootNode.nextId);
-                // Delay typing animation start for realism
-                setTimeout(() => setIsTyping(true), 1000);
-                setCurrentOptions([]);
-            } else {
-                setPendingNodeId(null);
-                setIsTyping(false);
-                setCurrentOptions(rootNode.options || []);
-            }
+            setIsBlocked(false);
 
+            // We save 'root' as the current node, but the resume logic will 
+            // pick up that it needs to advance to nextId immediately.
             updateChatProgress(activeContact, {
                 currentNodeId: 'root',
                 history: initialHistory,
@@ -213,18 +205,27 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         setIsBlocked(progress.isBlocked || false);
 
         if (hasTextToBeTyped) {
-            // We need to type this node!
             setPendingNodeId(progress.currentNodeId);
             setIsTyping(true);
             setCurrentOptions([]);
-        } else {
-            // Check if we reached an end node that now has a satisfied gate
-            if (currentNode?.isEnd && currentNode.nextId) {
+        } else if (currentNode?.nextId) {
+            // Auto-advance logic: If this node has a nextId and it's not gated
+            const nextNode = chatGraph[currentNode.nextId];
+            const isGated = nextNode?.reqRank || nextNode?.reqTimeWait;
+
+            if (!isGated && !currentNode.isEnd) {
                 setPendingNodeId(currentNode.nextId);
+                setIsTyping(true);
+                setCurrentOptions([]);
             } else {
-                setPendingNodeId(null);
-                setCurrentOptions(currentNode?.options || []);
+                setPendingNodeId(currentNode.nextId);
+                setIsTyping(false);
+                setCurrentOptions(currentNode.options || []);
             }
+        } else {
+            setPendingNodeId(null);
+            setIsTyping(false);
+            setCurrentOptions(currentNode?.options || []);
         }
 
     }, [activeContact, currentUser, updateChatProgress]);
@@ -505,7 +506,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                     }
                 </div>
 
-                <div className={styles.content} ref={scrollRef}>
+                <div className={styles.content}>
                     {activeTab === 'FILE' && (
                         <div className={styles.tabContent}>
                             <h3 className={styles.sectionTitle}>Biography:</h3>
@@ -744,7 +745,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                     <div className={styles.chatHeader} style={{ padding: '15px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                             <button
-                                                onClick={() => setActiveContact(null)}
+                                                onClick={(e) => { e.stopPropagation(); setActiveContact(null); }}
                                                 style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                                             >
                                                 <ChevronLeft size={24} />
@@ -754,7 +755,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                             </span>
                                         </div>
                                         <button
-                                            onClick={handleResetChat}
+                                            onClick={(e) => { e.stopPropagation(); handleResetChat(); }}
                                             style={{ background: 'transparent', border: 'none', color: '#ff4444', fontSize: '0.7rem', cursor: 'pointer', opacity: 0.6 }}
                                         >
                                             RESET
