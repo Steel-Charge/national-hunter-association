@@ -181,12 +181,19 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         if (!progress) {
             // First time initialization - reveal first message immediately
             const rootNode = chatGraph['root'];
-            const initialHistory = [{ sender: activeContact, text: rootNode.text }];
+            const initialHistory = [{ sender: activeContact, text: rootNode.text, showSeparator: false }];
             setChatHistory(initialHistory);
-            setCurrentOptions(rootNode.options || []);
-            setIsBlocked(false);
-            setPendingNodeId(rootNode.nextId || null);
-            setIsTyping(false);
+            // Deciding what's next for initialization
+            if (rootNode.nextId) {
+                setPendingNodeId(rootNode.nextId);
+                // Delay typing animation start for realism
+                setTimeout(() => setIsTyping(true), 1000);
+                setCurrentOptions([]);
+            } else {
+                setPendingNodeId(null);
+                setIsTyping(false);
+                setCurrentOptions(rootNode.options || []);
+            }
 
             updateChatProgress(activeContact, {
                 currentNodeId: 'root',
