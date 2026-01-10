@@ -18,6 +18,7 @@ export interface ChatNode {
     reqRank?: string; // e.g. "C"
     reqTimeWait?: number; // Hours to wait after previous node
     isEnd?: boolean; // Conversation pauses here
+    showSeparator?: boolean; // Show time break horizontal line before this node
 }
 
 export type ChatGraph = Record<string, ChatNode>;
@@ -119,6 +120,7 @@ export const RAT_KING_CHAT: ChatGraph = {
         speaker: 'Rat King',
         text: "[username]!",
         reqRank: 'C',
+        showSeparator: true,
         nextId: 'c_1'
     },
     'c_1': {

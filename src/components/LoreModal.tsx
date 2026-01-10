@@ -103,12 +103,19 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     const [videoUrl, setVideoUrl] = useState(targetProfile.videoUrl || '');
 
     // Chat Logic
-    const [chatHistory, setChatHistory] = useState<{ sender: 'Rat King' | 'Bones' | 'User', text: string, audioUrl?: string }[]>([]);
+    const [chatHistory, setChatHistory] = useState<{ sender: 'Rat King' | 'Bones' | 'User', text: string, audioUrl?: string, showSeparator?: boolean }[]>([]);
     const [currentOptions, setCurrentOptions] = useState<ChatOption[]>([]);
     const [isBlocked, setIsBlocked] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const [pendingNodeId, setPendingNodeId] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll to bottom
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [chatHistory, isTyping]);
 
     const isSelf = currentUser?.id === targetProfile.id;
     // Permissions...
@@ -278,7 +285,8 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             newHistory.push({
                 sender: node.speaker as any,
                 text: node.text,
-                audioUrl: node.audioUrl
+                audioUrl: node.audioUrl,
+                showSeparator: node.showSeparator
             });
         }
         setChatHistory(newHistory);
@@ -398,11 +406,6 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         }
     }, [isOpen, targetProfile]);
 
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }, [chatHistory, activeTab]);
 
     if (!isOpen) return null;
 
@@ -763,22 +766,52 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         }}
                                     >
                                         {chatHistory.map((m, i) => (
-                                            <div key={i} className={m.sender === 'User' ? styles.userMsg : styles.ratKingMsg} style={{ alignSelf: m.sender === 'User' ? 'flex-end' : 'flex-start' }}>
-                                                <div className={styles.msg} style={{
-                                                    background: m.sender === 'User' ? 'var(--rank-color)' : '#333',
-                                                    color: m.sender === 'User' ? 'black' : 'white',
-                                                    padding: '12px 16px',
+                                            <React.Fragment key={i}>
+                                                {m.showSeparator && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', gap: '15px', opacity: 0.3 }}>
+                                                        <div style={{ flex: 1, height: '1px', background: 'white' }} />
+                                                        <span style={{ fontSize: '0.6rem', fontWeight: 'bold', whiteSpace: 'nowrap', letterSpacing: '2px' }}>PASSAGE OF TIME</span>
+                                                        <div style={{ flex: 1, height: '1px', background: 'white' }} />
+                                                    </div>
+                                                )}
+                                                <div className={m.sender === 'User' ? styles.userMsg : styles.ratKingMsg} style={{ alignSelf: m.sender === 'User' ? 'flex-end' : 'flex-start' }}>
+                                                    <div className={styles.msg} style={{
+                                                        background: m.sender === 'User' ? 'var(--rank-color)' : '#333',
+                                                        color: m.sender === 'User' ? 'black' : 'white',
+                                                        padding: '12px 18px', // Increased horizontal padding
+                                                        borderRadius: '15px',
+                                                        maxWidth: '85%',
+                                                        minWidth: '60px', // Ensure bubble isn't too tight
+                                                        whiteSpace: 'pre-wrap',
+                                                        fontWeight: m.sender === 'User' ? 'bold' : 'normal',
+                                                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                                                        textAlign: 'left'
+                                                    }}>
+                                                        {m.text.replace(/\[username\]/g, currentUser?.name || 'Hunter')}
+                                                    </div>
+                                                </div>
+                                            </React.Fragment>
+                                        ))}
+
+                                        {isTyping && (
+                                            <div
+                                                className={styles.msg}
+                                                style={{
+                                                    background: '#333',
+                                                    padding: '12px 18px',
                                                     borderRadius: '15px',
-                                                    maxWidth: '85%',
-                                                    whiteSpace: 'pre-wrap',
-                                                    fontWeight: m.sender === 'User' ? 'bold' : 'normal',
-                                                    boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-                                                    textAlign: 'left'
-                                                }}>
-                                                    {m.text.replace(/\[username\]/g, currentUser?.name || 'Hunter')}
+                                                    width: 'fit-content',
+                                                    alignSelf: 'flex-start',
+                                                    marginBottom: '10px'
+                                                }}
+                                            >
+                                                <div className={styles.typingDots}>
+                                                    <div className={styles.dot} />
+                                                    <div className={styles.dot} />
+                                                    <div className={styles.dot} />
                                                 </div>
                                             </div>
-                                        ))}
+                                        )}
 
                                         {!isTyping && currentOptions.length > 0 && (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignSelf: 'flex-end', width: '85%', marginTop: '5px' }}>
@@ -793,11 +826,12 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                                         style={{
                                                             background: 'rgba(255,255,255,0.05)',
                                                             color: 'white',
-                                                            padding: '12px 16px',
+                                                            padding: '12px 18px',
                                                             borderRadius: '15px',
                                                             alignSelf: 'flex-end',
                                                             textAlign: 'left',
                                                             fontSize: '0.95rem',
+                                                            minWidth: '60px'
                                                         }}
                                                     >
                                                         {opt.label}
@@ -808,24 +842,13 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         <div ref={scrollRef} />
                                     </div>
 
-                                    {isTyping && (
-                                        <div
-                                            className={styles.typingBubble}
-                                            style={{
-                                                margin: '0 20px 10px',
-                                                zIndex: 5
-                                            }}
-                                        >
-                                            <div className={styles.typingDots}>
-                                                <div className={styles.dot} />
-                                                <div className={styles.dot} />
-                                                <div className={styles.dot} />
-                                            </div>
+                                    <div style={{ padding: '0 20px', height: '20px' }}>
+                                        {isTyping && (
                                             <span className={styles.typingText}>
-                                                {activeContact === 'Rat King' ? 'Rat King' : 'Bones'} is typing...
+                                                {activeContact === 'Rat King' ? 'RAT KING' : 'BONES'} IS TYPING...
                                             </span>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
 
                                     <div className={styles.phoneInputArea}>
                                         <div className={styles.inputIcons}>
