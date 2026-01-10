@@ -172,18 +172,20 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         const progress = currentUser.settings.chatProgress?.[activeContact];
 
         if (!progress) {
-            // First time initialization - start NPC typing
-            setChatHistory([]);
-            setCurrentOptions([]);
+            // First time initialization - reveal first message immediately
+            const rootNode = chatGraph['root'];
+            const initialHistory = [{ sender: activeContact, text: rootNode.text }];
+            setChatHistory(initialHistory);
+            setCurrentOptions(rootNode.options || []);
             setIsBlocked(false);
-            setPendingNodeId('root');
-            setIsTyping(true);
-            // Mark as unread initially
+            setPendingNodeId(rootNode.nextId || null);
+            setIsTyping(false);
+
             updateChatProgress(activeContact, {
                 currentNodeId: 'root',
-                history: [],
+                history: initialHistory,
                 lastInteractionTime: Date.now(),
-                hasUnread: true
+                hasUnread: false
             });
             return;
         }
@@ -686,7 +688,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                     )}
 
                     {activeTab === 'PHONE' && (
-                        <div className={styles.chatContainer}>
+                        <div className={styles.chatContainer} onClick={handleScreenClick}>
                             {activeContact === null ? (
                                 <div className={styles.contactList}>
                                     <h3 className={styles.sectionTitle} style={{ padding: '20px 20px 10px' }}>CONTACTS</h3>
@@ -770,29 +772,13 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                                     maxWidth: '85%',
                                                     whiteSpace: 'pre-wrap',
                                                     fontWeight: m.sender === 'User' ? 'bold' : 'normal',
-                                                    boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                                                    boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                                                    textAlign: 'left'
                                                 }}>
                                                     {m.text.replace(/\[username\]/g, currentUser?.name || 'Hunter')}
                                                 </div>
                                             </div>
                                         ))}
-
-                                        {isTyping && (
-                                            <div
-                                                className={styles.typingBubble}
-                                                onClick={handleScreenClick}
-                                                style={{ marginBottom: '10px' }}
-                                            >
-                                                <div className={styles.typingDots}>
-                                                    <div className={styles.dot} />
-                                                    <div className={styles.dot} />
-                                                    <div className={styles.dot} />
-                                                </div>
-                                                <span className={styles.typingText}>
-                                                    {activeContact === 'Rat King' ? 'Rat King' : 'Bones'} is typing...
-                                                </span>
-                                            </div>
-                                        )}
 
                                         {!isTyping && currentOptions.length > 0 && (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignSelf: 'flex-end', width: '85%', marginTop: '5px' }}>
@@ -810,7 +796,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                                             padding: '12px 16px',
                                                             borderRadius: '15px',
                                                             alignSelf: 'flex-end',
-                                                            textAlign: 'right',
+                                                            textAlign: 'left',
                                                             fontSize: '0.95rem',
                                                         }}
                                                     >
@@ -821,6 +807,25 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         )}
                                         <div ref={scrollRef} />
                                     </div>
+
+                                    {isTyping && (
+                                        <div
+                                            className={styles.typingBubble}
+                                            style={{
+                                                margin: '0 20px 10px',
+                                                zIndex: 5
+                                            }}
+                                        >
+                                            <div className={styles.typingDots}>
+                                                <div className={styles.dot} />
+                                                <div className={styles.dot} />
+                                                <div className={styles.dot} />
+                                            </div>
+                                            <span className={styles.typingText}>
+                                                {activeContact === 'Rat King' ? 'Rat King' : 'Bones'} is typing...
+                                            </span>
+                                        </div>
+                                    )}
 
                                     <div className={styles.phoneInputArea}>
                                         <div className={styles.inputIcons}>
