@@ -109,6 +109,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     const [isTyping, setIsTyping] = useState(false);
     const [pendingNodeId, setPendingNodeId] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const chatScrollRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -181,43 +182,55 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         if (!progress) {
             // First time initialization - reveal first message immediately
             const rootNode = chatGraph['root'];
-            const initialHistory = [{ sender: activeContact, text: rootNode.text, showSeparator: false }];
+            const initialHistory = [{
+                sender: rootNode.speaker as any,
+                text: rootNode.text,
+                audioUrl: rootNode.audioUrl,
+                showSeparator: false
+            }];
             setChatHistory(initialHistory);
             setIsBlocked(false);
 
-            // We save 'root' as the current node, but the resume logic will 
-            // pick up that it needs to advance to nextId immediately.
+            // We save 'root' as the current node
             updateChatProgress(activeContact, {
                 currentNodeId: 'root',
                 history: initialHistory,
                 lastInteractionTime: Date.now(),
                 hasUnread: false
             });
+
+            // If root has a nextId, prepare it for typing
+            if (rootNode.nextId && !rootNode.isEnd) {
+                const nextNode = chatGraph[rootNode.nextId];
+                if (!nextNode.reqRank && !nextNode.reqTimeWait) {
+                    setPendingNodeId(rootNode.nextId);
+                    setTimeout(() => setIsTyping(true), 1200);
+                } else {
+                    setCurrentOptions(rootNode.options || []);
+                }
+            } else {
+                setCurrentOptions(rootNode.options || []);
+            }
             return;
         }
 
         // Resume existing chat
         const currentNode = chatGraph[progress.currentNodeId];
-        const lastMsgInHistory = progress.history[progress.history.length - 1];
-        const hasTextToBeTyped = currentNode?.text && (!lastMsgInHistory || lastMsgInHistory.text !== currentNode.text);
-
         setChatHistory(progress.history);
         setIsBlocked(progress.isBlocked || false);
 
-        if (hasTextToBeTyped) {
-            setPendingNodeId(progress.currentNodeId);
-            setIsTyping(true);
-            setCurrentOptions([]);
-        } else if (currentNode?.nextId) {
-            // Auto-advance logic: If this node has a nextId and it's not gated
+        // Resume: If the current node in progress has a nextId and it's not gated,
+        // we should show the typing indicator for that next node.
+        if (currentNode?.nextId && !currentNode.isEnd) {
             const nextNode = chatGraph[currentNode.nextId];
             const isGated = nextNode?.reqRank || nextNode?.reqTimeWait;
 
-            if (!isGated && !currentNode.isEnd) {
+            if (!isGated) {
                 setPendingNodeId(currentNode.nextId);
                 setIsTyping(true);
                 setCurrentOptions([]);
             } else {
+                // It's gated, so we stay on current node and show its options/state
                 setPendingNodeId(currentNode.nextId);
                 setIsTyping(false);
                 setCurrentOptions(currentNode.options || []);
@@ -228,7 +241,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             setCurrentOptions(currentNode?.options || []);
         }
 
-    }, [activeContact, currentUser, updateChatProgress]);
+    }, [activeContact, currentUser]);
 
     const handleResetChat = async () => {
         if (!activeContact || !currentUser) return;
@@ -245,15 +258,14 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
     const handleChatOption = async (option: ChatOption) => {
         if (!currentUser || !activeContact) return;
-        const progress = currentUser.settings.chatProgress?.[activeContact];
 
-        // 1. Add User selection to history
+        // 1. Add User selection to history (unfaded look is handled by rendering logic)
         const newHistory = [
             ...chatHistory,
             { sender: 'User' as const, text: option.label }
         ];
         setChatHistory(newHistory);
-        setCurrentOptions([]); // IMPORTANT: Remove other options immediately
+        setCurrentOptions([]); // Hide other options
 
         // 2. Grant Rewards
         if (option.rewardTitle) {
@@ -261,11 +273,10 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             await claimQuest(questId, option.rewardTitle);
         }
 
-        // 3. Start Typing next node
+        // 3. Prepare next node
         setPendingNodeId(option.nextId);
-        setIsTyping(true);
 
-        // Save progress (User msg)
+        // Save progress immediately with User msg
         const newState: ChatState = {
             currentNodeId: option.nextId,
             history: newHistory,
@@ -274,6 +285,9 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             hasUnread: false
         };
         await updateChatProgress(activeContact, newState);
+
+        // Start typing after a brief delay
+        setTimeout(() => setIsTyping(true), 800);
     };
 
     const handleScreenClick = async () => {
@@ -310,31 +324,33 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         let nextId = node.nextId;
         let nextNode = nextId ? chatGraph[nextId] : null;
 
-        if (nextNode && !nextNode.reqRank && !nextNode.reqTimeWait) {
-            // ALWAYS type the next node if it exists and is not gated, even if it has options
+        if (nextNode && !nextNode.reqRank && !nextNode.reqTimeWait && !node.isEnd) {
+            // Prepare the next node for typing
             setPendingNodeId(nextId!);
             setTimeout(() => setIsTyping(true), 600);
-            setCurrentOptions([]); // Hide options until next node is revealed
+            setCurrentOptions([]);
 
-            // Update Persistence to the node we are ABOUT to type
+            // Update Persistence
             const newState: ChatState = {
                 currentNodeId: nextId!,
                 history: newHistory,
                 lastInteractionTime: Date.now(),
-                isBlocked: blocked
+                isBlocked: blocked,
+                hasUnread: false
             };
             await updateChatProgress(activeContact, newState);
         } else {
-            // No next sequence, or gated node
+            // No next auto-sequence, or gated node
             setPendingNodeId(nextId || pendingNodeId);
             setCurrentOptions(node.options || []);
 
-            // Persistence stays on the revealed node (or the gated one)
+            // Persistence stays on the revealed node
             const newState: ChatState = {
                 currentNodeId: nextId || pendingNodeId,
                 history: newHistory,
                 lastInteractionTime: Date.now(),
-                isBlocked: blocked
+                isBlocked: blocked,
+                hasUnread: false
             };
             await updateChatProgress(activeContact, newState);
         }
@@ -708,13 +724,15 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         onClick={() => setActiveContact('Rat King')}
                                         style={{ display: 'flex', alignItems: 'center', padding: '15px 20px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.1)', position: 'relative' }}
                                     >
-                                        <img src="/ratking.png" alt="Rat King" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', marginRight: '15px' }} />
+                                        <div style={{ position: 'relative' }}>
+                                            <img src="/ratking.png" alt="Rat King" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', marginRight: '15px' }} />
+                                            {currentUser?.settings.chatProgress?.['Rat King']?.hasUnread && (
+                                                <div className={styles.unreadDot} style={{ position: 'absolute', top: 0, right: 12 }} />
+                                            )}
+                                        </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>Rat King 🐀👑</span>
-                                                {currentUser?.settings.chatProgress?.['Rat King']?.hasUnread && (
-                                                    <div className={styles.unreadDot} />
-                                                )}
                                             </div>
                                             {currentUser?.settings.chatProgress?.['Rat King'] && (
                                                 <span style={{ fontSize: '0.8rem', color: '#888' }}>
@@ -728,13 +746,15 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         onClick={() => setActiveContact('Bones')}
                                         style={{ display: 'flex', alignItems: 'center', padding: '15px 20px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.1)', position: 'relative' }}
                                     >
-                                        <img src="/icon.png" alt="Bones" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', marginRight: '15px' }} />
+                                        <div style={{ position: 'relative' }}>
+                                            <img src="/icon.png" alt="Bones" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', marginRight: '15px' }} />
+                                            {currentUser?.settings.chatProgress?.['Bones']?.hasUnread && (
+                                                <div className={styles.unreadDot} style={{ position: 'absolute', top: 0, right: 12 }} />
+                                            )}
+                                        </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>Bones (Manager)</span>
-                                                {currentUser?.settings.chatProgress?.['Bones']?.hasUnread && (
-                                                    <div className={styles.unreadDot} />
-                                                )}
                                             </div>
                                             <span style={{ fontSize: '0.8rem', color: '#888' }}>Official NHA Channel</span>
                                         </div>
@@ -764,6 +784,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
                                     <div
                                         className={styles.chatMessages}
+                                        ref={chatScrollRef}
                                         style={{
                                             display: 'flex',
                                             flexDirection: 'column',
@@ -776,13 +797,13 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         {chatHistory.map((m, i) => (
                                             <React.Fragment key={i}>
                                                 {m.showSeparator && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', gap: '15px', opacity: 0.3 }}>
-                                                        <div style={{ flex: 1, height: '1px', background: 'white' }} />
-                                                        <span style={{ fontSize: '0.6rem', fontWeight: 'bold', whiteSpace: 'nowrap', letterSpacing: '2px' }}>PASSAGE OF TIME</span>
-                                                        <div style={{ flex: 1, height: '1px', background: 'white' }} />
+                                                    <div className={styles.passageSeparator}>
+                                                        <div className={styles.passageLine} />
+                                                        <span className={styles.passageText}>PASSAGE OF TIME</span>
+                                                        <div className={styles.passageLine} />
                                                     </div>
                                                 )}
-                                                <div className={m.sender === 'User' ? styles.userMsg : styles.ratKingMsg} style={{ alignSelf: m.sender === 'User' ? 'flex-end' : 'flex-start' }}>
+                                                <div className={m.sender === 'User' ? styles.userMsg : styles.ratKingMsg}>
                                                     <div className={styles.msg} style={{
                                                         background: m.sender === 'User' ? 'var(--rank-color)' : '#333',
                                                         color: m.sender === 'User' ? 'black' : 'white',
@@ -795,10 +816,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         ))}
 
                                         {isTyping && (
-                                            <div
-                                                className={`${styles.msg} ${styles.typingBubble}`}
-                                                style={{ marginBottom: '10px' }}
-                                            >
+                                            <div className={`${styles.msg} ${styles.typingDotsBubble}`}>
                                                 <div className={styles.typingDots}>
                                                     <div className={styles.dot} />
                                                     <div className={styles.dot} />
@@ -808,11 +826,11 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         )}
 
                                         {!isTyping && currentOptions.length > 0 && (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignSelf: 'flex-end', width: '85%', marginTop: '5px' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignSelf: 'flex-end', alignItems: 'flex-end', marginTop: '5px' }}>
                                                 {currentOptions.map((opt, i) => (
                                                     <div
                                                         key={i}
-                                                        className={`${styles.msg} ${styles.fadedOption}`}
+                                                        className={`${styles.msg} ${styles.fadedMsg}`}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleChatOption(opt);
@@ -831,9 +849,9 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                         <div ref={scrollRef} />
                                     </div>
 
-                                    <div style={{ padding: '0 20px', height: '20px' }}>
+                                    <div style={{ padding: '0 20px', height: '24px', display: 'flex', alignItems: 'center' }}>
                                         {isTyping && (
-                                            <span className={styles.typingText}>
+                                            <span className={styles.typingStatusText}>
                                                 {activeContact === 'Rat King' ? 'RAT KING' : 'BONES'} IS TYPING...
                                             </span>
                                         )}
