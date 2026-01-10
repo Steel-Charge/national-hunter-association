@@ -786,14 +786,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                                     <div className={styles.msg} style={{
                                                         background: m.sender === 'User' ? 'var(--rank-color)' : '#333',
                                                         color: m.sender === 'User' ? 'black' : 'white',
-                                                        padding: '12px 18px', // Increased horizontal padding
-                                                        borderRadius: '15px',
-                                                        maxWidth: '85%',
-                                                        minWidth: '60px', // Ensure bubble isn't too tight
-                                                        whiteSpace: 'pre-wrap',
                                                         fontWeight: m.sender === 'User' ? 'bold' : 'normal',
-                                                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-                                                        textAlign: 'left'
                                                     }}>
                                                         {m.text.replace(/\[username\]/g, currentUser?.name || 'Hunter')}
                                                     </div>
@@ -803,15 +796,8 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
                                         {isTyping && (
                                             <div
-                                                className={styles.msg}
-                                                style={{
-                                                    background: '#333',
-                                                    padding: '12px 18px',
-                                                    borderRadius: '15px',
-                                                    width: 'fit-content',
-                                                    alignSelf: 'flex-start',
-                                                    marginBottom: '10px'
-                                                }}
+                                                className={`${styles.msg} ${styles.typingBubble}`}
+                                                style={{ marginBottom: '10px' }}
                                             >
                                                 <div className={styles.typingDots}>
                                                     <div className={styles.dot} />
@@ -834,12 +820,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                                         style={{
                                                             background: 'rgba(255,255,255,0.05)',
                                                             color: 'white',
-                                                            padding: '12px 18px',
-                                                            borderRadius: '15px',
                                                             alignSelf: 'flex-end',
-                                                            textAlign: 'left',
-                                                            fontSize: '0.95rem',
-                                                            minWidth: '60px'
                                                         }}
                                                     >
                                                         {opt.label}
