@@ -14,6 +14,7 @@ export interface ChatState {
     history: { sender: 'Rat King' | 'Bones' | 'User'; text: string; audioUrl?: string }[];
     lastInteractionTime?: number; // timestamp in ms
     isBlocked?: boolean;
+    hasUnread?: boolean;
 }
 
 export interface UserSettings {
