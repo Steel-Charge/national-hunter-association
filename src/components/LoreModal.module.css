@@ -452,15 +452,19 @@
     border-radius: 15px;
     font-size: 0.95rem;
     width: fit-content;
+    min-width: 60px;
+    /* Prevent extreme squashing */
     max-width: 85%;
     line-height: 1.5;
     position: relative;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     box-sizing: border-box;
-    overflow-wrap: break-word;
     word-break: normal;
+    overflow-wrap: break-word;
     white-space: pre-wrap;
     text-align: left;
+    display: block;
+    /* Ensure block-level behavior for fit-content calculation */
 }
 
 .ratKingMsg {
