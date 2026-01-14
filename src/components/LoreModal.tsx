@@ -110,6 +110,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     const [pendingNodeId, setPendingNodeId] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
     const chatScrollRef = useRef<HTMLDivElement>(null);
+    const chatTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -204,7 +205,10 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                 const nextNode = chatGraph[rootNode.nextId];
                 if (!nextNode.reqRank && !nextNode.reqTimeWait) {
                     setPendingNodeId(rootNode.nextId);
-                    setTimeout(() => setIsTyping(true), 1200);
+                    if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+                    chatTimeoutRef.current = setTimeout(() => {
+                        setIsTyping(true);
+                    }, 1200);
                 } else {
                     setCurrentOptions(rootNode.options || []);
                 }
@@ -247,17 +251,24 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         if (!activeContact || !currentUser) return;
         if (!confirm(`Reset conversation with ${activeContact}?`)) return;
 
+        if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+        setIsTyping(false);
+        setPendingNodeId(null);
+
         await updateChatProgress(activeContact, null);
 
         // Force re-init by flickering active contact
         const current = activeContact;
-        setActiveContact(null);
-        setTimeout(() => setActiveContact(current), 10);
+        _setActiveContact(null);
+        setTimeout(() => _setActiveContact(current), 50);
     };
 
 
     const handleChatOption = async (option: ChatOption) => {
         if (!currentUser || !activeContact) return;
+
+        if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+        setIsTyping(false);
 
         // 1. Add User selection to history (unfaded look is handled by rendering logic)
         const newHistory = [
@@ -287,11 +298,15 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         await updateChatProgress(activeContact, newState);
 
         // Start typing after a brief delay
-        setTimeout(() => setIsTyping(true), 800);
+        chatTimeoutRef.current = setTimeout(() => {
+            setIsTyping(true);
+        }, 800);
     };
 
     const handleScreenClick = async () => {
         if (!isTyping || !pendingNodeId || !activeContact) return;
+
+        if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
 
         const chatGraph = activeContact === 'Rat King' ? RAT_KING_CHAT : BONES_CHAT;
         let node = chatGraph[pendingNodeId];
@@ -327,7 +342,9 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         if (nextNode && !nextNode.reqRank && !nextNode.reqTimeWait && !node.isEnd) {
             // Prepare the next node for typing
             setPendingNodeId(nextId!);
-            setTimeout(() => setIsTyping(true), 600);
+            chatTimeoutRef.current = setTimeout(() => {
+                setIsTyping(true);
+            }, 600);
             setCurrentOptions([]);
 
             // Update Persistence
