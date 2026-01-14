@@ -340,11 +340,20 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         let nextNode = nextId ? chatGraph[nextId] : null;
 
         if (nextNode && !nextNode.reqRank && !nextNode.reqTimeWait && !node.isEnd) {
-            // Prepare the next node for typing
+            // Prepare the next node
             setPendingNodeId(nextId!);
-            chatTimeoutRef.current = setTimeout(() => {
-                setIsTyping(true);
-            }, 600);
+
+            // If the next node is USER, reveal it with NO typing delay, OR very short delay
+            if (nextNode.speaker === 'User') {
+                // We DON'T set isTyping true for users. We trigger a second click or just reveal it?
+                // For better flow, we'll just set a tiny timeout to "reveal" it or allow a second click.
+                // Actually, let's just NOT set isTyping and let the user click again immediately.
+                setIsTyping(true); // We still need isTyping to be true for handleScreenClick to work on next click
+            } else {
+                chatTimeoutRef.current = setTimeout(() => {
+                    setIsTyping(true);
+                }, 600);
+            }
             setCurrentOptions([]);
 
             // Update Persistence
@@ -357,6 +366,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             };
             await updateChatProgress(activeContact, newState);
         } else {
+            // ... (rest of the logic)
             // No next auto-sequence, or gated node
             setPendingNodeId(nextId || pendingNodeId);
             setCurrentOptions(node.options || []);
@@ -832,14 +842,22 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                             </React.Fragment>
                                         ))}
 
-                                        {isTyping && (
-                                            <div className={`${styles.msg} ${styles.typingDotsBubble}`}>
-                                                <div className={styles.typingDots}>
-                                                    <div className={styles.dot} />
-                                                    <div className={styles.dot} />
-                                                    <div className={styles.dot} />
-                                                </div>
-                                            </div>
+                                        {isTyping && activeContact && (
+                                            (() => {
+                                                const graph = activeContact === 'Rat King' ? RAT_KING_CHAT : BONES_CHAT;
+                                                const node = pendingNodeId ? graph[pendingNodeId] : null;
+                                                if (node && node.speaker === 'User') return null;
+
+                                                return (
+                                                    <div className={`${styles.msg} ${styles.typingDotsBubble}`}>
+                                                        <div className={styles.typingDots}>
+                                                            <div className={styles.dot} />
+                                                            <div className={styles.dot} />
+                                                            <div className={styles.dot} />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()
                                         )}
 
                                         {!isTyping && currentOptions.length > 0 && (
@@ -867,10 +885,18 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                                     </div>
 
                                     <div style={{ padding: '0 20px', height: '24px', display: 'flex', alignItems: 'center' }}>
-                                        {isTyping && (
-                                            <span className={styles.typingStatusText}>
-                                                {activeContact === 'Rat King' ? 'RAT KING' : 'BONES'} IS TYPING...
-                                            </span>
+                                        {isTyping && activeContact && (
+                                            (() => {
+                                                const graph = activeContact === 'Rat King' ? RAT_KING_CHAT : BONES_CHAT;
+                                                const node = pendingNodeId ? graph[pendingNodeId] : null;
+                                                if (node && node.speaker === 'User') return null;
+
+                                                return (
+                                                    <span className={styles.typingStatusText}>
+                                                        {activeContact === 'Rat King' ? 'RAT KING' : 'BONES'} IS TYPING...
+                                                    </span>
+                                                );
+                                            })()
                                         )}
                                     </div>
 

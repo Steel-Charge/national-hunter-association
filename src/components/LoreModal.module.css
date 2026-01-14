@@ -459,12 +459,14 @@
     position: relative;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     box-sizing: border-box;
-    word-break: normal;
-    overflow-wrap: break-word;
+    word-break: break-word;
+    /* Better for modern browsers */
+    overflow-wrap: anywhere;
+    /* Ensures no splitting unless absolutely necessary */
     white-space: pre-wrap;
     text-align: left;
-    display: block;
-    /* Ensure block-level behavior for fit-content calculation */
+    display: inline-block;
+    /* Helps with fit-content calculation */
 }
 
 .ratKingMsg {
