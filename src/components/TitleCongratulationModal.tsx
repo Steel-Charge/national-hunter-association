@@ -4,6 +4,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Award } from 'lucide-react';
 import { Title } from '@/lib/store';
+import { playSound } from '@/lib/audio';
 
 interface TitleCongratulationModalProps {
     title: Title;
@@ -140,7 +141,7 @@ export default function TitleCongratulationModal({ title, onClose }: TitleCongra
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={onClose}
+                            onClick={() => { playSound('click'); onClose(); }}
                             style={{
                                 background: color,
                                 color: '#000',

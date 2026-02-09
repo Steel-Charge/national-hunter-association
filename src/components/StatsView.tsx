@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserProfile, useHunterStore, Title, canSelfManage, getDisplayTitle, isDefaultTitle } from '@/lib/store';
-import { getAttributes, RANK_COLORS, Rank, calculateAttributeRank, calculateOverallRank, calculateOverallPercentage } from '@/lib/game-logic';
+import { getAttributes, RANK_COLORS, RARITY_COLORS, Rank, calculateAttributeRank, calculateOverallRank, calculateOverallPercentage } from '@/lib/game-logic';
 
 import RadarChart from '@/components/RadarChart';
 import ProfileFrame from '@/components/ProfileFrame';
 import styles from '@/app/stats/page.module.css';
+import { playSound } from '@/lib/audio';
 
 interface StatsViewProps {
     profile: UserProfile;
@@ -202,17 +203,8 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
         }
 
         setIsComparing(!isComparing);
+        playSound('click');
     };
-
-    // Map rarity names to hex values (matches CSS vars in globals.css)
-    const RARITY_COLORS: Record<string, string> = {
-        rare: '#cd7f32',
-        epic: '#c0c0c0',
-        legendary: '#ffd700',
-        mythic: '#ff2a57',
-        common: '#00e5ff'
-    };
-
     // Determine hex to pass to chart and CSS var fallback
     const rankHexForChart = specialTheme ? (RARITY_COLORS[specialTheme] || RANK_COLORS[themeRank as Rank]) : (RANK_COLORS[themeRank as Rank] || '#ffffff');
 
@@ -267,7 +259,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                 <RadarChart
                     labels={radarLabels}
                     data={radarData}
-                    rankColor={RANK_COLORS[themeRank as Rank]}
+                    rankColor={rankHexForChart}
                     comparisonData={comparisonData}
                     comparisonColor={viewerRankColor}
                 />
@@ -279,7 +271,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                     <button
                         key={stat.name}
                         className={`${styles.tab} ${activeTab === stat.name ? styles.activeTab : ''}`}
-                        onClick={() => setActiveTab(stat.name)}
+                        onClick={() => { playSound('click'); setActiveTab(stat.name); }}
                         style={activeTab === stat.name ? {
                             backgroundColor: rankColor,
                             color: '#000',
@@ -431,7 +423,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                 {Object.keys(pendingChanges).length > 0 && isOwnProfile && (
                     <div style={{ marginTop: '20px', textAlign: 'center' }}>
                         <button
-                            onClick={canManageStats ? handleAdminSave : submitRequest}
+                            onClick={() => { playSound('click'); canManageStats ? handleAdminSave() : submitRequest(); }}
                             disabled={isSubmitting}
                             className={styles.submitBtn}
                             style={{
@@ -472,6 +464,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                                 <div style={{ display: 'flex', gap: '10px' }}>
                                     <button
                                         onClick={async () => {
+                                            playSound('click');
                                             await approveStatRequest(req.id);
                                             setStatRequests(prev => prev.filter(r => r.id !== req.id));
                                             if (onScoreUpdate) onScoreUpdate(req.stat_name, req.new_value);
@@ -482,6 +475,7 @@ export default function StatsView({ profile, isReadOnly = false, viewerProfile =
                                     </button>
                                     <button
                                         onClick={async () => {
+                                            playSound('click');
                                             await denyStatRequest(req.id);
                                             setStatRequests(prev => prev.filter(r => r.id !== req.id));
                                         }}

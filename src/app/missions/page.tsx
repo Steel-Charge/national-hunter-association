@@ -6,6 +6,7 @@ import { useHunterStore, canSelfManage, getDisplayTitle, isDefaultTitle } from '
 import { MISSION_PATHS, MissionPath, Quest } from '@/lib/missions';
 import LoadingScreen from '@/components/LoadingScreen';
 import styles from './page.module.css';
+import { playSound } from '@/lib/audio';
 
 import { supabase } from '@/lib/supabase';
 import { calculateOverallRank } from '@/lib/game-logic';
@@ -235,7 +236,7 @@ export default function MissionsPage() {
                             <button
                                 className={styles.claimButton}
                                 style={{ flex: 1, background: isTracked ? 'transparent' : '#fff', color: isTracked ? '#fff' : '#000', border: isTracked ? '1px solid #fff' : 'none' }}
-                                onClick={() => onTrack(quest.id)}
+                                onClick={() => { playSound('click'); onTrack(quest.id); }}
                             >
                                 {isTracked ? 'UNTRACK' : 'TRACK'}
                             </button>
@@ -243,7 +244,7 @@ export default function MissionsPage() {
                         <button
                             className={styles.claimButton}
                             style={{ flex: 2, background: (isAgency ? agencyCanClaim : true) ? (rarityColor || rankColorVar) : '#222', color: '#fff' }}
-                            onClick={() => onClaim(quest)}
+                            onClick={() => { playSound('click'); onClaim(quest); }}
                             disabled={isPending || (isAgency && !agencyCanClaim)}
                         >
                             {isPending ? 'PENDING' : (isAgency ? (agencyCanClaim ? 'CLAIM FOR AGENCY' : 'LOCKED') : (canSelfManage(profile) ? 'CLAIM' : 'REQUEST'))}
@@ -290,7 +291,7 @@ export default function MissionsPage() {
                             return (
                                 <button
                                     key={f}
-                                    onClick={() => setFilter(f)}
+                                    onClick={() => { playSound('click'); setFilter(f); }}
                                     className={`${styles.filterBtn} ${filter === f ? styles.active : ''}`}
                                 >
                                     {labels[f]}

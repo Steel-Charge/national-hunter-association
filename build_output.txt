@@ -1,0 +1,142 @@
+   ▲ Next.js 15.1.9
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./src/app/batch3/page.tsx
+32:11  Error: 'handleTabChange' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+39:12  Error: 'isEditingDescription' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+40:12  Error: 'isSearching' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+49:11  Error: 'isNamelessInBatch3' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+171:18  Error: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+259:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+279:29  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+279:196  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+418:37  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+505:49  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+533:45  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+759:29  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/batch3/[username]/missions/page.tsx
+147:31  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+./src/app/batch3/[username]/page.tsx
+8:60  Error: 'getDisplayTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+8:77  Error: 'isDefaultTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+9:32  Error: 'RANK_COLORS' is defined but never used.  @typescript-eslint/no-unused-vars
+216:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/forgot-password/page.tsx
+66:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+97:31  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+97:35  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+97:40  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./src/app/home/page.tsx
+6:10  Error: 'calculateOverallRank' is defined but never used.  @typescript-eslint/no-unused-vars
+12:10  Error: 'supabase' is defined but never used.  @typescript-eslint/no-unused-vars
+18:57  Error: 'setProfile' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/missions/page.tsx
+43:12  Error: 'isFilterMode' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+43:26  Error: 'setIsFilterMode' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+65:8  Warning: React Hook useEffect has a missing dependency: 'getTrackedQuest'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/page.tsx
+32:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+80:16  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+./src/app/rankings/page.tsx
+15:31  Error: 'getOverallRank' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+48:8  Warning: React Hook useEffect has missing dependencies: 'loading' and 'profile'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/register/page.tsx
+40:18  Error: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+50:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/role-selection/page.tsx
+12:24  Error: 'setAgencyLogo' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+13:39  Error: 'profile' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+52:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+75:29  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+98:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/settings/page.tsx
+20:11  Error: 'fileInputRef' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+67:11  Error: 'handleFileChange' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/stats/page.tsx
+3:21  Error: 'useState' is defined but never used.  @typescript-eslint/no-unused-vars
+6:10  Error: 'ATTRIBUTES' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/AgencySettings.tsx
+7:35  Error: 'UserMinus' is defined but never used.  @typescript-eslint/no-unused-vars
+17:49  Error: 'kickMember' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+179:41  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/AgencyTitlesModal.tsx
+2:10  Error: 'useState' is defined but never used.  @typescript-eslint/no-unused-vars
+15:52  Error: 'profile' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/BackgroundWrapper.tsx
+12:12  Error: 'hasError' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+59:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/LoreModal.tsx
+6:37  Error: 'ChatGraph' is defined but never used.  @typescript-eslint/no-unused-vars
+6:48  Error: 'ChatNode' is defined but never used.  @typescript-eslint/no-unused-vars
+7:19  Error: 'Send' is defined but never used.  @typescript-eslint/no-unused-vars
+7:25  Error: 'Shield' is defined but never used.  @typescript-eslint/no-unused-vars
+7:33  Error: 'Lock' is defined but never used.  @typescript-eslint/no-unused-vars
+7:39  Error: 'Eye' is defined but never used.  @typescript-eslint/no-unused-vars
+255:8  Warning: React Hook useEffect has a missing dependency: 'updateChatProgress'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+320:13  Error: 'node' is never reassigned. Use 'const' instead.  prefer-const
+347:13  Error: 'nextId' is never reassigned. Use 'const' instead.  prefer-const
+348:13  Error: 'nextNode' is never reassigned. Use 'const' instead.  prefer-const
+400:17  Error: 'currentNode' is never reassigned. Use 'const' instead.  prefer-const
+401:17  Error: 'changed' is never reassigned. Use 'const' instead.  prefer-const
+402:17  Error: 'newHistory' is never reassigned. Use 'const' instead.  prefer-const
+403:17  Error: 'nextNodeId' is never reassigned. Use 'const' instead.  prefer-const
+464:8  Warning: React Hook useEffect has a missing dependency: 'DEFAULT_LOGS'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+716:72  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+764:45  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+786:45  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+915:45  Warning: Image elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+
+./src/components/NewTitleHandler.tsx
+17:17  Error: 'knownTitles' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/components/ProfileSettings.tsx
+50:29  Error: 'calculateOverallRank' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/StatsView.tsx
+3:39  Error: 'Title' is defined but never used.  @typescript-eslint/no-unused-vars
+4:105  Error: 'calculateOverallPercentage' is defined but never used.  @typescript-eslint/no-unused-vars
+7:8  Error: 'ProfileFrame' is defined but never used.  @typescript-eslint/no-unused-vars
+19:13  Error: 'updateScore' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+19:26  Error: 'getTheme' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+19:36  Error: 'getStats' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+126:74  Error: 'requestStatUpdate' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+299:51  Error: 'index' is defined but never used.  @typescript-eslint/no-unused-vars
+426:66  Error: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+
+./src/components/TitleCongratulationModal.tsx
+5:10  Error: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/leaderboard.ts
+2:10  Error: 'getAttributes' is defined but never used.  @typescript-eslint/no-unused-vars
+2:61  Error: 'getRankFromPercentage' is defined but never used.  @typescript-eslint/no-unused-vars
+10:7  Error: 'RANK_VALUES' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/store.ts
+3:10  Error: 'ATTRIBUTES' is defined but never used.  @typescript-eslint/no-unused-vars
+279:25  Error: 'profileData' is never reassigned. Use 'const' instead.  prefer-const
+279:45  Error: 'profileError' is never reassigned. Use 'const' instead.  prefer-const
+490:25  Error: 'profileData' is never reassigned. Use 'const' instead.  prefer-const
+490:38  Error: 'error' is never reassigned. Use 'const' instead.  prefer-const
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules

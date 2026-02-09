@@ -6,11 +6,12 @@ import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import styles from './page.module.css';
 import LoadingScreen from '@/components/LoadingScreen';
-import { Settings as Cog, Lock, X, MoreVertical, Crown, UserX, Search, UserPlus, PenTool } from 'lucide-react';
+import { Settings as Cog, X, MoreVertical, Crown, UserX, Search, PenTool } from 'lucide-react';
 import { calculateOverallPercentage, getRankFromPercentage, Rank } from '@/lib/game-logic';
 import AgencySettings from '@/components/AgencySettings';
 import AgencyTitlesModal from '@/components/AgencyTitlesModal';
 import { useHunterStore, UserProfile, Agency, Title, getDisplayTitle, isDefaultTitle } from '@/lib/store';
+import { playSound } from '@/lib/audio';
 
 export default function AgencyPage() {
     const router = useRouter();
@@ -28,6 +29,10 @@ export default function AgencyPage() {
     const [loading, setLoading] = useState(true);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'agency' | 'network'>('agency');
+    const handleTabChange = (tab: 'agency' | 'network') => {
+        playSound('click');
+        setActiveTab(tab);
+    };
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [description, setDescription] = useState('');
@@ -348,7 +353,7 @@ export default function AgencyPage() {
             <div className={styles.tabContainer}>
                 <button
                     className={`${styles.tabButton} ${activeTab === 'agency' ? styles.activeTab : ''} ${isSolo ? styles.disabledTab : ''}`}
-                    onClick={() => !isSolo && setActiveTab('agency')}
+                    onClick={() => { if (!isSolo) { playSound('click'); setActiveTab('agency'); } }}
                     style={activeTab === 'agency' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
                     disabled={isSolo}
                 >
@@ -356,7 +361,7 @@ export default function AgencyPage() {
                 </button>
                 <button
                     className={`${styles.tabButton} ${activeTab === 'network' ? styles.activeTab : ''}`}
-                    onClick={() => setActiveTab('network')}
+                    onClick={() => { playSound('click'); setActiveTab('network'); }}
                     style={activeTab === 'network' ? { backgroundColor: rankColor, color: '#000', boxShadow: `0 0 15px ${rankColor}` } : { borderColor: rankColor, color: rankColor }}
                 >
                     NETWORK
@@ -407,7 +412,7 @@ export default function AgencyPage() {
                                 )}
 
                                 <div
-                                    onClick={() => handleHunterClick(member.name)}
+                                    onClick={() => { playSound('click'); handleHunterClick(member.name); }}
                                     className={styles.memberContentWrapper}
                                 >
                                     <img

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useHunterStore } from '@/lib/store';
-import { calculateOverallRank, RANK_COLORS, Rank } from '@/lib/game-logic';
+import { calculateOverallRank, RANK_COLORS, RARITY_COLORS, Rank } from '@/lib/game-logic';
 import Navbar from '@/components/Navbar';
 import ProfileView from '@/components/ProfileView';
 import LoadingScreen from '@/components/LoadingScreen';
@@ -32,6 +32,7 @@ export default function HomePage() {
     const overallRank = getOverallRank();
     const themeRank = getTheme();
     const specialTheme = profile?.settings?.specialTheme || null;
+    const rankColor = specialTheme ? (RARITY_COLORS[specialTheme] || RANK_COLORS[themeRank as Rank]) : (RANK_COLORS[themeRank as Rank] || '#ffffff');
 
     return (
         <div className={styles.container}>
@@ -92,7 +93,7 @@ export default function HomePage() {
                     isOpen={bookOpen}
                     onClose={() => setBookOpen(false)}
                     targetProfile={profile}
-                    rankColor={RANK_COLORS[themeRank] || '#00e5ff'}
+                    rankColor={rankColor}
                 />
             )}
 

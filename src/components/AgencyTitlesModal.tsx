@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Title, useHunterStore } from '@/lib/store';
 import { X, Eye, EyeOff } from 'lucide-react';
+import { playSound } from '@/lib/audio';
 
 interface Props {
     titles: Title[];
@@ -42,7 +43,7 @@ export default function AgencyTitlesModal({ titles, visibility, onClose, onUpdat
                 position: 'relative'
             }}>
                 <button
-                    onClick={onClose}
+                    onClick={() => { playSound('click'); onClose(); }}
                     style={{
                         position: 'absolute',
                         top: '1rem',
@@ -87,7 +88,7 @@ export default function AgencyTitlesModal({ titles, visibility, onClose, onUpdat
                                         <span style={{ fontSize: '0.8rem', color: '#666' }}>{title.rarity}</span>
                                     </div>
                                     <button
-                                        onClick={() => handleToggle(title.name, isHidden)}
+                                        onClick={() => { playSound('click'); handleToggle(title.name, isHidden); }}
                                         style={{
                                             background: 'transparent',
                                             border: 'none',

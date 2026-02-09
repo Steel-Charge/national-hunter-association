@@ -6,6 +6,7 @@ import { calculateOverallRank, Rank } from '@/lib/game-logic';
 import { RAT_KING_CHAT, BONES_CHAT, ChatGraph, ChatNode, ChatOption } from '@/lib/chat-data';
 import { X, Save, Send, Shield, Lock, Eye, ChevronLeft, Mic, MoreHorizontal, Image, Camera } from 'lucide-react';
 import styles from './LoreModal.module.css';
+import { playSound } from '@/lib/audio';
 
 interface MissionLog {
     date: string;
@@ -114,10 +115,6 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     const isProcessingRef = useRef(false);
     const lastSyncedNodeIdRef = useRef<string | null>(null);
 
-    const playSound = (type: 'text' | 'click') => {
-        const audio = new Audio(type === 'text' ? '/text-sound.mp3' : '/click.mp3');
-        audio.play().catch(e => console.warn('Audio play failed:', e));
-    };
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -539,7 +536,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     return (
         <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
             <div className={styles.modal} style={{ '--rank-color': rankColor } as React.CSSProperties}>
-                <button className={styles.closeX} onClick={onClose}><X size={24} /></button>
+                <button className={styles.closeX} onClick={() => { playSound('click'); onClose(); }}><X size={24} /></button>
 
                 <div className={styles.header}>
                     <h1 className={styles.headerTitle}>{targetProfile.name.toUpperCase()}</h1>
@@ -553,7 +550,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
                             <button
                                 key={t}
                                 className={`${styles.tab} ${activeTab === t ? styles.activeTab : ''}`}
-                                onClick={() => setActiveTab(t as any)}
+                                onClick={() => { playSound('click'); setActiveTab(t as any); }}
                             >
                                 {t}
                             </button>

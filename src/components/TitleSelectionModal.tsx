@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Title, useHunterStore, getDisplayTitle } from '@/lib/store';
 import { X, Filter, Save, Eye, EyeOff } from 'lucide-react';
 import styles from './TitleSelectionModal.module.css';
+import { playSound } from '@/lib/audio';
 
 interface TitleSelectionModalProps {
     isOpen: boolean;
@@ -55,14 +56,14 @@ export default function TitleSelectionModal({ isOpen, onClose, unlockedTitles, r
             <div className={styles.modal} style={{ '--rank-color': rankColor } as React.CSSProperties}>
                 <div className={styles.header}>
                     <h2>Manage Titles</h2>
-                    <button onClick={onClose} className={styles.closeBtn}><X size={24} /></button>
+                    <button onClick={() => { playSound('click'); onClose(); }} className={styles.closeBtn}><X size={24} /></button>
                 </div>
 
                 <div className={styles.filterBar}>
                     <Filter size={18} />
                     <button
                         className={`${styles.filterTab} ${!filter ? styles.activeFilter : ''}`}
-                        onClick={() => setFilter(null)}
+                        onClick={() => { playSound('click'); setFilter(null); }}
                     >
                         All
                     </button>
@@ -70,7 +71,7 @@ export default function TitleSelectionModal({ isOpen, onClose, unlockedTitles, r
                         <button
                             key={r}
                             className={`${styles.filterTab} ${filter === r ? styles.activeFilter : ''}`}
-                            onClick={() => setFilter(r)}
+                            onClick={() => { playSound('click'); setFilter(r); }}
                             style={{ '--rarity-color': `var(--rarity-${r.toLowerCase()})` } as React.CSSProperties}
                         >
                             {r}
@@ -91,7 +92,7 @@ export default function TitleSelectionModal({ isOpen, onClose, unlockedTitles, r
                                 <span className={styles.titleName}>{getDisplayTitle(title.name, role, agencyName)}</span>
                             </div>
                             <button
-                                onClick={() => toggleLocalVisibility(title.name)}
+                                onClick={() => { playSound('click'); toggleLocalVisibility(title.name); }}
                                 className={`${styles.visibilityBtn} ${title.is_hidden ? styles.hidden : ''}`}
                                 title={title.is_hidden ? "Show on profile" : "Hide from profile"}
                             >
@@ -102,7 +103,7 @@ export default function TitleSelectionModal({ isOpen, onClose, unlockedTitles, r
                 </div>
 
                 <div className={styles.footer}>
-                    <button onClick={handleSave} disabled={saving} className={styles.saveBtn}>
+                    <button onClick={() => { playSound('click'); handleSave(); }} disabled={saving} className={styles.saveBtn}>
                         <Save size={18} />
                         {saving ? 'Saving...' : 'Save Changes'}
                     </button>

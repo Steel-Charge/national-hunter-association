@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useHunterStore, Agency } from '@/lib/store';
 import styles from './AgencySettings.module.css';
 import { X, Copy, Trash2, LogOut, UserMinus, UserPlus, Building2 } from 'lucide-react';
+import { playSound } from '@/lib/audio';
 
 interface Props {
     agency: Agency;
@@ -118,7 +119,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
     return (
         <div className={styles.overlay} style={{ '--rank-color': rankColor } as React.CSSProperties}>
             <div className={styles.modal}>
-                <button className={styles.closeBtn} onClick={onClose}><X /></button>
+                <button className={styles.closeBtn} onClick={() => { playSound('click'); onClose(); }}><X /></button>
                 <h2 className={styles.title}>AGENCY SETTINGS</h2>
 
                 <div className={styles.content}>
@@ -133,14 +134,14 @@ export default function AgencySettings({ agency, onClose }: Props) {
                             </p>
                             <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
                                 <button
-                                    onClick={() => setShowJoinModal(true)}
+                                    onClick={() => { playSound('click'); setShowJoinModal(true); }}
                                     className={styles.saveBtn}
                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                                 >
                                     <UserPlus size={18} /> JOIN AGENCY
                                 </button>
                                 <button
-                                    onClick={() => setShowCreateModal(true)}
+                                    onClick={() => { playSound('click'); setShowCreateModal(true); }}
                                     className={styles.saveBtn}
                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                                 >
@@ -157,7 +158,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
                                 <div className={styles.inputGroup}>
                                     <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Agency Name" />
                                 </div>
-                                <button onClick={handleSaveName} disabled={isSavingName} className={styles.saveBtn}>
+                                <button onClick={() => { playSound('click'); handleSaveName(); }} disabled={isSavingName} className={styles.saveBtn}>
                                     {isSavingName ? 'SAVING...' : 'SAVE NAME'}
                                 </button>
                             </div>
@@ -191,7 +192,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
                                     <label htmlFor="logo-upload" className={styles.uploadBtn}>
                                         UPLOAD IMAGE
                                     </label>
-                                    <button onClick={handleSaveLogo} disabled={isSavingLogo} className={styles.saveBtn}>
+                                    <button onClick={() => { playSound('click'); handleSaveLogo(); }} disabled={isSavingLogo} className={styles.saveBtn}>
                                         {isSavingLogo ? 'SAVING...' : 'SAVE LOGO'}
                                     </button>
                                 </div>
@@ -203,7 +204,7 @@ export default function AgencySettings({ agency, onClose }: Props) {
                         <h3>INVITE CODE</h3>
                         <div className={styles.codeBox}>
                             <span>{agency.invite_code}</span>
-                            <button onClick={handleCopyCode}><Copy size={16} /></button>
+                            <button onClick={() => { playSound('click'); handleCopyCode(); }}><Copy size={16} /></button>
                         </div>
                     </div>
 

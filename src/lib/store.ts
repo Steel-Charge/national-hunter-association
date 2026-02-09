@@ -234,7 +234,7 @@ interface HunterState {
     denyStatRequest: (requestId: string) => Promise<void>;
     getStats: () => { name: string; percentage: number; rank: Rank }[];
     getOverallRank: () => Rank;
-    getTheme: () => Rank;
+    getTheme: () => string;
     initialize: () => void;
     // Agency Actions
     createAgency: (name: string, logoUrl: string) => Promise<void>;
@@ -487,7 +487,6 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         set({ loading: true });
         try {
             // Check if user exists
-            console.log('Checking if user exists...');
             let { data: profileData, error } = await supabase
                 .from('profiles')
                 .select('password')
@@ -1364,7 +1363,7 @@ export const useHunterStore = create<HunterState>((set, get) => ({
     getTheme: () => {
         const profile = get().profile;
         if (!profile) return 'E';
-        return profile.settings.theme || get().getOverallRank();
+        return (profile.settings.specialTheme || profile.settings.theme || get().getOverallRank()) as string;
     },
 
     initialize: () => {

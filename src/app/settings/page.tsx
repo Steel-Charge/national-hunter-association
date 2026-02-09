@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useHunterStore, UserSettings, Title } from '@/lib/store';
+import { useHunterStore, Title } from '@/lib/store';
 import { usePWA } from '@/context/PWAContext';
 import { Rank } from '@/lib/game-logic';
 import Navbar from '@/components/Navbar';
-import { LogOut, Image as ImageIcon, Calculator, Palette, Award, Save, Download } from 'lucide-react';
+import { LogOut, Palette, Lock, Download, Save } from 'lucide-react';
 import LoadingScreen from '@/components/LoadingScreen';
 import styles from './page.module.css';
+import { playSound } from '@/lib/audio';
 
 const RANKS: Rank[] = ['E', 'D', 'C', 'B', 'A', 'S'];
 
@@ -49,11 +50,14 @@ export default function SettingsPage() {
 
     const overallRank = getOverallRank();
     const themeRank = getTheme();
-    // Use local theme if selected, otherwise current theme
-    const currentTheme = localTheme || themeRank;
-    const rankColor = `var(--rank-${currentTheme.toLowerCase()})`;
+    // Prefer local special theme, then local rank theme, then fallback to current theme rank
+    const currentTheme = localSpecialTheme || localTheme || themeRank;
+    const rankColor = currentTheme.length === 1
+        ? `var(--rank-${currentTheme.toLowerCase()})`
+        : `var(--rarity-${currentTheme.toLowerCase()})`;
 
     const handleLogout = () => {
+        playSound('click');
         logout();
         router.push('/');
     };
@@ -63,8 +67,6 @@ export default function SettingsPage() {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
-            // Limit file size to 1MB to prevent DB issues
             if (file.size > 1024 * 1024) {
                 alert('File is too large! Please choose an image under 1MB.');
                 return;
@@ -73,7 +75,6 @@ export default function SettingsPage() {
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64 = reader.result as string;
-                console.log('File converted to Base64, length:', base64.length);
                 setLocalAvatar(base64);
                 setHasChanges(true);
             };
@@ -81,41 +82,23 @@ export default function SettingsPage() {
         }
     };
 
-    const toggleStatsCalculator = () => {
-        setLocalStatsCalc(!localStatsCalc);
-        setHasChanges(true);
-    };
-
     const handleThemeChange = (rank: Rank) => {
+        playSound('click');
         setLocalTheme(rank);
-        // Deselect any special rarity theme when choosing a rank theme
         setLocalSpecialTheme(null);
         setHasChanges(true);
     };
 
     const toggleSpecialTheme = (rarity: 'rare' | 'epic' | 'legendary' | 'mythic') => {
+        playSound('click');
         const newVal = localSpecialTheme === rarity ? null : rarity;
         setLocalSpecialTheme(newVal);
-        // If selecting a special theme, clear the rank theme selection
         if (newVal) setLocalTheme(null);
         setHasChanges(true);
     };
 
-    const handleTitleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const titleName = e.target.value;
-        const title = profile.unlockedTitles.find(t => t.name === titleName);
-        if (title) {
-            setLocalActiveTitle(title);
-            setHasChanges(true);
-        }
-    };
-
-    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setLocalName(e.target.value);
-        setHasChanges(true);
-    };
-
     const handlePasswordUpdate = async () => {
+        playSound('click');
         if (!localPassword) {
             setSaveMessage('Password cannot be empty');
             return;
@@ -137,7 +120,7 @@ export default function SettingsPage() {
     };
 
     const saveChanges = async () => {
-        // Commit all changes to store/DB
+        playSound('click');
         if (localAvatar !== profile.avatarUrl) await updateAvatar(localAvatar);
 
         if (localStatsCalc !== profile.settings.statsCalculator || localTheme !== profile.settings.theme || localSpecialTheme !== profile.settings.specialTheme) {
@@ -166,13 +149,11 @@ export default function SettingsPage() {
         setTimeout(() => setSaveMessage(''), 3000);
     };
 
-    // Helper to check if a rank is unlocked (<= overall rank)
     const isRankUnlocked = (rank: Rank) => {
         const rankValues: Record<Rank, number> = { E: 1, D: 2, C: 3, B: 4, A: 5, S: 6 };
         return rankValues[rank] <= rankValues[overallRank];
     };
 
-    // Count titles by rarity to determine unlocks for rarity themes
     const countTitlesByRarity = (rarity: string) => profile.unlockedTitles.filter(t => (t.rarity || '').toLowerCase() === rarity.toLowerCase()).length;
     const rareUnlocked = countTitlesByRarity('Rare') >= 2;
     const epicUnlocked = countTitlesByRarity('Epic') >= 2;
@@ -181,13 +162,15 @@ export default function SettingsPage() {
 
     return (
         <div className="container" style={{ '--rank-color': rankColor } as React.CSSProperties}>
+            <Navbar />
+
             <div className={styles.header}>
                 <h1 className={styles.pageTitle} style={{ color: rankColor, textShadow: `0 0 10px ${rankColor}` }}>
                     SETTINGS
                 </h1>
             </div>
 
-            {/* Theme Section - FILTERED TO ONLY SHOW UNLOCKED */}
+            {/* Theme Section */}
             <div className={styles.section} style={{ borderColor: `${rankColor}44` }}>
                 <h2 className={styles.sectionTitle} style={{ color: rankColor }}>
                     <Palette size={20} /> Change Theme
@@ -195,9 +178,9 @@ export default function SettingsPage() {
                 <div className={styles.themeGrid}>
                     {RANKS.map((rank) => {
                         const unlocked = isRankUnlocked(rank);
-                        if (!unlocked) return null; // HIDE LOCKED THEMES
+                        if (!unlocked) return null;
 
-                        const isActive = (localTheme || overallRank) === rank;
+                        const isActive = !localSpecialTheme && (localTheme || themeRank) === rank;
                         const rColor = `var(--rank-${rank.toLowerCase()})`;
 
                         return (
@@ -212,7 +195,6 @@ export default function SettingsPage() {
                         );
                     })}
 
-                    {/* Rarity themes - ALSO HIDE LOCKED */}
                     {rareUnlocked && (
                         <button
                             className={`${styles.themeBtn} ${localSpecialTheme === 'rare' ? styles.active : ''}`}
@@ -255,77 +237,84 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            {/* Reset Password Section */}
+            {/* Password Section */}
             <div className={styles.section} style={{ borderColor: `${rankColor}44` }}>
                 <h2 className={styles.sectionTitle} style={{ color: rankColor }}>
-                    Reset Password
+                    <Lock size={20} /> Security
                 </h2>
-                <div className={styles.row} style={{ flexDirection: 'column', gap: '15px', alignItems: 'stretch' }}>
+                <div className={styles.formGroup} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <input
                         type="password"
+                        placeholder="New Password"
                         value={localPassword}
                         onChange={(e) => setLocalPassword(e.target.value)}
-                        placeholder="New Password"
-                        className={styles.select}
-                        style={{ borderColor: rankColor }}
+                        className={styles.input}
+                        style={{ borderColor: `${rankColor}44`, padding: '10px', background: 'rgba(0,0,0,0.3)', color: '#fff', borderRadius: '4px' }}
                     />
                     <input
                         type="password"
+                        placeholder="Confirm Password"
                         value={localPasswordConfirm}
                         onChange={(e) => setLocalPasswordConfirm(e.target.value)}
-                        placeholder="Confirm New Password"
-                        className={styles.select}
-                        style={{ borderColor: rankColor }}
+                        className={styles.input}
+                        style={{ borderColor: `${rankColor}44`, padding: '10px', background: 'rgba(0,0,0,0.3)', color: '#fff', borderRadius: '4px' }}
                     />
                     <button
                         className={styles.themeBtn}
                         onClick={handlePasswordUpdate}
-                        style={{ backgroundColor: `${rankColor}22`, borderColor: rankColor }}
+                        style={{ borderColor: rankColor, color: rankColor }}
                     >
                         Update Password
                     </button>
+                </div>
+            </div>
 
-                    {/* Install App Button */}
+            {/* Account Actions */}
+            <div className={styles.section} style={{ borderColor: `${rankColor}44` }}>
+                <div className={styles.actionRow} style={{ display: 'flex', gap: '15px' }}>
+                    <button className={styles.logoutBtn} onClick={handleLogout} style={{ flex: 1 }}>
+                        <LogOut size={20} /> Log Out
+                    </button>
                     {isInstallable && (
                         <button
                             className={styles.themeBtn}
-                            onClick={installPWA}
-                            style={{
-                                marginTop: '10px',
-                                backgroundColor: isInstallable ? '#00cc6622' : 'transparent',
-                                borderColor: '#00cc66',
-                                color: '#00cc66'
-                            }}
+                            onClick={() => { playSound('click'); installPWA(); }}
+                            style={{ flex: 1, borderColor: '#00cc66', color: '#00cc66' }}
                         >
-                            <Download size={18} style={{ marginRight: '8px' }} />
-                            INSTALL APP
+                            <Download size={20} /> Install App
                         </button>
                     )}
                 </div>
             </div>
 
-            {/* Save Button for Theme */}
+            {/* Floating Save Button */}
             {hasChanges && (
-                <div className={styles.saveContainer}>
-                    <button className={styles.saveBtn} onClick={saveChanges} style={{ backgroundColor: rankColor, boxShadow: `0 0 15px ${rankColor}` }}>
-                        <Save size={20} /> Save Changes
+                <div className={styles.saveContainer} style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 100 }}>
+                    <button
+                        className={styles.saveBtn}
+                        onClick={saveChanges}
+                        style={{
+                            backgroundColor: rankColor,
+                            color: '#000',
+                            fontWeight: 'bold',
+                            padding: '12px 24px',
+                            borderRadius: '30px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            boxShadow: `0 0 20px ${rankColor}`
+                        }}
+                    >
+                        <Save size={20} /> SAVE CHANGES
                     </button>
                 </div>
             )}
 
-            {/* Save Message Popup */}
             {saveMessage && (
-                <div className={styles.popup}>
+                <div className={styles.popup} style={{ position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)', backgroundColor: rankColor, color: '#000', padding: '10px 20px', borderRadius: '8px', zIndex: 1000 }}>
                     {saveMessage}
                 </div>
             )}
-
-            {/* Logout Button */}
-            <button className={styles.logoutBtn} onClick={handleLogout}>
-                <LogOut size={20} /> Log Out
-            </button>
-
-            <Navbar />
         </div>
     );
 }

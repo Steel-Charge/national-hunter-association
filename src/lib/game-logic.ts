@@ -10,6 +10,14 @@ export const RANK_COLORS: Record<Rank, string> = {
   'E': '#dfdfdf', // Light Grey (#dfdfdf)
 };
 
+export const RARITY_COLORS: Record<string, string> = {
+  rare: '#cd7f32',
+  epic: '#c0c0c0',
+  legendary: '#ffd700',
+  mythic: '#ff2a57',
+  common: '#00e5ff'
+};
+
 export interface TestStandard {
   name: string;
   maxScore: number; // The value that equals 100%

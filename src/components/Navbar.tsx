@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { User, Activity, Target, Users, Trophy, Settings } from 'lucide-react';
 import { useHunterStore } from '@/lib/store';
 import styles from './Navbar.module.css';
+import { playSound } from '@/lib/audio';
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -34,6 +35,7 @@ export default function Navbar() {
                 href={profileLink}
                 className={`${styles.navItem} ${isActive(profileLink) ? styles.active : ''}`}
                 style={isActive(profileLink) ? { color: rankColor, textShadow: `0 0 5px ${rankColor}` } : {}}
+                onClick={() => playSound('click')}
             >
                 <User size={24} style={isActive(profileLink) ? { filter: `drop-shadow(0 0 5px ${rankColor})` } : {}} />
                 <span>Profile</span>
@@ -42,6 +44,7 @@ export default function Navbar() {
                 href={statsLink}
                 className={`${styles.navItem} ${isActive(statsLink) ? styles.active : ''}`}
                 style={isActive(statsLink) ? { color: rankColor, textShadow: `0 0 5px ${rankColor}` } : {}}
+                onClick={() => playSound('click')}
             >
                 <Activity size={24} style={isActive(statsLink) ? { filter: `drop-shadow(0 0 5px ${rankColor})` } : {}} />
                 <span>Stats</span>
@@ -50,6 +53,7 @@ export default function Navbar() {
                 href={missionsLink}
                 className={`${styles.navItem} ${isActive(missionsLink) ? styles.active : ''}`}
                 style={isActive(missionsLink) ? { color: rankColor, textShadow: `0 0 5px ${rankColor}` } : {}}
+                onClick={() => playSound('click')}
             >
                 <Target size={24} style={isActive(missionsLink) ? { filter: `drop-shadow(0 0 5px ${rankColor})` } : {}} />
                 <span>Missions</span>
@@ -58,6 +62,7 @@ export default function Navbar() {
                 href="/batch3"
                 className={`${styles.navItem} ${isActive('/batch3') || pathname.startsWith('/batch3') ? styles.active : ''}`}
                 style={isActive('/batch3') || pathname.startsWith('/batch3') ? { color: rankColor, textShadow: `0 0 5px ${rankColor}` } : {}}
+                onClick={() => playSound('click')}
             >
                 <Users size={24} style={isActive('/batch3') || pathname.startsWith('/batch3') ? { filter: `drop-shadow(0 0 5px ${rankColor})` } : {}} />
                 <span>Hub</span>
@@ -66,6 +71,7 @@ export default function Navbar() {
                 href="/rankings"
                 className={`${styles.navItem} ${isActive('/rankings') ? styles.active : ''}`}
                 style={isActive('/rankings') ? { color: rankColor, textShadow: `0 0 5px ${rankColor}` } : {}}
+                onClick={() => playSound('click')}
             >
                 <Trophy size={24} style={isActive('/rankings') ? { filter: `drop-shadow(0 0 5px ${rankColor})` } : {}} />
                 <span>Rankings</span>
@@ -74,6 +80,7 @@ export default function Navbar() {
                 href="/settings"
                 className={`${styles.navItem} ${isActive('/settings') ? styles.active : ''}`}
                 style={isActive('/settings') ? { color: rankColor, textShadow: `0 0 5px ${rankColor}` } : {}}
+                onClick={() => playSound('click')}
             >
                 <Settings size={24} style={isActive('/settings') ? { filter: `drop-shadow(0 0 5px ${rankColor})` } : {}} />
                 <span>Settings</span>
