@@ -111,6 +111,13 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     const scrollRef = useRef<HTMLDivElement>(null);
     const chatScrollRef = useRef<HTMLDivElement>(null);
     const chatTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isProcessingRef = useRef(false);
+    const lastSyncedNodeIdRef = useRef<string | null>(null);
+
+    const playSound = (type: 'text' | 'click') => {
+        const audio = new Audio(type === 'text' ? '/text-sound.mp3' : '/click.mp3');
+        audio.play().catch(e => console.warn('Audio play failed:', e));
+    };
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -218,10 +225,13 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             return;
         }
 
+        if (lastSyncedNodeIdRef.current === progress.currentNodeId) return;
+
         // Resume existing chat
         const currentNode = chatGraph[progress.currentNodeId];
         setChatHistory(progress.history);
         setIsBlocked(progress.isBlocked || false);
+        lastSyncedNodeIdRef.current = progress.currentNodeId;
 
         // Resume: If the current node in progress has a nextId and it's not gated,
         // we should show the typing indicator for that next node.
@@ -266,16 +276,13 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
     const handleChatOption = async (option: ChatOption) => {
         if (!currentUser || !activeContact) return;
+        playSound('click');
 
         if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
         setIsTyping(false);
 
-        // 1. Add User selection to history (unfaded look is handled by rendering logic)
-        const newHistory = [
-            ...chatHistory,
-            { sender: 'User' as const, text: option.label }
-        ];
-        setChatHistory(newHistory);
+        // 1. Add User selection to history
+        setChatHistory(prev => [...prev, { sender: 'User' as const, text: option.label }]);
         setCurrentOptions([]); // Hide other options
 
         // 2. Grant Rewards
@@ -286,16 +293,19 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
         // 3. Prepare next node
         setPendingNodeId(option.nextId);
+        lastSyncedNodeIdRef.current = option.nextId;
 
         // Save progress immediately with User msg
-        const newState: ChatState = {
-            currentNodeId: option.nextId,
-            history: newHistory,
-            lastInteractionTime: Date.now(),
-            isBlocked: isBlocked,
-            hasUnread: false
-        };
-        await updateChatProgress(activeContact, newState);
+        await updateChatProgress(activeContact, (prev: ChatState | null) => {
+            const history = prev?.history || [];
+            return {
+                currentNodeId: option.nextId,
+                history: [...history, { sender: 'User' as const, text: option.label }],
+                lastInteractionTime: Date.now(),
+                isBlocked: isBlocked,
+                hasUnread: false
+            };
+        });
 
         // Start typing after a brief delay
         chatTimeoutRef.current = setTimeout(() => {
@@ -304,7 +314,8 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
     };
 
     const handleScreenClick = async () => {
-        if (!isTyping || !pendingNodeId || !activeContact) return;
+        if (!isTyping || !pendingNodeId || !activeContact || isProcessingRef.current) return;
+        isProcessingRef.current = true;
 
         if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
 
@@ -313,20 +324,20 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         if (!node) {
             setIsTyping(false);
             setPendingNodeId(null);
+            isProcessingRef.current = false;
             return;
         }
 
         // 1. Reveal current pending node
-        const newHistory = [...chatHistory];
-        if (node.text) {
-            newHistory.push({
-                sender: node.speaker as any,
-                text: node.text,
-                audioUrl: node.audioUrl,
-                showSeparator: node.showSeparator
-            });
-        }
-        setChatHistory(newHistory);
+        const messageToAdd = {
+            sender: node.speaker as any,
+            text: node.text,
+            audioUrl: node.audioUrl,
+            showSeparator: node.showSeparator
+        };
+
+        setChatHistory(prev => [...prev, messageToAdd]);
+        playSound('text');
         setIsTyping(false);
 
         let blocked = isBlocked;
@@ -342,13 +353,11 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
         if (nextNode && !nextNode.reqRank && !nextNode.reqTimeWait && !node.isEnd) {
             // Prepare the next node
             setPendingNodeId(nextId!);
+            lastSyncedNodeIdRef.current = nextId!;
 
-            // If the next node is USER, reveal it with NO typing delay, OR very short delay
-            if (nextNode.speaker === 'User') {
-                // We DON'T set isTyping true for users. We trigger a second click or just reveal it?
-                // For better flow, we'll just set a tiny timeout to "reveal" it or allow a second click.
-                // Actually, let's just NOT set isTyping and let the user click again immediately.
-                setIsTyping(true); // We still need isTyping to be true for handleScreenClick to work on next click
+            const nextIsUser = nextNode.speaker === 'User';
+            if (nextIsUser) {
+                setIsTyping(true);
             } else {
                 chatTimeoutRef.current = setTimeout(() => {
                     setIsTyping(true);
@@ -357,30 +366,30 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
             setCurrentOptions([]);
 
             // Update Persistence
-            const newState: ChatState = {
+            await updateChatProgress(activeContact, (prev: ChatState | null) => ({
                 currentNodeId: nextId!,
-                history: newHistory,
+                history: [...(prev?.history || []), messageToAdd],
                 lastInteractionTime: Date.now(),
                 isBlocked: blocked,
                 hasUnread: false
-            };
-            await updateChatProgress(activeContact, newState);
+            }));
         } else {
-            // ... (rest of the logic)
             // No next auto-sequence, or gated node
-            setPendingNodeId(nextId || pendingNodeId);
+            const finalNodeId = nextId || pendingNodeId;
+            setPendingNodeId(finalNodeId);
+            lastSyncedNodeIdRef.current = finalNodeId;
             setCurrentOptions(node.options || []);
 
             // Persistence stays on the revealed node
-            const newState: ChatState = {
-                currentNodeId: nextId || pendingNodeId,
-                history: newHistory,
+            await updateChatProgress(activeContact, (prev: ChatState | null) => ({
+                currentNodeId: finalNodeId,
+                history: [...(prev?.history || []), messageToAdd],
                 lastInteractionTime: Date.now(),
                 isBlocked: blocked,
                 hasUnread: false
-            };
-            await updateChatProgress(activeContact, newState);
+            }));
         }
+        isProcessingRef.current = false;
     };
 
     // Check for 24h wait or Rank unlock periodically or on mount
@@ -472,6 +481,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
     const handleSave = async (tab: string) => {
         setSaving(true);
+        playSound('click');
         try {
             const updates: any = {};
             if (tab === 'FILE') {
@@ -498,6 +508,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
     const toggleAffinity = (element: string) => {
         if (!canEditLoreTags) return;
+        playSound('click');
         setAffinities(prev =>
             prev.includes(element) ? prev.filter(e => e !== element) : [...prev, element]
         );
@@ -505,6 +516,7 @@ export default function LoreModal({ isOpen, onClose, targetProfile, rankColor }:
 
     const toggleClass = (c: string) => {
         if (!canEditLoreTags) return;
+        playSound('click');
         setClassTags(prev =>
             prev.includes(c) ? prev.filter(item => item !== c) : [...prev, c]
         );

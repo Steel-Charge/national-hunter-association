@@ -260,7 +260,7 @@ interface HunterState {
     claimAgencyTitle: (title: Title) => Promise<void>;
     updateAgencyTitleVisibility: (titleName: string, isHidden: boolean) => Promise<void>;
     updateLore: (profileId: string, data: { bio?: string, managerComment?: string, videoUrl?: string, affinities?: string[], classTags?: string[], missionLogs?: any[] }) => Promise<void>;
-    updateChatProgress: (contact: string, state: ChatState | null) => Promise<void>;
+    updateChatProgress: (contact: string, stateOrUpdater: ChatState | null | ((prev: ChatState | null) => ChatState | null)) => Promise<void>;
 }
 
 export const useHunterStore = create<HunterState>((set, get) => ({
@@ -819,16 +819,25 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         return [];
     },
 
-    updateChatProgress: async (contact: string, state: ChatState | null) => {
+    updateChatProgress: async (contact: string, stateOrUpdater: ChatState | null | ((prev: ChatState | null) => ChatState | null)) => {
         const profile = get().profile;
         if (!profile) return;
 
+        const currentProgress = profile.settings.chatProgress?.[contact] || null;
+        let newState: ChatState | null;
+
+        if (typeof stateOrUpdater === 'function') {
+            newState = stateOrUpdater(currentProgress);
+        } else {
+            newState = stateOrUpdater;
+        }
+
         // Optimistic update
         const updatedChatProgress = { ...(profile.settings.chatProgress || {}) };
-        if (state === null) {
+        if (newState === null) {
             delete updatedChatProgress[contact];
         } else {
-            updatedChatProgress[contact] = state;
+            updatedChatProgress[contact] = newState;
         }
 
         const newSettings = {
