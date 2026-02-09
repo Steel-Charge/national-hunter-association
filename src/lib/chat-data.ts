@@ -147,7 +147,13 @@ export const RAT_KING_CHAT: ChatGraph = {
     'c_4a': {
         id: 'c_4a',
         speaker: 'Rat King',
-        text: "Well I’m alive,\nI thought it only fair I look into NHA, get some blackmail so they can back off ",
+        text: "Well I’m alive,",
+        nextId: 'c_4b'
+    },
+    'c_4b': {
+        id: 'c_4b',
+        speaker: 'Rat King',
+        text: "I thought it only fair I look into NHA, get some blackmail so they can back off ",
         options: [
             { label: "Get anything?", nextId: 'c_5a' },
             { label: "Are they talking sh*t about me?", nextId: 'c_5a' }
@@ -202,7 +208,13 @@ export const RAT_KING_CHAT: ChatGraph = {
     'w_3': {
         id: 'w_3',
         speaker: 'Rat King',
-        text: "The satellite that went MISSING\nIt was put in charge to watch REGRET after it discovered it.",
+        text: "The satellite that went MISSING",
+        nextId: 'w_3b'
+    },
+    'w_3b': {
+        id: 'w_3b',
+        speaker: 'Rat King',
+        text: "It was put in charge to watch REGRET after it discovered it.",
         options: [
             { label: "How did they lose it?", nextId: 'w_4' },
             { label: "Why should I care about this?", nextId: 'w_4' }
@@ -211,7 +223,13 @@ export const RAT_KING_CHAT: ChatGraph = {
     'w_4': {
         id: 'w_4',
         speaker: 'Rat King',
-        text: "Get this, Captain harbinger the astronaut who went missing made to calls the last one lasted 44 seconds to the space station, but before that he contact Bones for 20 minutes\nThe NHA doesn't even know",
+        text: "Get this, Captain Harbinger the astronaut who went missing made two calls the last one lasted 44 seconds to the space station, but before that he contacted Bones for 20 minutes",
+        nextId: 'w_4b'
+    },
+    'w_4b': {
+        id: 'w_4b',
+        speaker: 'Rat King',
+        text: "The NHA doesn't even know",
         nextId: 'w_5'
     },
     'w_5': {
@@ -241,7 +259,7 @@ export const RAT_KING_CHAT: ChatGraph = {
     'w_audio': {
         id: 'w_audio',
         speaker: 'Rat King',
-        text: "[Audio Playback Placeholder]", // Placeholder for audio file
+        text: "[Put placeholder audio file will add this later]", // Placeholder for audio file
         audioUrl: '/audio/placeholder.mp3', // Placeholder path
         nextId: 'w_9'
     },
