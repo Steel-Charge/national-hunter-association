@@ -18,6 +18,12 @@ export default function ProfileFrame({ children, frameId, className = '' }: Prof
                 {children}
             </div>
 
+            {idLower === 'e' && (
+                <svg className="e-frame-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <rect x="0" y="0" width="100" height="100" fill="none" vectorEffect="non-scaling-stroke" pathLength="100" />
+                </svg>
+            )}
+
             {/* Decorative Corner Accents */}
             <div className="frame-corner top-left"><div className="corner-accent"></div></div>
             <div className="frame-corner top-right"><div className="corner-accent"></div></div>
@@ -108,7 +114,29 @@ export default function ProfileFrame({ children, frameId, className = '' }: Prof
                 }
 
                 /* Rank-based Styles */
-                .e { border-color: #555; }
+                .e { border: none !important; }
+                .e .frame-corner, .e .side-accent, .e .corner-accent { display: none !important; }
+                .e-frame-svg {
+                    position: absolute;
+                    inset: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: none;
+                }
+                .e-frame-svg rect {
+                    stroke: #dfdfdf;
+                    stroke-width: 4px;
+                    /* 3 segments per side. Total 12 segments. 12 gaps. */
+                    /* Using pathLength="100" on the rect to normalize coordinates */
+                    stroke-dasharray: 4.16 4.16;
+                    animation: eFrameAnim 4s infinite linear;
+                }
+
+                @keyframes eFrameAnim {
+                    from { stroke-dashoffset: 0; }
+                    to { stroke-dashoffset: 100; }
+                }
+
                 .d { border: 2px solid var(--rank-d); }
                 .c { border: 2px solid var(--rank-c); box-shadow: inset 0 0 10px rgba(0, 150, 255, 0.2); }
                 .b { border: 3px solid var(--rank-b); box-shadow: inset 0 0 15px rgba(130, 71, 255, 0.3); }
