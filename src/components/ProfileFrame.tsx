@@ -236,14 +236,14 @@ export default function ProfileFrame({ children, frameId, className = '' }: Prof
                     filter: drop-shadow(0 0 5px var(--rank-c));
                     animation: cBurstFlicker 1.5s infinite;
                 }
-                .burst.b1 { animation-delay: 0.1s; }
-                .burst.b2 { animation-delay: 0.4s; }
-                .burst.b3 { animation-delay: 0.7s; }
-                .burst.b4 { animation-delay: 1.1s; }
+                .burst.b1 { transform-origin: top left; animation-delay: 0.1s; }
+                .burst.b2 { transform-origin: top right; animation-delay: 0.4s; }
+                .burst.b3 { transform-origin: bottom left; animation-delay: 0.7s; }
+                .burst.b4 { transform-origin: bottom right; animation-delay: 1.1s; }
 
                 @keyframes cBurstFlicker {
                     0%, 100% { opacity: 0; transform: scale(0.5); }
-                    50% { opacity: 1; transform: scale(1.2) translate(2px, 2px); }
+                    50% { opacity: 1; transform: scale(1.5); }
                 }
 
                 /* B-Rank: Flowing Energy */
