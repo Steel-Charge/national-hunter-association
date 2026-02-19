@@ -41,12 +41,7 @@ export default function ProfileFrame({ children, frameId, className = '' }: Prof
 
             {idLower === 'c' && (
                 <svg className="rank-frame-svg c-frame" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {/* Corner energy bursts */}
-                    <line x1="0" y1="0" x2="10" y2="10" className="burst b1" vectorEffect="non-scaling-stroke" />
-                    <line x1="100" y1="0" x2="90" y2="10" className="burst b2" vectorEffect="non-scaling-stroke" />
-                    <line x1="0" y1="100" x2="10" y2="90" className="burst b3" vectorEffect="non-scaling-stroke" />
-                    <line x1="100" y1="100" x2="90" y2="90" className="burst b4" vectorEffect="non-scaling-stroke" />
-                    <rect x="0" y="0" width="100" height="100" fill="none" vectorEffect="non-scaling-stroke" strokeDasharray="30 70" />
+                    <rect x="0" y="0" width="100" height="100" fill="none" vectorEffect="non-scaling-stroke" pathLength="100" />
                 </svg>
             )}
 
@@ -86,14 +81,14 @@ export default function ProfileFrame({ children, frameId, className = '' }: Prof
             {idLower === 's' && (
                 <svg className="rank-frame-svg s-frame" viewBox="0 0 100 100" preserveAspectRatio="none">
                     <defs>
-                        <filter id="distortion-s">
-                            <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" result="turb">
-                                <animate attributeName="baseFrequency" values="0.05; 0.07; 0.05" dur="1s" repeatCount="indefinite" />
-                            </feTurbulence>
-                            <feDisplacementMap in="SourceGraphic" in2="turb" scale="5" xChannelSelector="R" yChannelSelector="G" />
-                        </filter>
+                        <linearGradient id="grad-s" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="var(--rank-s)" stopOpacity="1" />
+                            <stop offset="50%" stopColor="#fff" stopOpacity="1" />
+                            <stop offset="100%" stopColor="var(--rank-s)" stopOpacity="1" />
+                            <animateTransform attributeName="gradientTransform" type="translate" values="-1 0; 1 0" dur="1s" repeatCount="indefinite" />
+                        </linearGradient>
                     </defs>
-                    <rect x="5" y="5" width="90" height="90" fill="none" vectorEffect="non-scaling-stroke" stroke="var(--rank-s)" strokeWidth="6" filter="url(#distortion-s)" />
+                    <rect x="0" y="0" width="100" height="100" fill="none" vectorEffect="non-scaling-stroke" stroke="url(#grad-s)" strokeWidth="6" />
                 </svg>
             )}
 
@@ -222,24 +217,16 @@ export default function ProfileFrame({ children, frameId, className = '' }: Prof
                     50% { opacity: 0.8; stroke-width: 10px; }
                 }
 
-                /* C-Rank: Electric Flicker */
+                /* C-Rank: Redesign (Flow + Breathe) */
                 .c { border: none !important; }
                 .c .frame-corner, .c .side-accent, .c .corner-accent { display: none !important; }
                 .c-frame rect {
                     stroke: var(--rank-c);
-                    stroke-width: 2px;
-                    opacity: 0.6;
+                    stroke-width: 4px;
+                    stroke-dasharray: 7.5 17.5; /* Approx 4 segments */
+                    animation: eFrameAnim 3s infinite linear, dFrameBreathe 3s infinite ease-in-out;
+                    filter: drop-shadow(0 0 8px var(--rank-c));
                 }
-                .c-frame .burst {
-                    stroke: #fff;
-                    stroke-width: 3px;
-                    filter: drop-shadow(0 0 5px var(--rank-c));
-                    animation: cBurstFlicker 1.5s infinite;
-                }
-                .burst.b1 { transform-origin: top left; animation-delay: 0.1s; }
-                .burst.b2 { transform-origin: top right; animation-delay: 0.4s; }
-                .burst.b3 { transform-origin: bottom left; animation-delay: 0.7s; }
-                .burst.b4 { transform-origin: bottom right; animation-delay: 1.1s; }
 
                 @keyframes cBurstFlicker {
                     0%, 100% { opacity: 0; transform: scale(0.5); }
@@ -267,11 +254,27 @@ export default function ProfileFrame({ children, frameId, className = '' }: Prof
                     to { transform: scale(1.015); }
                 }
 
-                /* S-Rank: Unstable Power */
+                /* S-Rank: Pulse + Flow (like A-rank) */
                 .s { border: none !important; animation: none !important; }
                 .s .frame-corner, .s .side-accent, .s .corner-accent { display: none !important; }
+                .s-frame {
+                    animation: aFramePulse 0.4s infinite alternate ease-in-out;
+                }
                 .s-frame rect {
-                    filter: drop-shadow(0 0 20px var(--rank-s)) url(#distortion-s);
+                    filter: drop-shadow(0 0 20px var(--rank-s));
+                }
+
+                /* GLITCH EFFECT */
+                @keyframes glitch-anim {
+                    0% { transform: translate(0); clip-path: inset(0 0 0 0); }
+                    2% { transform: translate(-5px, 2px); clip-path: inset(20% 0 10% 0); }
+                    4% { transform: translate(5px, -2px); clip-path: inset(10% 0 30% 0); }
+                    6% { transform: translate(0); clip-path: inset(0 0 0 0); }
+                    100% { transform: translate(0); clip-path: inset(0 0 0 0); }
+                }
+
+                .glitch-image {
+                    animation: glitch-anim 2s infinite linear alternate-reverse;
                 }
 
                 .d { border: 2px solid var(--rank-d); }

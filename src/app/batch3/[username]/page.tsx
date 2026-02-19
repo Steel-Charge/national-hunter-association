@@ -170,6 +170,7 @@ export default function HunterProfilePage() {
     const themeRank = profile.settings.theme || overallRank;
     const specialTheme = profile.settings.specialTheme || null;
     const rankColor = specialTheme ? `var(--rarity-${specialTheme})` : `var(--rank-${themeRank.toLowerCase()})`;
+    const frameId = (profile.activeFrame || profile.activeTitle?.rarity || 'Common').toLowerCase();
 
     return (
         <div className={styles.container}>
@@ -216,6 +217,7 @@ export default function HunterProfilePage() {
                 <img
                     src={profile.avatarUrl}
                     alt="Background"
+                    className={frameId === 's' ? 'glitch-image' : ''}
                     style={{
                         position: 'fixed',
                         top: 0,
