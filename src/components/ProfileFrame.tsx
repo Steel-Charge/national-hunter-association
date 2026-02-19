@@ -264,7 +264,7 @@ export default function ProfileFrame({ children, frameId, className = '' }: Prof
                 }
                 @keyframes aFramePulse {
                     from { transform: scale(1); }
-                    to { transform: scale(1.05); }
+                    to { transform: scale(1.015); }
                 }
 
                 /* S-Rank: Unstable Power */
