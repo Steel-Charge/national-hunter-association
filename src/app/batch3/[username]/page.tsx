@@ -123,17 +123,7 @@ export default function HunterProfilePage() {
                     const currentRankIdx = ranks.indexOf(currentRank as Rank);
                     const rankFrames = currentRankIdx !== -1 ? ranks.slice(0, currentRankIdx + 1) : [];
 
-                    const titleNames = (titlesData || []).map((t: any) => t.name);
-                    const titleFrames = titleNames.filter(name => [
-                        'Streak of Lightning', 'Sovreign of the Gale', 'Unshakable Will', 'The Unfallen King',
-                        'Tactical Master', 'Echo of a Thousand Plans', 'Flame of Will', 'Phoenix Soul',
-                        'Wild Instinct', 'Beastmaster', 'Relentless Chase', 'Crimson Seeker',
-                        'Precision Breaker', 'Fist of Ruin', 'Sink or Rise', 'Warden of the Abyss',
-                        'Flashstorm', 'Thunderborn Tyrant', 'Balance Through Chaos', 'Soulbreaker Sage',
-                        'Edge Dancer', 'Ghost of the Edge'
-                    ].includes(name));
-
-                    return Array.from(new Set([...base, ...rankFrames, ...titleFrames]));
+                    return Array.from(new Set([...base, ...rankFrames]));
                 })()
             };
 
