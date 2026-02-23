@@ -25,6 +25,14 @@ export interface UserSettings {
     chatProgress?: Record<string, ChatState>; // key: 'Rat King' | 'Bones'
 }
 
+export interface WeightEntry {
+    id?: string;
+    profile_id: string;
+    date: string;
+    weight: number;
+    created_at?: string;
+}
+
 export interface UserProfile {
     id: string; // Add UUID
     name: string;
@@ -51,6 +59,7 @@ export interface UserProfile {
     affinities?: string[];
     classTags?: string[];
     missionLogs?: any[];
+    weightEntries?: WeightEntry[];
 }
 
 export interface Agency {
@@ -261,7 +270,10 @@ interface HunterState {
     updateAgencyTitleVisibility: (titleName: string, isHidden: boolean) => Promise<void>;
     updateLore: (profileId: string, data: { bio?: string, managerComment?: string, videoUrl?: string, affinities?: string[], classTags?: string[], missionLogs?: any[] }) => Promise<void>;
     updateChatProgress: (contact: string, stateOrUpdater: ChatState | null | ((prev: ChatState | null) => ChatState | null)) => Promise<void>;
+    submitWeight: (weight: number, date?: string) => Promise<void>;
+    fetchWeightEntries: () => Promise<void>;
 }
+
 
 export const useHunterStore = create<HunterState>((set, get) => ({
     profile: null,
@@ -315,6 +327,13 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                     .select('quest_id')
                     .eq('profile_id', profileData.id);
 
+                // 4. Get Weight Entries
+                const { data: weightsData } = await supabase
+                    .from('weight_entries')
+                    .select('*')
+                    .eq('profile_id', profileData.id)
+                    .order('date', { ascending: true });
+
                 // If this is the special binary profile, enable the exclusive glitch theme locally
                 const SPECIAL_BINARY_NAME = '01010100 01101000 01100101 00100000 01100101 01101110 01100100 00100000 01101001 01100110 00100000 01110111 01100101 00100000 01100110 01100001 01101001 01101100 00101110 00101110 00101110';
                 const isExclusive = profileData.name === SPECIAL_BINARY_NAME;
@@ -366,7 +385,14 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                             const currentRankIdx = ranks.indexOf(currentRank as Rank);
                             const rankFrames = currentRankIdx !== -1 ? ranks.slice(0, currentRankIdx + 1) : [];
                             return Array.from(new Set([...base, ...rankFrames]));
-                        })()
+                        })(),
+                        weightEntries: (weightsData || []).map((w: any) => ({
+                            id: w.id,
+                            profile_id: w.profile_id,
+                            date: w.date,
+                            weight: w.weight,
+                            created_at: w.created_at
+                        }))
                     }
                 });
             }
@@ -1845,6 +1871,62 @@ export const useHunterStore = create<HunterState>((set, get) => ({
         } catch (error) {
             console.error('Error updating lore:', error);
             throw error;
+        }
+    },
+
+    submitWeight: async (weight: number, date?: string) => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        const entryDate = date || new Date().toISOString().split('T')[0];
+        const newEntry: WeightEntry = {
+            profile_id: profile.id,
+            date: entryDate,
+            weight: weight
+        };
+
+        try {
+            const { data, error } = await supabase
+                .from('weight_entries')
+                .upsert(newEntry, { onConflict: 'profile_id, date' })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            // Update local state
+            const updatedEntries = [...(profile.weightEntries || [])];
+            const existingIdx = updatedEntries.findIndex(e => e.date === entryDate);
+            if (existingIdx !== -1) {
+                updatedEntries[existingIdx] = data;
+            } else {
+                updatedEntries.push(data);
+                updatedEntries.sort((a, b) => a.date.localeCompare(b.date));
+            }
+
+            set({ profile: { ...profile, weightEntries: updatedEntries } });
+        } catch (error) {
+            console.error('Error submitting weight:', error);
+            alert('Failed to submit weight. Please ensure the table exists.');
+        }
+    },
+
+    fetchWeightEntries: async () => {
+        const profile = get().profile;
+        if (!profile) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('weight_entries')
+                .select('*')
+                .eq('profile_id', profile.id)
+                .order('date', { ascending: true });
+
+            if (error) throw error;
+
+            set({ profile: { ...profile, weightEntries: data || [] } });
+        } catch (error) {
+            console.error('Error fetching weight entries:', error);
         }
     }
 }));

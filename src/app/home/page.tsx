@@ -8,11 +8,12 @@ import Navbar from '@/components/Navbar';
 import ProfileView from '@/components/ProfileView';
 import LoadingScreen from '@/components/LoadingScreen';
 import styles from './page.module.css';
-import { Book, Settings } from 'lucide-react';
+import { Book, Settings, Calendar } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ProfileSettings from '@/components/ProfileSettings';
 import ProfileFrame from '@/components/ProfileFrame';
 import LoreModal from '@/components/LoreModal';
+import WeightCheckInModal from '@/components/WeightCheckInModal';
 
 export default function HomePage() {
     const { profile, loading, getOverallRank, getTheme, setProfile } = useHunterStore();
@@ -20,6 +21,7 @@ export default function HomePage() {
 
     const [bookOpen, setBookOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [weightModalOpen, setWeightModalOpen] = useState(false);
 
     useEffect(() => {
         if (!loading && !profile) {
@@ -52,6 +54,24 @@ export default function HomePage() {
                 }}
             >
                 <Book size={36} />
+            </button>
+
+            {/* Weight Check-in button */}
+            <button
+                onClick={() => setWeightModalOpen(true)}
+                aria-label="Open weight check-in"
+                style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '70px',
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'white',
+                    cursor: 'pointer',
+                    zIndex: 100
+                }}
+            >
+                <Calendar size={36} />
             </button>
 
             {/* Profile Settings button - NEW TOP RIGHT */}
@@ -102,6 +122,11 @@ export default function HomePage() {
                 isOpen={settingsOpen}
                 onClose={() => setSettingsOpen(false)}
             />
+
+            {/* Weight Check-in Modal */}
+            {weightModalOpen && (
+                <WeightCheckInModal onClose={() => setWeightModalOpen(false)} />
+            )}
 
             <Navbar />
         </div>
