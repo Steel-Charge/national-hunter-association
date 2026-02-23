@@ -1905,9 +1905,9 @@ export const useHunterStore = create<HunterState>((set, get) => ({
             }
 
             set({ profile: { ...profile, weightEntries: updatedEntries } });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error submitting weight:', error);
-            alert('Failed to submit weight. Please ensure the table exists.');
+            alert(`Failed to submit weight: ${error.message || 'Unknown error'}`);
         }
     },
 

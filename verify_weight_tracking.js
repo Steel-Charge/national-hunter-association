@@ -34,7 +34,10 @@ async function verifyWeightTracking() {
             .limit(1)
             .single();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+            console.error('Error fetching test profile:', profileError);
+            throw profileError;
+        }
         console.log(`Using test profile: ${profile.name} (${profile.id})`);
 
         const testDate = new Date().toISOString().split('T')[0];
@@ -53,9 +56,10 @@ async function verifyWeightTracking() {
             .single();
 
         if (insertError) {
+            console.error('Insert Error Detail:', insertError);
             if (insertError.code === '42P01') {
-                console.error('FAILED: Table "weight_entries" does not exist. Please run create_weight_entries.sql in Supabase Dashboard.');
-                process.exit(1);
+                console.error('FAILED: Table "weight_entries" does not exist in schema "public".');
+                console.log('Please ensure you ran the SQL migration in the Supabase Dashboard.');
             }
             throw insertError;
         }

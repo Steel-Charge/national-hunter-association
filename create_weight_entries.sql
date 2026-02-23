@@ -8,30 +8,17 @@ CREATE TABLE IF NOT EXISTS public.weight_entries (
     UNIQUE(profile_id, date)
 );
 
--- Enable Row Level Security
+-- Enable Row Level Security (Keeping it enabled for future but making it permissive for custom auth)
 ALTER TABLE public.weight_entries ENABLE ROW LEVEL SECURITY;
 
--- Create policies
--- Users can only view their own weight entries
-CREATE POLICY "Users can view own weight entries" 
-ON public.weight_entries 
-FOR SELECT 
-USING (auth.uid() = profile_id);
+-- Drop existing policies
+DROP POLICY IF EXISTS "Users can view own weight entries" ON public.weight_entries;
+DROP POLICY IF EXISTS "Users can insert own weight entries" ON public.weight_entries;
+DROP POLICY IF EXISTS "Users can update own weight entries" ON public.weight_entries;
+DROP POLICY IF EXISTS "Users can delete own weight entries" ON public.weight_entries;
 
--- Users can only insert their own weight entries
-CREATE POLICY "Users can insert own weight entries" 
-ON public.weight_entries 
-FOR INSERT 
-WITH CHECK (auth.uid() = profile_id);
-
--- Users can only update their own weight entries
-CREATE POLICY "Users can update own weight entries" 
-ON public.weight_entries 
-FOR UPDATE 
-USING (auth.uid() = profile_id);
-
--- Users can only delete their own weight entries
-CREATE POLICY "Users can delete own weight entries" 
-ON public.weight_entries 
-FOR DELETE 
-USING (auth.uid() = profile_id);
+-- Create permissive policies (Since app uses custom table-based auth)
+CREATE POLICY "Public view access" ON public.weight_entries FOR SELECT USING (true);
+CREATE POLICY "Public insert access" ON public.weight_entries FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public update access" ON public.weight_entries FOR UPDATE USING (true);
+CREATE POLICY "Public delete access" ON public.weight_entries FOR DELETE USING (true);
