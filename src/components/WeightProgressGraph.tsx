@@ -29,9 +29,10 @@ ChartJS.register(
 interface Props {
     entries: WeightEntry[];
     viewMode: 'WEEK' | 'MONTH';
+    themeColor?: string;
 }
 
-export default function WeightProgressGraph({ entries, viewMode }: Props) {
+export default function WeightProgressGraph({ entries, viewMode, themeColor = '#fff' }: Props) {
     const sortedEntries = useMemo(() => {
         return [...entries].sort((a, b) => a.date.localeCompare(b.date));
     }, [entries]);
@@ -58,10 +59,10 @@ export default function WeightProgressGraph({ entries, viewMode }: Props) {
                 {
                     label: 'Weight',
                     data: data,
-                    borderColor: '#fff',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: themeColor,
+                    backgroundColor: `${themeColor}20`,
                     borderWidth: 3,
-                    pointBackgroundColor: '#fff',
+                    pointBackgroundColor: themeColor,
                     pointBorderColor: 'rgba(0,0,0,0.5)',
                     pointBorderWidth: 2,
                     pointRadius: 5,
@@ -71,7 +72,7 @@ export default function WeightProgressGraph({ entries, viewMode }: Props) {
                 }
             ]
         };
-    }, [sortedEntries, viewMode]);
+    }, [sortedEntries, viewMode, themeColor]);
 
     const options = {
         responsive: true,
@@ -83,7 +84,7 @@ export default function WeightProgressGraph({ entries, viewMode }: Props) {
                 backgroundColor: 'rgba(0, 0, 0, 0.9)',
                 titleColor: '#fff',
                 bodyColor: '#fff',
-                borderColor: 'rgba(255, 255, 255, 0.2)',
+                borderColor: `${themeColor}44`,
                 borderWidth: 1,
                 padding: 12,
                 displayColors: false,

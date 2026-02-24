@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useHunterStore, WeightEntry } from '@/lib/store';
+import { RANK_COLORS, RARITY_COLORS, Rank } from '@/lib/game-logic';
 import { X, ChevronLeft, ChevronRight, Check, Minus } from 'lucide-react';
 import { playSound } from '@/lib/audio';
 import styles from './WeightCheckInModal.module.css';
@@ -21,7 +22,15 @@ export default function WeightCheckInModal({ onClose }: Props) {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [graphPeriod, setGraphPeriod] = useState<'WEEK' | 'MONTH'>('WEEK');
 
-    const rankColor = `var(--rank-${getTheme().toLowerCase()})`;
+    const themeRank = getTheme();
+    const rankColor = themeRank.length === 1
+        ? `var(--rank-${themeRank.toLowerCase()})`
+        : `var(--rarity-${themeRank.toLowerCase()})`;
+
+    // Get the actual hex code for ChartJS
+    const rankHex = themeRank.length === 1
+        ? (RANK_COLORS[themeRank as Rank] || '#00e5ff')
+        : (RARITY_COLORS[themeRank.toLowerCase()] || '#00e5ff');
 
     useEffect(() => {
         fetchWeightEntries();
@@ -105,7 +114,7 @@ export default function WeightCheckInModal({ onClose }: Props) {
         <div className={styles.modalOverlay} onClick={onClose}>
             <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
                 <div className={styles.modalHeader}>
-                    <h2 style={{ color: rankColor }}>Weight Tracking</h2>
+                    <h2 style={{ color: rankHex }}>Weight Tracking</h2>
                     <button className={styles.closeButton} onClick={() => { playSound('click'); onClose(); }}>
                         <X size={20} />
                     </button>
@@ -115,12 +124,14 @@ export default function WeightCheckInModal({ onClose }: Props) {
                     <button
                         className={`${styles.tabButton} ${view === 'CHECKIN' ? styles.tabButtonActive : ''}`}
                         onClick={() => { playSound('click'); setView('CHECKIN'); }}
+                        style={view === 'CHECKIN' ? { color: rankHex, background: `${rankHex}15` } : {}}
                     >
                         Check-in
                     </button>
                     <button
                         className={`${styles.tabButton} ${view === 'PROGRESS' ? styles.tabButtonActive : ''}`}
                         onClick={() => { playSound('click'); setView('PROGRESS'); }}
+                        style={view === 'PROGRESS' ? { color: rankHex, background: `${rankHex}15` } : {}}
                     >
                         Progress
                     </button>
@@ -130,13 +141,13 @@ export default function WeightCheckInModal({ onClose }: Props) {
                     {view === 'CHECKIN' ? (
                         <div className={styles.checkInView}>
                             <div className={styles.calendarControls}>
-                                <button className={styles.navButton} onClick={() => changeMonth(-1)}>
+                                <button className={styles.navButton} onClick={() => changeMonth(-1)} style={{ borderColor: `${rankHex}44` }}>
                                     <ChevronLeft size={20} />
                                 </button>
                                 <span className={styles.monthLabel}>
                                     {currentMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
                                 </span>
-                                <button className={styles.navButton} onClick={() => changeMonth(1)}>
+                                <button className={styles.navButton} onClick={() => changeMonth(1)} style={{ borderColor: `${rankHex}44` }}>
                                     <ChevronRight size={20} />
                                 </button>
                             </div>
@@ -149,14 +160,15 @@ export default function WeightCheckInModal({ onClose }: Props) {
                                     <div
                                         key={i}
                                         className={`${styles.dayCell} ${!day ? styles.emptyDay : ''} ${day?.date === selectedDate ? styles.dayCellSelected : ''}`}
+                                        style={day?.date === selectedDate ? { borderColor: rankHex, background: `${rankHex}15` } : {}}
                                         onClick={() => day && (playSound('click'), setSelectedDate(day.date))}
                                     >
                                         {day && (
                                             <>
-                                                <span className={styles.dayNumber}>{day.day}</span>
+                                                <span className={styles.dayNumber} style={day?.date === selectedDate ? { color: rankHex } : {}}>{day.day}</span>
                                                 <div className={styles.dayIndicator}>
                                                     {day.entry ? (
-                                                        <Check size={12} className={styles.indicatorActive} />
+                                                        <Check size={12} className={styles.indicatorActive} style={{ color: rankHex }} />
                                                     ) : (
                                                         day.date < new Date().toISOString().split('T')[0] && (
                                                             <Minus size={12} className={styles.indicatorMissed} />
@@ -179,14 +191,16 @@ export default function WeightCheckInModal({ onClose }: Props) {
                                         step="0.1"
                                         placeholder="0.0"
                                         className={styles.weightInput}
+                                        style={{ borderColor: `${rankHex}44`, color: rankHex }}
                                         value={weight}
                                         onChange={(e) => setWeight(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
                                     />
-                                    <span className={styles.weightUnit}>KG</span>
+                                    <span className={styles.weightUnit} style={{ color: `${rankHex}88` }}>KG</span>
                                 </div>
                                 <button
                                     className={`${styles.submitButton} ${isSubmitted ? styles.submittedButton : ''}`}
+                                    style={!isSubmitted && weight ? { backgroundColor: rankHex, boxShadow: `0 0 20px ${rankHex}44` } : {}}
                                     onClick={handleSubmit}
                                     disabled={!weight || isSubmitting}
                                 >
@@ -198,13 +212,14 @@ export default function WeightCheckInModal({ onClose }: Props) {
                         <div className={styles.progressView}>
                             <div className={styles.chartControls}>
                                 <button
-                                    className={`${styles.tabButton} ${graphPeriod === 'WEEK' ? styles.tabButtonActive : ''}`}
+                                    style={graphPeriod === 'WEEK' ? { color: rankHex, background: `${rankHex}15`, borderColor: `${rankHex}44` } : {}}
                                     onClick={() => { playSound('click'); setGraphPeriod('WEEK'); }}
                                 >
                                     Last 7 Days
                                 </button>
                                 <button
                                     className={`${styles.tabButton} ${graphPeriod === 'MONTH' ? styles.tabButtonActive : ''}`}
+                                    style={graphPeriod === 'MONTH' ? { color: rankHex, background: `${rankHex}15`, borderColor: `${rankHex}44` } : {}}
                                     onClick={() => { playSound('click'); setGraphPeriod('MONTH'); }}
                                 >
                                     Last 30 Days
@@ -212,24 +227,24 @@ export default function WeightCheckInModal({ onClose }: Props) {
                             </div>
 
                             <div className={styles.chartContainer}>
-                                <WeightProgressGraph entries={profile?.weightEntries || []} viewMode={graphPeriod} />
+                                <WeightProgressGraph entries={profile?.weightEntries || []} viewMode={graphPeriod} themeColor={rankHex} />
                             </div>
 
                             <div className={styles.statsGrid}>
                                 <div className={styles.statCard}>
                                     <div className={styles.statLabel}>Current</div>
-                                    <div className={styles.statValue}>{stats.current} <span style={{ fontSize: '0.8rem' }}>kg</span></div>
+                                    <div className={styles.statValue} style={{ color: rankHex }}>{stats.current} <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>kg</span></div>
                                 </div>
                                 <div className={styles.statCard}>
                                     <div className={styles.statLabel}>Change</div>
                                     <div className={`${styles.statValue} ${stats.trend === 'up' ? styles.trendUp : styles.trendDown}`}>
                                         {stats.trend === 'up' ? '+' : stats.trend === 'down' ? '-' : ''}
-                                        {stats.change.toFixed(1)} <span style={{ fontSize: '0.8rem' }}>kg</span>
+                                        {stats.change.toFixed(1)} <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>kg</span>
                                     </div>
                                 </div>
                                 <div className={styles.statCard}>
                                     <div className={styles.statLabel}>Entries</div>
-                                    <div className={styles.statValue}>{profile?.weightEntries?.length || 0}</div>
+                                    <div className={styles.statValue} style={{ color: rankHex }}>{profile?.weightEntries?.length || 0}</div>
                                 </div>
                             </div>
                         </div>

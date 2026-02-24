@@ -41,6 +41,7 @@
     letter-spacing: 0.1em;
     color: #fff;
     text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
 .closeButton {
@@ -87,7 +88,6 @@
 .tabButtonActive {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .viewContainer {
@@ -163,8 +163,7 @@
 }
 
 .dayCellSelected {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
+    z-index: 10;
 }
 
 .dayNumber {
