@@ -11,6 +11,7 @@ import { calculateOverallPercentage, getRankFromPercentage, Rank } from '@/lib/g
 import AgencySettings from '@/components/AgencySettings';
 import AgencyTitlesModal from '@/components/AgencyTitlesModal';
 import TrainingView from '@/components/TrainingView';
+import EventsView from '@/components/EventsView';
 import { useHunterStore, UserProfile, Agency, Title, getDisplayTitle, isDefaultTitle } from '@/lib/store';
 import { playSound } from '@/lib/audio';
 
@@ -302,26 +303,26 @@ export default function AgencyPage() {
 
                     {/* Events tile (full width) */}
                     <button
-                        className={`${styles.hubTile} ${styles.hubTileWide} ${styles.hubTileDisabled}`}
-                        style={{ borderColor: 'rgba(255,255,255,0.12)', boxShadow: 'none' }}
-                        disabled
+                        className={`${styles.hubTile} ${styles.hubTileWide}`}
+                        style={{ borderColor: '#ff004c', boxShadow: `0 0 20px rgba(255, 0, 76, 0.3)` }}
+                        onClick={() => navigateTo('events')}
                     >
                         <div className={styles.hubTileIcon}>
                             {/* Calendar SVG */}
                             <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.tileIconSvg}>
-                                <rect x="8" y="16" width="64" height="56" rx="6" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" fill="none" />
-                                <line x1="8" y1="30" x2="72" y2="30" stroke="rgba(255,255,255,0.25)" strokeWidth="2" />
-                                <line x1="26" y1="8" x2="26" y2="24" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" />
-                                <line x1="54" y1="8" x2="54" y2="24" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" />
-                                <rect x="20" y="38" width="10" height="10" rx="2" fill="rgba(255,255,255,0.15)" />
-                                <rect x="35" y="38" width="10" height="10" rx="2" fill="rgba(255,255,255,0.15)" />
-                                <rect x="50" y="38" width="10" height="10" rx="2" fill="rgba(255,255,255,0.15)" />
-                                <rect x="20" y="54" width="10" height="10" rx="2" fill="rgba(255,255,255,0.15)" />
-                                <path d="M35 59 L40 54 L45 59" stroke="rgba(255,255,255,0.35)" strokeWidth="2" strokeLinecap="round" fill="none" />
+                                <rect x="8" y="16" width="64" height="56" rx="6" stroke="#ff004c" strokeWidth="2.5" fill="none" />
+                                <line x1="8" y1="30" x2="72" y2="30" stroke="#ff004c" strokeWidth="2" />
+                                <line x1="26" y1="8" x2="26" y2="24" stroke="#ff004c" strokeWidth="2.5" strokeLinecap="round" />
+                                <line x1="54" y1="8" x2="54" y2="24" stroke="#ff004c" strokeWidth="2.5" strokeLinecap="round" />
+                                <rect x="20" y="38" width="10" height="10" rx="2" fill="rgba(255, 0, 76, 0.2)" />
+                                <rect x="35" y="38" width="10" height="10" rx="2" fill="rgba(255, 0, 76, 0.2)" />
+                                <rect x="50" y="38" width="10" height="10" rx="2" fill="rgba(255, 0, 76, 0.2)" />
+                                <rect x="20" y="54" width="10" height="10" rx="2" fill="rgba(255, 0, 76, 0.2)" />
+                                <path d="M35 59 L40 54 L45 59" stroke="#ff004c" strokeWidth="2" strokeLinecap="round" fill="none" />
                             </svg>
                         </div>
-                        <span className={styles.hubTileLabel} style={{ color: 'rgba(255,255,255,0.25)' }}>EVENTS</span>
-                        <span className={styles.comingSoonBadge}>COMING SOON</span>
+                        <span className={styles.hubTileLabel} style={{ color: '#ff004c' }}>PHOENIX GAMES</span>
+                        <span className={styles.eventActiveBadge}>ACTIVE NOW</span>
                     </button>
 
                     {/* Training tile (full width) */}
@@ -640,10 +641,7 @@ export default function AgencyPage() {
 
             {/* ── EVENTS view ────────────────────────────────────────────── */}
             {activeView === 'events' && (
-                <div className={styles.emptyView}>
-                    <div className={styles.emptyIcon} style={{ color: rankColor }}>🗓️</div>
-                    <p className={styles.emptyMessage} style={{ color: `${rankColor}99` }}>EVENTS COMING SOON</p>
-                </div>
+                <EventsView />
             )}
 
             {/* ── TRAINING view ──────────────────────────────────────────── */}

@@ -1,0 +1,308 @@
+.container {
+    width: 100%;
+    padding: 20px;
+    background: transparent;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ── Header ────────────────────────────────────────────────────────── */
+.eventHeader {
+    position: relative;
+    padding: 30px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 3px solid #ff004c;
+    box-shadow: 0 0 30px rgba(255, 0, 76, 0.2);
+    margin-bottom: 25px;
+    overflow: hidden;
+    text-align: center;
+}
+
+.headerGlow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #ff004c, transparent);
+    animation: glowMove 3s infinite linear;
+}
+
+@keyframes glowMove {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.eventMainTitle {
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: 6px;
+    margin: 0;
+    color: #ff004c;
+    text-shadow: 0 0 15px rgba(255, 0, 76, 0.8);
+}
+
+.eventSubtitle {
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    opacity: 0.8;
+    margin-top: 10px;
+}
+
+.timerBox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+    font-size: 0.85rem;
+    font-weight: 900;
+    color: #fff;
+    background: #ff004c;
+    padding: 6px 15px;
+    border-radius: 20px;
+    width: fit-content;
+    margin-inline: auto;
+    letter-spacing: 1px;
+}
+
+/* ── Lore ─────────────────────────────────────────────────────────── */
+.loreBox {
+    background: rgba(40, 0, 20, 0.6);
+    border-left: 4px solid #ff004c;
+    padding: 20px 25px;
+    border-radius: 4px 15px 15px 4px;
+    margin-bottom: 30px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.loreIcon {
+    color: #ff004c;
+    flex-shrink: 0;
+}
+
+.loreText {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* ── Content Grid ─────────────────────────────────────────────────── */
+.contentGrid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 30px;
+}
+
+@media (max-width: 900px) {
+    .contentGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Leaderboard ──────────────────────────────────────────────────── */
+.leaderboardSection, .missionsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+}
+
+.sectionIcon {
+    color: #ff004c;
+}
+
+.sectionHeader h2 {
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+.leaderboardList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.leaderboardItem {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 12px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.2s;
+}
+
+.userRow {
+    border: 2px solid #ff004c;
+    background: rgba(255, 0, 76, 0.1);
+    box-shadow: 0 0 15px rgba(255, 0, 76, 0.1);
+    transform: scale(1.02);
+}
+
+.rankNum {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #ff004c;
+    min-width: 30px;
+}
+
+.entryAvatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid #ff004c;
+    object-fit: cover;
+}
+
+.entryInfo {
+    flex: 1;
+}
+
+.entryName {
+    font-size: 1rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.topCrown {
+    color: #ffd700;
+}
+
+.entryTitle {
+    font-size: 0.7rem;
+    font-weight: 700;
+    opacity: 0.6;
+    letter-spacing: 0.5px;
+}
+
+.entryPoints {
+    text-align: right;
+}
+
+.pointsVal {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #ff004c;
+}
+
+.pointsLabel {
+    font-size: 0.6rem;
+    font-weight: 800;
+    opacity: 0.5;
+}
+
+/* ── Missions/Titles ──────────────────────────────────────────────── */
+.missionsList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.missionCard {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.missionUnlocked {
+    border-color: #ff004c;
+    background: rgba(255, 0, 76, 0.05);
+}
+
+.missionHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.missionRarity {
+    font-size: 0.8rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.missionRarity[data-rarity="legendary"] { color: #ffd700; }
+.missionRarity[data-rarity="mythic"] { color: #ff004c; }
+.missionRarity[data-rarity="epic"] { color: #c0c0c0; }
+
+.missionPoints {
+    font-size: 0.8rem;
+    font-weight: 900;
+    opacity: 0.7;
+}
+
+.missionTitle {
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin: 0 0 10px 0;
+}
+
+.missionDesc {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    opacity: 0.7;
+    margin: 0 0 20px 0;
+}
+
+.missionFooter {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.unlockedBadge {
+    background: #ff004c;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 900;
+}
+
+.claimBtn {
+    background: transparent;
+    border: 2px solid #ff004c;
+    color: #ff004c;
+    padding: 6px 15px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.claimBtn:hover {
+    background: #ff004c;
+    color: #fff;
+}
+
+.lockedBadge {
+    font-size: 0.75rem;
+    font-weight: 900;
+    opacity: 0.4;
+    letter-spacing: 1px;
+}

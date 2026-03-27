@@ -127,17 +127,29 @@
 
 .comingSoonBadge {
     position: absolute;
+    text-transform: uppercase;
+}
+
+.eventActiveBadge {
+    position: absolute;
     top: 10px;
     right: 14px;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.15);
+    background: #ff004c;
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 40px;
     padding: 2px 10px;
     font-size: 0.6rem;
-    font-weight: 800;
-    letter-spacing: 1px;
-    color: rgba(255,255,255,0.3);
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: #fff;
     text-transform: uppercase;
+    box-shadow: 0 0 10px rgba(255, 0, 76, 0.6);
+    animation: badgePulse 2s infinite ease-in-out;
+}
+
+@keyframes badgePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
 }
 
 /* ─── Empty / Events view ─────────────────────────────────────────────────── */

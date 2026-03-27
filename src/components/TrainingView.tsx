@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, X, Clock, Hash, ChevronDown, ChevronUp, ArrowRight, Settings } from 'lucide-react';
+import { Plus, X, Clock, Hash, ChevronDown, ChevronUp, ArrowRight, Settings, Zap } from 'lucide-react';
 import styles from './TrainingView.module.css';
 import { v4 as uuidv4 } from 'uuid';
 import { useHunterStore, getDisplayTitle } from '@/lib/store';
+import { Rank } from '@/lib/game-logic';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ interface TrainingViewProps {
 }
 
 export default function TrainingView({ profileName, rankColor }: TrainingViewProps) {
-    const { profile, getOverallRank, getTheme } = useHunterStore();
+    const { profile, getOverallRank, getTheme, addEventPoints } = useHunterStore();
     const [plan, setPlan] = useState<WorkoutPlan>(makeDefaultPlan());
     const [logs, setLogs] = useState<WorkoutLogs>({});
     const [selectedDay, setSelectedDay] = useState<string>('MON');
@@ -206,6 +207,27 @@ export default function TrainingView({ profileName, rankColor }: TrainingViewPro
             [selectedDay]: { ...dayLogs, [exerciseId]: newSessions },
         };
         saveLogs(newLogs);
+    };
+
+    // ── Finish Session & Award Points
+    const [isFinishedToday, setIsFinishedToday] = useState(false);
+    const finishedKey = `${profileName}_last_finished_date`;
+
+    useEffect(() => {
+        const lastDate = localStorage.getItem(finishedKey);
+        if (lastDate === todayKey()) setIsFinishedToday(true);
+    }, [finishedKey]);
+
+    const activeDaysCount = Object.values(plan).filter(d => !d.isRest).length || 7;
+    const pointsPerSession = Math.round((35 / activeDaysCount) * 10) / 10;
+
+    const handleFinishSession = async () => {
+        if (isFinishedToday) return;
+        
+        await addEventPoints(pointsPerSession);
+        localStorage.setItem(finishedKey, todayKey());
+        setIsFinishedToday(true);
+        alert(`SESSION COMPLETE! +${pointsPerSession} Event Points Awarded.`);
     };
 
     return (
@@ -387,6 +409,25 @@ export default function TrainingView({ profileName, rankColor }: TrainingViewPro
                         <div className={styles.boxBlock} style={{ borderColor: rankColor, opacity: 0.5 }}>
                             <div className={styles.boxPlaceholder}>*</div>
                         </div>
+                    </div>
+
+                    {/* Finish Session Button */}
+                    <div className={styles.finishContainer}>
+                        <button 
+                            className={styles.finishBtn} 
+                            onClick={handleFinishSession}
+                            disabled={isFinishedToday}
+                            style={isFinishedToday 
+                                ? { borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.2)' } 
+                                : { borderColor: rankColor, color: rankColor, boxShadow: `0 0 15px ${rankColor}33` }
+                            }
+                        >
+                            <Zap size={18} fill={isFinishedToday ? "none" : rankColor} />
+                            {isFinishedToday ? "SESSION COMPLETED" : "FINISH SESSION"}
+                        </button>
+                        {!isFinishedToday && (
+                            <p className={styles.pointsHint}>+{pointsPerSession} PTS POTENTIAL</p>
+                        )}
                     </div>
                 </div>
             )}

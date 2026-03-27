@@ -60,6 +60,8 @@ export interface UserProfile {
     classTags?: string[];
     missionLogs?: any[];
     weightEntries?: WeightEntry[];
+    eventPoints?: number;
+    eventTitles?: string[];
 }
 
 export interface Agency {
@@ -272,6 +274,8 @@ interface HunterState {
     updateChatProgress: (contact: string, stateOrUpdater: ChatState | null | ((prev: ChatState | null) => ChatState | null)) => Promise<void>;
     submitWeight: (weight: number, date?: string) => Promise<void>;
     fetchWeightEntries: () => Promise<void>;
+    addEventPoints: (points: number) => Promise<void>;
+    unlockEventTitle: (titleName: string) => Promise<void>;
 }
 
 
@@ -392,7 +396,9 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                             date: w.date,
                             weight: w.weight,
                             created_at: w.created_at
-                        }))
+                        })),
+                        eventPoints: profileData.event_points || 0,
+                        eventTitles: profileData.event_titles || []
                     }
                 });
             }
@@ -448,7 +454,9 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                     email: initialProfile.email,
                     phone: initialProfile.phone,
                     active_frame: initialProfile.activeFrame,
-                    unlocked_frames: initialProfile.unlockedFrames
+                    unlocked_frames: initialProfile.unlockedFrames,
+                    event_points: 0,
+                    event_titles: []
                 }])
                 .select()
                 .single();
@@ -488,7 +496,9 @@ export const useHunterStore = create<HunterState>((set, get) => ({
                     agencyId: newProfile.agency_id,
                     bio: newProfile.bio,
                     managerComment: newProfile.manager_comment,
-                    trackedQuests: newProfile.tracked_quests || []
+                    trackedQuests: newProfile.tracked_quests || [],
+                    eventPoints: 0,
+                    eventTitles: []
                 }
             });
         } catch (error) {
@@ -1914,21 +1924,24 @@ export const useHunterStore = create<HunterState>((set, get) => ({
     fetchWeightEntries: async () => {
         const profile = get().profile;
         if (!profile) return;
+        const { data } = await supabase.from('weight_entries').select('*').eq('profile_id', profile.id).order('date', { ascending: true });
+        if (data) set({ profile: { ...profile, weightEntries: data.map((w: any) => ({ id: w.id, profile_id: w.profile_id, date: w.date, weight: w.weight, created_at: w.created_at })) } });
+    },
 
-        try {
-            const { data, error } = await supabase
-                .from('weight_entries')
-                .select('*')
-                .eq('profile_id', profile.id)
-                .order('date', { ascending: true });
+    addEventPoints: async (points: number) => {
+        const profile = get().profile;
+        if (!profile) return;
+        const newPoints = (profile.eventPoints || 0) + points;
+        set({ profile: { ...profile, eventPoints: newPoints } });
+        await supabase.from('profiles').update({ event_points: newPoints }).eq('id', profile.id);
+    },
 
-            if (error) throw error;
-
-            set({ profile: { ...profile, weightEntries: data || [] } });
-        } catch (error) {
-            console.error('Error fetching weight entries:', error);
-        }
+    unlockEventTitle: async (titleName: string) => {
+        const profile = get().profile;
+        if (!profile) return;
+        if ((profile.eventTitles || []).includes(titleName)) return;
+        const newTitles = [...(profile.eventTitles || []), titleName];
+        set({ profile: { ...profile, eventTitles: newTitles } });
+        await supabase.from('profiles').update({ event_titles: newTitles }).eq('id', profile.id);
     }
 }));
-
-
