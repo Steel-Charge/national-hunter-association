@@ -1,0 +1,396 @@
+/* TrainingView.module.css */
+
+.wrapper {
+    width: 100%;
+    max-width: 480px; /* Mobile-first feel as per screenshot */
+    margin: 0 auto;
+    padding: 20px;
+    background: transparent;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+}
+
+.headerMain {
+    display: flex;
+    flex-direction: column;
+}
+
+.profileName {
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+.profileTitle {
+    font-size: 0.9rem;
+    font-weight: 700;
+    opacity: 0.9;
+    letter-spacing: 1px;
+}
+
+.settingsIcon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.settingsIcon:hover {
+    opacity: 1;
+}
+
+/* ─── Schedule ───────────────────────────────────────────────────────────── */
+.scheduleSection {
+    margin-bottom: 25px;
+}
+
+.scheduleTitle {
+    font-size: 1.2rem;
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+}
+
+.scheduleBox {
+    border: 2px solid;
+    border-radius: 20px;
+    padding: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.dayPill {
+    background: transparent;
+    border: 2px solid;
+    border-radius: 25px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dayPillActive {
+    transform: scale(1.05);
+}
+
+/* ─── Day Header Row ─────────────────────────────────────────────────────── */
+.dayHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.dayTitle {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+.restBtn {
+    background: transparent;
+    border: 2px solid;
+    border-radius: 25px;
+    padding: 8px 25px;
+    font-size: 0.85rem;
+    font-weight: 900;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+}
+
+.restBtnActive {
+    transform: scale(1.05);
+}
+
+/* ─── Labels Row ────────────────────────────────────────────────────────── */
+.labelsRow {
+    display: grid;
+    grid-template-columns: 1fr 60px 20px 70px;
+    gap: 12px;
+    margin-bottom: 8px;
+    padding-right: 15px;
+}
+
+.labelCell {
+    font-size: 0.7rem;
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 1px;
+    opacity: 0.6;
+}
+
+/* ─── Exercise List ──────────────────────────────────────────────────────── */
+.exerciseList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.exerciseBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.exerciseRow {
+    display: grid;
+    grid-template-columns: 1fr 60px 20px 70px;
+    gap: 12px;
+    align-items: center;
+    position: relative;
+}
+
+.descBlock {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 0;
+}
+
+.descBlockActive {
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+}
+
+.descInput {
+    background: transparent;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 900;
+    outline: none;
+    width: 100%;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.descInput::placeholder {
+    opacity: 0.5;
+}
+
+.typeToggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    flex-shrink: 0;
+}
+
+.boxBlock {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid;
+    border-radius: 12px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.boxInput {
+    background: transparent;
+    border: none;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 900;
+    outline: none;
+}
+
+.boxPlaceholder {
+    font-weight: 900;
+    font-size: 1.2rem;
+    opacity: 0.5;
+}
+
+.xSep {
+    text-align: center;
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+
+/* ─── Comparison Box ─────────────────────────────────────────────────────── */
+.comparisonBox {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid;
+    border-radius: 20px;
+    padding: 15px 20px;
+    margin-top: 5px;
+}
+
+.comparisonTitle {
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.comparisonGrid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.compCell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.compValBox, .compInputBox {
+    width: 80px;
+    height: 80px;
+    border: 2px solid;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 900;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.compInput {
+    background: transparent;
+    border: none;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 900;
+    outline: none;
+}
+
+.compLabel {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.compArrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+}
+
+/* ─── Add Item ───────────────────────────────────────────────────────────── */
+.addRow {
+    display: grid;
+    grid-template-columns: 1fr 60px 20px 70px;
+    gap: 12px;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.addItemBtn {
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px solid;
+    border-radius: 12px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addItemBtn:hover {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.addItemLabel {
+    font-size: 0.9rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+/* ─── Mini Delete ────────────────────────────────────────────────────────── */
+.miniDelete {
+    position: absolute;
+    right: -25px;
+    background: transparent;
+    border: none;
+    color: #ff4d4d;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.miniDelete:hover {
+    opacity: 1;
+}
+
+/* ─── Rest View ──────────────────────────────────────────────────────────── */
+.restPlaceholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.restIcon {
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+    animation: restPulse 2s infinite ease-in-out;
+}
+
+@keyframes restPulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 0.5; }
+}
+
+.restMsg {
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* Responsive tweaks */
+@media (max-width: 400px) {
+    .labelsRow, .exerciseRow, .addRow {
+        grid-template-columns: 1fr 50px 15px 60px;
+        gap: 8px;
+    }
+    .compValBox, .compInputBox {
+        width: 65px;
+        height: 65px;
+        font-size: 1.5rem;
+    }
+}
