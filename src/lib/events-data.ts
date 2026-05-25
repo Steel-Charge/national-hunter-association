@@ -17,7 +17,7 @@ export interface NPC {
     isNPC: boolean;
 }
 
-export const PHOENIX_GAMES_END_DATE = '2026-09-30T23:59:59';
+export const PHOENIX_GAMES_END_DATE = '2020-01-01T00:00:00';
 
 export const EVENT_MISSIONS: EventMission[] = [
     {
@@ -73,9 +73,9 @@ export const HYENA_NPCS: NPC[] = [
         isNPC: true
     },
     {
-        id: 'npc_lockjaw',
-        name: 'Lockjaw',
-        title: 'Gambit',
+        id: 'npc_gambit',
+        name: 'Gambit',
+        title: 'Hyena Agent',
         avatarUrl: '/placeholder.png',
         points: 720,
         rank: 'A',
@@ -84,7 +84,7 @@ export const HYENA_NPCS: NPC[] = [
     {
         id: 'npc_mana',
         name: 'Mana',
-        title: 'Faery',
+        title: 'Hyena Agent',
         avatarUrl: '/placeholder.png',
         points: 610,
         rank: 'B',
@@ -93,7 +93,7 @@ export const HYENA_NPCS: NPC[] = [
     {
         id: 'npc_dala',
         name: 'Dala',
-        title: 'Toto',
+        title: 'Hyena Agent',
         avatarUrl: '/placeholder.png',
         points: 440,
         rank: 'C',

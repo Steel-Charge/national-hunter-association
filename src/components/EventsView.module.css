@@ -12,8 +12,8 @@
     padding: 30px;
     border-radius: 20px;
     background: rgba(0, 0, 0, 0.4);
-    border: 3px solid #ff004c;
-    box-shadow: 0 0 30px rgba(255, 0, 76, 0.2);
+    border: 3px solid #ff1cd2;
+    box-shadow: 0 0 30px rgba(255, 28, 210, 0.2);
     margin-bottom: 25px;
     overflow: hidden;
     text-align: center;
@@ -25,7 +25,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, transparent, #ff004c, transparent);
+    background: linear-gradient(90deg, transparent, #ff1cd2, transparent);
     animation: glowMove 3s infinite linear;
 }
 
@@ -39,8 +39,8 @@
     font-weight: 900;
     letter-spacing: 6px;
     margin: 0;
-    color: #ff004c;
-    text-shadow: 0 0 15px rgba(255, 0, 76, 0.8);
+    color: #ff1cd2;
+    text-shadow: 0 0 15px rgba(255, 28, 210, 0.8);
 }
 
 .eventSubtitle {
@@ -60,7 +60,7 @@
     font-size: 0.85rem;
     font-weight: 900;
     color: #fff;
-    background: #ff004c;
+    background: #ff1cd2;
     padding: 6px 15px;
     border-radius: 20px;
     width: fit-content;
@@ -71,7 +71,7 @@
 /* ── Lore ─────────────────────────────────────────────────────────── */
 .loreBox {
     background: rgba(40, 0, 20, 0.6);
-    border-left: 4px solid #ff004c;
+    border-left: 4px solid #ff1cd2;
     padding: 20px 25px;
     border-radius: 4px 15px 15px 4px;
     margin-bottom: 30px;
@@ -81,7 +81,7 @@
 }
 
 .loreIcon {
-    color: #ff004c;
+    color: #ff1cd2;
     flex-shrink: 0;
 }
 
@@ -121,7 +121,7 @@
 }
 
 .sectionIcon {
-    color: #ff004c;
+    color: #ff1cd2;
 }
 
 .sectionHeader h2 {
@@ -149,16 +149,16 @@
 }
 
 .userRow {
-    border: 2px solid #ff004c;
-    background: rgba(255, 0, 76, 0.1);
-    box-shadow: 0 0 15px rgba(255, 0, 76, 0.1);
+    border: 2px solid #ff1cd2;
+    background: rgba(255, 28, 210, 0.1);
+    box-shadow: 0 0 15px rgba(255, 28, 210, 0.1);
     transform: scale(1.02);
 }
 
 .rankNum {
     font-size: 1.1rem;
     font-weight: 900;
-    color: #ff004c;
+    color: #ff1cd2;
     min-width: 30px;
 }
 
@@ -166,7 +166,7 @@
     width: 45px;
     height: 45px;
     border-radius: 50%;
-    border: 2px solid #ff004c;
+    border: 2px solid #ff1cd2;
     object-fit: cover;
 }
 
@@ -180,6 +180,22 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
+}
+
+.npcBadge {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #ff1cd2;
+    letter-spacing: 1px;
+}
+
+.nameText {
+    flex-shrink: 0;
 }
 
 .topCrown {
@@ -191,6 +207,8 @@
     font-weight: 700;
     opacity: 0.6;
     letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
 }
 
 .entryPoints {
@@ -201,7 +219,7 @@
     display: block;
     font-size: 1.2rem;
     font-weight: 900;
-    color: #ff004c;
+    color: #ff1cd2;
 }
 
 .pointsLabel {
@@ -228,8 +246,8 @@
 }
 
 .missionUnlocked {
-    border-color: #ff004c;
-    background: rgba(255, 0, 76, 0.05);
+    border-color: #ff1cd2;
+    background: rgba(255, 28, 210, 0.05);
 }
 
 .missionHeader {
@@ -246,7 +264,7 @@
 }
 
 .missionRarity[data-rarity="legendary"] { color: #ffd700; }
-.missionRarity[data-rarity="mythic"] { color: #ff004c; }
+.missionRarity[data-rarity="mythic"] { color: #ff1cd2; }
 .missionRarity[data-rarity="epic"] { color: #c0c0c0; }
 
 .missionPoints {
@@ -275,7 +293,7 @@
 }
 
 .unlockedBadge {
-    background: #ff004c;
+    background: #ff1cd2;
     color: #fff;
     padding: 4px 12px;
     border-radius: 4px;
@@ -285,8 +303,8 @@
 
 .claimBtn {
     background: transparent;
-    border: 2px solid #ff004c;
-    color: #ff004c;
+    border: 2px solid #ff1cd2;
+    color: #ff1cd2;
     padding: 6px 15px;
     border-radius: 4px;
     font-size: 0.8rem;
@@ -296,7 +314,7 @@
 }
 
 .claimBtn:hover {
-    background: #ff004c;
+    background: #ff1cd2;
     color: #fff;
 }
 

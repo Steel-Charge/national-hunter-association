@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react';
 import { useHunterStore } from '@/lib/store';
 import { Rank } from '@/lib/game-logic';
+import { supabase } from '@/lib/supabase';
 import { EVENT_MISSIONS, HYENA_NPCS, PHOENIX_GAMES_END_DATE, NPC } from '@/lib/events-data';
 import styles from './EventsView.module.css';
 import { Trophy, Target, Star, Shield, Zap, Info, Clock, Crown } from 'lucide-react';
@@ -21,6 +22,32 @@ export default function EventsView() {
         return `${days}D ${hours}H REMAINING`;
     }, []);
 
+    const [agencyMembers, setAgencyMembers] = React.useState<NPC[]>([]);
+
+    React.useEffect(() => {
+        const fetchAgencyMembers = async () => {
+            if (!profile?.agencyId) return;
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, name, active_title, avatar_url, event_points')
+                .eq('agency_id', profile.agencyId);
+
+            if (data && !error) {
+                const members = data.filter(m => m.id !== profile.id).map(m => ({
+                    id: m.id,
+                    name: m.name,
+                    title: (m.active_title as any)?.name || 'Hunter',
+                    avatarUrl: m.avatar_url || '/placeholder.png',
+                    points: m.event_points || 0,
+                    rank: 'AGENCY',
+                    isNPC: false
+                }));
+                setAgencyMembers(members);
+            }
+        };
+        fetchAgencyMembers();
+    }, [profile?.agencyId]);
+
     const leaderboard = useMemo(() => {
         if (!profile) return HYENA_NPCS;
         const userEntry: NPC = {
@@ -32,8 +59,8 @@ export default function EventsView() {
             rank: 'USER', // Custom flag for styling
             isNPC: false
         };
-        return [...HYENA_NPCS, userEntry].sort((a, b) => b.points - a.points);
-    }, [profile]);
+        return [...HYENA_NPCS, userEntry, ...agencyMembers].sort((a, b) => b.points - a.points);
+    }, [profile, agencyMembers]);
 
     const userRankIndex = leaderboard.findIndex(entry => entry.id === profile?.id);
 
@@ -95,10 +122,14 @@ export default function EventsView() {
                                     <img src={entry.avatarUrl} alt={entry.name} className={styles.entryAvatar} />
                                     <div className={styles.entryInfo}>
                                         <div className={styles.entryName}>
-                                            {entry.name}
+                                            <span className={styles.nameText}>{entry.name}</span>
+                                            {entry.isNPC && <span className={styles.npcBadge}>[NPC]</span>}
                                             {index === 0 && <Crown size={14} className={styles.topCrown} />}
                                         </div>
-                                        <div className={styles.entryTitle}>{entry.title.toUpperCase()}</div>
+                                        <div className={styles.entryTitle}>
+                                            {entry.rank === 'AGENCY' && <Crown size={10} style={{ marginRight: '4px', opacity: 0.6 }} />}
+                                            {entry.title.toUpperCase()}
+                                        </div>
                                     </div>
                                     <div className={styles.entryPoints}>
                                         <span className={styles.pointsVal}>{entry.points}</span>

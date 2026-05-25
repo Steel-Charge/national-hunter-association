@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, X, Clock, Hash, ChevronDown, ChevronUp, ArrowRight, Settings, Zap } from 'lucide-react';
+import { Plus, X, Clock, Hash, ChevronDown, ChevronUp, ArrowRight, Zap } from 'lucide-react';
 import styles from './TrainingView.module.css';
 import { v4 as uuidv4 } from 'uuid';
 import { useHunterStore, getDisplayTitle } from '@/lib/store';
@@ -103,7 +103,7 @@ interface TrainingViewProps {
 }
 
 export default function TrainingView({ profileName, rankColor }: TrainingViewProps) {
-    const { profile, getOverallRank, getTheme, addEventPoints } = useHunterStore();
+    const { profile, getOverallRank, getTheme } = useHunterStore();
     const [plan, setPlan] = useState<WorkoutPlan>(makeDefaultPlan());
     const [logs, setLogs] = useState<WorkoutLogs>({});
     const [selectedDay, setSelectedDay] = useState<string>('MON');
@@ -224,10 +224,9 @@ export default function TrainingView({ profileName, rankColor }: TrainingViewPro
     const handleFinishSession = async () => {
         if (isFinishedToday) return;
         
-        await addEventPoints(pointsPerSession);
         localStorage.setItem(finishedKey, todayKey());
         setIsFinishedToday(true);
-        alert(`SESSION COMPLETE! +${pointsPerSession} Event Points Awarded.`);
+        alert(`SESSION COMPLETE!`);
     };
 
     return (
@@ -242,9 +241,7 @@ export default function TrainingView({ profileName, rankColor }: TrainingViewPro
                         {displayTitle.toUpperCase()}
                     </div>
                 </div>
-                <button className={styles.settingsIcon} style={{ color: rankColor }}>
-                    <Settings size={28} />
-                </button>
+
             </div>
 
             {/* ─── SCHEDULE section ────────────────────────────────────────── */}
@@ -425,9 +422,7 @@ export default function TrainingView({ profileName, rankColor }: TrainingViewPro
                             <Zap size={18} fill={isFinishedToday ? "none" : rankColor} />
                             {isFinishedToday ? "SESSION COMPLETED" : "FINISH SESSION"}
                         </button>
-                        {!isFinishedToday && (
-                            <p className={styles.pointsHint}>+{pointsPerSession} PTS POTENTIAL</p>
-                        )}
+
                     </div>
                 </div>
             )}
